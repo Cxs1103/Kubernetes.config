@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gitlab-ci-runner
+  namespace: kube-ops
+  labels:
+    app: gitlab-ci-runner
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gitlab-ci-runner
+  serviceName: gitlab-ci-runner
+  template:
+    metadata:
+      labels:
+        app: gitlab-ci-runner
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - k8s-node1
+      volumes:
+      - name: gitlab-ci-runner-scripts
+        projected:
+          sources:
+          - configMap:
+              name: gitlab-ci-runner-scripts
+              items:
+              - key: run.sh
+                path: run.sh
+                mode: 0755
+      serviceAccountName: gitlab-ci
+      containers:
+      - image: gitlab/gitlab-runner:latest
+        name: gitlab-ci-runner
+        command:
+        - /scripts/run.sh
+        envFrom:
+        - configMapRef:
+            name: gitlab-ci-runner-cm
+        - secretRef:
+            name: gitlab-ci-token
+        env:
+        - name: RUNNER_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        ports:
+        - containerPort: 9100
+          name: http-metrics
+          protocol: TCP
+        volumeMounts:
+        - name: gitlab-ci-runner-scripts
+          mountPath: "/scripts"
+          readOnly: true
+      restartPolicy: Always
