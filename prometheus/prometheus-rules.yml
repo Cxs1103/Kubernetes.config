@@ -1,0 +1,242 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: kube-mon
+data:
+  host-rules.yml: |
+    groups:
+    - name: hostStatsAlert
+      rules:
+      - alert: hostCpuUsageAlert
+        expr: sum(avg without (cpu)(irate(node_cpu{mode!='idle'}[5m]))) by (instance) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} CPU usage above 85% (current value: {{ $value }}%)"
+      - alert: hostMemUsageAlert
+        expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 80
+        for: 2m
+        labels:
+          team: dingtalk
+        annotations:
+          summary: "{{ $labels.instance }} MEM usage above 85% (current value: {{ $value }}%)"
+      - alert: OutOfInodes
+        expr: node_filesystem_free{fstype="overlay",mountpoint ="/"} / node_filesystem_size{fstype="overlay",mountpoint ="/"} * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Out of inodes (instance {{ $labels.instance }})"
+          description: "Disk is almost running out of available inodes (< 10% left) (current value: {{ $value }})"
+      - alert: OutOfDiskSpace
+        expr: node_filesystem_free{fstype="overlay",mountpoint ="/rootfs"} / node_filesystem_size{fstype="overlay",mountpoint ="/rootfs"} * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Out of disk space (instance {{ $labels.instance }})"
+          description: "Disk is almost full (< 10% left) (current value: {{ $value }})"
+      - alert: UnusualNetworkThroughputIn
+        expr: sum by (instance) (irate(node_network_receive_bytes[2m])) / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual network throughput in (instance {{ $labels.instance }})"
+          description: "Host network interfaces are probably receiving too much data (> 100 MB/s) (current value: {{ $value }})"
+      - alert: UnusualNetworkThroughputOut
+        expr: sum by (instance) (irate(node_network_transmit_bytes[2m])) / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual network throughput out (instance {{ $labels.instance }})"
+          description: "Host network interfaces are probably sending too much data (> 100 MB/s) (current value: {{ $value }})"
+      - alert: UnusualDiskReadRate
+        expr: sum by (instance) (irate(node_disk_bytes_read[2m])) / 1024 / 1024 > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual disk read rate (instance {{ $labels.instance }})"
+          description: "Disk is probably reading too much data (> 50 MB/s) (current value: {{ $value }})"
+      - alert: UnusualDiskWriteRate
+        expr: sum by (instance) (irate(node_disk_bytes_written[2m])) / 1024 / 1024 > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual disk write rate (instance {{ $labels.instance }})"
+          description: "Disk is probably writing too much data (> 50 MB/s) (current value: {{ $value }})"
+      - alert: UnusualDiskReadLatency
+        expr: rate(node_disk_read_time_ms[1m]) / rate(node_disk_reads_completed[1m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual disk read latency (instance {{ $labels.instance }})"
+          description: "Disk latency is growing (read operations > 100ms) (current value: {{ $value }})"
+      - alert: UnusualDiskWriteLatency
+        expr: rate(node_disk_write_time_ms[1m]) / rate(node_disk_writes_completedl[1m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual disk write latency (instance {{ $labels.instance }})"
+          description: "Disk latency is growing (write operations > 100ms) (current value: {{ $value }})"
+
+  http-rules.yml: |
+    groups:
+    - name: http_status
+      rules:
+      - alert: ProbeFailed
+        expr: probe_success == 0
+        for: 1m
+        labels:
+          severity: error
+        annotations:
+          summary: "Probe failed (instance {{ $labels.instance }})"
+          description: "Probe failed (current value: {{ $value }})"
+      - alert: StatusCode
+        expr: probe_http_status_code <= 199 OR probe_http_status_code >= 400
+        for: 1m
+        labels:
+          severity: error
+        annotations:
+          summary: "Status Code (instance {{ $labels.instance }})"
+          description: "HTTP status code is not 200-399 (current value: {{ $value }})"
+      - alert: SslCertificateWillExpireSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate will expire soon (instance {{ $labels.instance }})"
+          description: "SSL certificate expires in 30 days (current value: {{ $value }})"
+      - alert: SslCertificateHasExpired
+        expr: probe_ssl_earliest_cert_expiry - time()  <= 0
+        for: 5m
+        labels:
+          severity: error
+        annotations:
+          summary: "SSL certificate has expired (instance {{ $labels.instance }})"
+          description: "SSL certificate has expired already (current value: {{ $value }})"
+      - alert: BlackboxSlowPing
+        expr: probe_icmp_duration_seconds > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Blackbox slow ping (instance {{ $labels.instance }})"
+          description: "Blackbox ping took more than 2s (current value: {{ $value }})"
+      - alert: BlackboxSlowRequests
+        expr: probe_http_duration_seconds > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Blackbox slow requests (instance {{ $labels.instance }})"
+          description: "Blackbox request took more than 2s (current value: {{ $value }})"
+      - alert: PodCpuUsagePercent
+        expr: sum(sum(label_replace(irate(container_cpu_usage_seconds_total[1m]),"pod","$1","container_label_io_kubernetes_pod_name", "(.*)"))by(pod) / on(pod) group_right kube_pod_container_resource_limits_cpu_cores *100 )by(container,namespace,node,pod,severity) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod cpu usage percent has exceeded 80% (current value: {{ $value }}%)"
+
+  pods-rules.yml: |
+    groups:
+    - name: pod.rules
+      rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: error 
+        annotations:
+          summary: "监控采集器{{ $labels.instance }}停止工作"
+          value: "{{ $value }}"
+
+      - alert: PodSvcDown
+        expr: probe_success == 0
+        for: 1m
+        labels:
+          severity: error 
+        annotations:
+          summary: "容器代理服务{{ $labels.instance }}停止工作"
+          value: "{{ $value }}"
+
+      - alert: MysqlCon
+        expr: MysqlCon_metric > 40
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "mysql连接数过高"
+          value: "{{ $value }}"
+
+      - alert: PodCpuUsage
+        expr: sum by(pod_name, namespace) (rate(container_cpu_usage_seconds_total{image!=""}[1m])) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning 
+        annotations:
+          summary: "容器ns: {{ $labels.namespace }} | pod: {{ $labels.pod_name }} CPU使用率超过80%"
+          value: "{{ $value }}"
+
+      - alert: PodMemoryUsage
+        expr: sum(container_memory_rss{image!=""}) by(pod_name, namespace) / sum(container_spec_memory_limit_bytes{image!=""}) by(pod_name, namespace) * 100 != +inf > 80
+        for: 5m
+        labels:
+          severity: warning 
+        annotations:
+          summary: "容器ns: {{ $labels.namespace }} | pod: {{ $labels.pod_name }} 内存使用率超过80%"
+          value: "{{ $value }}"
+
+      - alert: PodFailed
+        expr: sum (kube_pod_status_phase{phase="Failed"}) by (pod,namespace) > 0
+        for: 1m
+        labels:
+          severity: error 
+        annotations:
+          summary: "容器ns: {{ $labels.namespace }} | pod: {{ $labels.pod }} pod status is Failed"
+          value: "{{ $value }}"
+
+      - alert: PodPending
+        expr: sum (kube_pod_status_phase{phase="Pending"}) by (pod,namespace) > 0
+        for: 1m
+        labels:
+          severity: error 
+        annotations:
+          summary: "容器ns: {{ $labels.namespace }} | pod: {{ $labels.pod }} status is Pending"
+          value: "{{ $value }}"
+
+      - alert: PodNetworkReceive
+        expr: sum (rate (container_network_receive_bytes_total{image!="",name=~"^k8s_.*"}[5m]) /1000) by (pod_name,namespace)  > 30000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "容器ns: {{ $labels.namespace }} | pod: {{ $labels.pod_name }} 接受到的网络入流量大于30MB/s"
+          value: "{{ $value }}K/s"                
+
+      - alert: PodNetworkTransmit
+        expr: sum (rate (container_network_transmit_bytes_total{image!="",name=~"^k8s_.*"}[5m]) /1000) by (pod_name,namespace) > 30000
+        for: 5m
+        labels:
+          severity: warning 
+        annotations:
+          summary: "容器ns: {{ $labels.namespace }} | pod: {{ $labels.pod_name }} 传输的网络出流量大于30MB/s"
+          value: "{{ $value }}K/s"
+
+      - alert: PodRestart
+        expr: sum (changes (kube_pod_container_status_restarts_total[1m])) by (pod,namespace) > 0
+        for: 5s
+        labels:
+          severity: warning 
+        annotations:
+          summary: "容器ns: {{ $labels.namespace }} | pod: {{ $labels.pod }} pod is restart"
+          value: "{{ $value }}"

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dingtalk-hook
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: dingtalk-hook
+  template:
+    metadata:
+      labels:
+        app: dingtalk-hook
+    spec:
+      volumes:
+      - name: dingtalk-configmap
+        configMap:
+          name: dingtalk-config
+      - name: dingtalk-tmpl
+        configMap:
+          name: dingtalk-template
+      containers:
+      - name: dingtalk-hook
+        image: registry.cn-hangzhou.aliyuncs.com/shooer/by_docker_shooter:prometheus_dingtalk_v0.2
+        imagePullPolicy: IfNotPresent
+        args:
+        - "--config.file=/etc/dingtalk-hook/config.yml"        
+        ports:
+        - containerPort: 8060
+          protocol: TCP
+        volumeMounts:
+        - name: dingtalk-configmap
+          mountPath: "/etc/dingtalk-hook/"
+        - name: dingtalk-tmpl
+          mountPath: "/etc/dingtalk-hook/dingtalk-tmpl/"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+          limits:
+            cpu: 50m
+            memory: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dingtalk-hook
+  namespace: monitoring
+  labels:
+    app: dingtalk-hook
+spec:
+  selector:
+    app: dingtalk-hook
+  ports:
+  - name: http
+    port: 8060
+    protocol: TCP
+    targetPort: 8060
+  type: ClusterIP 
