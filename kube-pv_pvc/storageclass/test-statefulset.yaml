@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sc-demo
+spec:
+  replicas: 3
+  serviceName: "nginx"   # statefulSet 需要添加serviceName
+  selector:
+    matchLabels:
+      app: sc-web
+  template:
+    metadata:
+      labels:
+        app: sc-web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.20.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+      annotations:
+        volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"    #sc一定要指向上面创建的sc名称
+    spec:
+      accessModes:
+        - ReadWriteMany   #采用ReadWriteMany的访问模式
+      resources:
+        requests:
+          storage: 50Mi    #请求50M的空间

@@ -1,0 +1,12 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"    #sc一定要指向上面创建的sc名称
+spec:
+  accessModes:
+    - ReadWriteMany   #采用ReadWriteMany的访问模式
+  resources:
+    requests:
+      storage: 1Mi   #请求1M的空间
