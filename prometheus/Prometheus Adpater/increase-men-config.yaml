@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: increase-mem-config
+data:
+  increase-mem.sh: |
+    #!/bin/bash  
+    mkdir /tmp/memory  
+    mount -t tmpfs -o size=40M tmpfs /tmp/memory  
+    dd if=/dev/zero of=/tmp/memory/block  
+    sleep 60 
+    rm /tmp/memory/block  
+    umount /tmp/memory  
+    rmdir /tmp/memory

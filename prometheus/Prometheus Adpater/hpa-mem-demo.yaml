@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hpa-mem-demo
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      volumes:
+      - name: increase-mem-script
+        configMap:
+          name: increase-mem-config
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: increase-mem-script
+          mountPath: /etc/script
+        resources:
+          requests:
+            memory: 50Mi
+            cpu: 50m
+        securityContext:
+          privileged: true
