@@ -1,26 +1,4 @@
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: gitlab-pv
-spec:
-  storageClassName: gitlab-data-db
-  capacity:
-    storage: 3Gi
-  volumeMode: Filesystem
-  accessModes:
-  - ReadWriteOnce
-  local:
-    path: /data/k8s/gitlab/data/
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - k8s-node2
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: gitlab-pvc
@@ -31,7 +9,7 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 3Gi
+      storage: 5Gi
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -170,7 +148,6 @@ spec:
             port: 80
           initialDelaySeconds: 350
           timeoutSeconds: 5
-          failureThreshold: 12
       volumes:
       - name: data
         persistentVolumeClaim:
