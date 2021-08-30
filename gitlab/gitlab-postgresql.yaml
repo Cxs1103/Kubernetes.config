@@ -1,9 +1,3 @@
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: gitlab-data-db
-provisioner: fuseim.pri/ifs
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
