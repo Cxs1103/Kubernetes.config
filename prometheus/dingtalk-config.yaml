@@ -11,8 +11,8 @@ data:
       - /etc/dingtalk-hook/dingtalk-tmpl/default.tmpl
     targets:
       webhook:
-        url: https://oapi.dingtalk.com/robot/send?access_token=3f556e31d61694749b26028c4a7130fb388bd55f869e6841ba8713d01354a99a
-        secret: SEC7143979c0baca070b335ad41696a0c42007436ed4146c794ac090e4b13dbe06a
+        url: https://oapi.dingtalk.com/robot/send?access_token=3f556e31d6xxxxxxxxxxxxxxxxxxxxxxd01354a99a
+        secret: SEC7143979c0baca070bxxxxxxxed4146c794ac090e4b13dbe06a
         message:
           title: '{{ template "ding.link.title" . }}'
           text: '{{ template "ding.link.content" . }}'

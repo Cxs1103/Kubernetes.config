@@ -8,9 +8,9 @@ data:
     global:
       resolve_timeout: 5m      # 当alertmanager持续多长时间未接收到告警后标记告警状态为 resolved，这里为5分钟
       smtp_smarthost: 'smtp.163.com:25'         # 配置邮件发送代理服务器
-      smtp_from: 'cxs1103@163.com'         # 配置邮件发送邮箱
-      smtp_auth_username: 'cxs1103@163.com'         # 配置邮件发送用户名
-      smtp_auth_password: 'KNGJZPXSWZWSZVYE'         # 配置邮件发送用户的密码
+      smtp_from: 'cxsXXXX@163.com'         # 配置邮件发送邮箱
+      smtp_auth_username: 'cxsXXX@163.com'         # 配置邮件发送用户名
+      smtp_auth_password: 'KNGJXXXXXXX'         # 配置邮件发送用户的密码
       smtp_hello: '163.com'         # 配置邮件发送签名
       smtp_require_tls: false
       wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
@@ -50,20 +50,20 @@ data:
 
     - name: 'default'
       email_configs:
-      - to: '1103098721@qq.com'
+      - to: '1111111@qq.com'
         send_resolved: true
 
     - name: 'email'
       email_configs:
-      - to: '1103098721@qq.com'
+      - to: '111111@qq.com'
         send_resolved: true
 
     - name: 'wechat'
       wechat_configs:
-      - corp_id: 'wwa88bb22b03d14d3f'    # 企业ID
+      - corp_id: 'wxxxxxxb03d14d3f'    # 企业ID
         to_user: '@all'    # 通知所有人
         to_party: '1'      # 部门名称
         agent_id: '1000002'       # 应用程序id
         message: '{{ template "wechat.default.message" . }}'   # 模板
-        api_secret: 'qQ_DFYFwml3hIY3CU4z9bXqDQx4YsOkpNEFN1BDGKB8'    # 应用程序安全码
+        api_secret: 'xxxxxxxxxkpNEFN1BDGKB8'    # 应用程序安全码
         send_resolved: true
