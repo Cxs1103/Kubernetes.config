@@ -1,15 +1,16 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gitlab-pvc
-  namespace: kube-ops
-spec:
-  storageClassName: gitlab-data-db
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
+  kind: PersistentVolumeClaim
+  metadata:
+    name: gitlab-pvc
+    namespace: kube-ops
+    annotations:
+      volume.beta.kubernetes.io/storage-class: "gitlab-data"
+  spec:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: 5Gi
 ---
 apiVersion: v1
 kind: ServiceAccount
