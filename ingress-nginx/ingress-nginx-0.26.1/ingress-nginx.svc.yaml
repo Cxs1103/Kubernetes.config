@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ingress-nginx
-  namespace: ingress-nginx
+  name: ingress-nginx-nginx
+  namespace: ingress-nginx-nginx
 spec:
   type: ClusterIP
   ports:
@@ -13,5 +13,5 @@ spec:
     name: https
     targetPort: 443
   selector:
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/name: ingress-nginx-nginx
+    app.kubernetes.io/part-of: ingress-nginx-nginx

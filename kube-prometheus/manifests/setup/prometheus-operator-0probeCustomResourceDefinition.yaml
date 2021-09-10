@@ -115,7 +115,7 @@ spec:
                 description: Targets defines a set of static and/or dynamically discovered targets to be probed using the prober.
                 properties:
                   ingress:
-                    description: Ingress defines the set of dynamically discovered ingress objects which hosts are considered for probing.
+                    description: Ingress defines the set of dynamically discovered ingress-nginx objects which hosts are considered for probing.
                     properties:
                       namespaceSelector:
                         description: Select Ingress objects by namespace.
