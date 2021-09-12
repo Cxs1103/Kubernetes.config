@@ -1,0 +1,70 @@
+externalURL: https://harbor.cxs.com
+harborAdminPassword: Harbor12345
+logLevel: debug
+
+expose:
+  type: ingress
+  tls:
+    enabled: false
+  ingress:
+    hosts:
+      core: harbor.cxs.com
+      notary: notary.cxs.com
+
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      # 如果需要做高可用，多个副本的组件则需要使用支持 ReadWriteMany 的后端，ceph rbd 是不支持的，可以使用 cephfs，可以换成前面我们使用的 rook-ceph-fs
+      storageClass: "harbor-data"
+      # 如果是高可用的，多个副本组件需要使用 ReadWriteMany，默认为 ReadWriteOnce
+      accessMode: ReadWriteOnce
+      size: 10Gi
+    chartmuseum:
+      storageClass: "harbor-data"
+      accessMode: ReadWriteOnce
+      size: 10Gi
+    jobservice:
+      storageClass: "harbor-data"
+      accessMode: ReadWriteOnce
+      size: 2Gi
+    trivy:
+      storageClass: "harbor-data"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+
+database:
+  type: external
+  external:
+    host: "postgresql.kube-ops.svc.cluster.local"
+    port: "5432"
+    username: "gitlab"
+    password: "password"
+
+redis:
+  type: external
+  external:
+    host: "redis.kube-ops.svc.cluster.local"
+    port: "6379"
+
+# 默认为一个副本，如果要做高可用，只需要设置为 replicas >= 2 即可
+portal:
+  replicas: 1
+core:
+  replicas: 1
+jobservice:
+  replicas: 1
+registry:
+  replicas: 1
+chartmuseum:
+  replicas: 1
+trivy:
+  replicas: 1
+clair:
+  replicas: 1
+notary:
+  server:
+    replicas: 1
+  signer:
+    replicas: 1
