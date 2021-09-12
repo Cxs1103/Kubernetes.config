@@ -1,16 +1,16 @@
 apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: gitlab-pvc
-    namespace: kube-ops
-    annotations:
-      volume.beta.kubernetes.io/storage-class: "gitlab-data"
-  spec:
-    accessModes:
-      - ReadWriteMany
-    resources:
-      requests:
-        storage: 5Gi
+kind: PersistentVolumeClaim
+metadata:
+  name: gitlab-pvc
+  namespace: kube-ops
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "gitlab-data"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -70,6 +70,17 @@ spec:
       labels:
         name: gitlab
     spec:
+      affinity: # 亲和性配置
+        podAntiAffinity: # Pod反亲和性
+         requiredDuringSchedulingIgnoredDuringExecution: # 硬限制
+           - labelSelector:
+               matchExpressions:
+                 - key: name
+                   operator: In
+                   values:
+                     - "redis"
+                     - "postgresql"
+             topologyKey: kubernetes.io/hostname
       initContainers:
       - name: fix-permissions
         image: busybox
@@ -81,13 +92,13 @@ spec:
           mountPath: /home/git/data
       containers:
       - name: gitlab
-        image: gitlab/gitlab-ce:13.12.10-ce.0
+        image: sameersbn/gitlab:12.1.6
         imagePullPolicy: IfNotPresent
         env:
         - name: TZ
           value: Asia/Shanghai
         - name: GITLAB_TIMEZONE
-          value: Shanghai
+          value: Beijing
         - name: GITLAB_SECRETS_DB_KEY_BASE
           value: long-and-random-alpha-numeric-string
         - name: GITLAB_SECRETS_SECRET_KEY_BASE

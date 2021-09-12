@@ -1,74 +1,85 @@
-apiiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: gitlab-redis-pvc
-    namespace: kube-ops
-    annotations:
-      volume.beta.kubernetes.io/storage-class: "gitlab-data"
-  spec:
-    accessModes:
-      - ReadWriteMany
-    resources:
-      requests:
-        storage: 3Gi
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitlab-postgresql-pvc
+  namespace: kube-ops
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "gitlab-data"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis
+  name: postgresql
   namespace: kube-ops
   labels:
-    name: redis
+    name: postgresql
 spec:
   selector:
     matchLabels:
-      name: redis
+      name: postgresql
   template:
     metadata:
-      name: redis
+      name: postgresql
       labels:
-        name: redis
+        name: postgresql
     spec:
       containers:
-      - name: redis
-        image: redis:4.0.9
+      - name: postgresql
+        image: sameersbn/postgresql
         imagePullPolicy: IfNotPresent
+        env:
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: trust
+        - name: DB_USER
+          value: gitlab
+        - name: DB_PASS
+          value: password
+        - name: DB_NAME
+          value: gitlab_production
+        - name: DB_EXTENSION
+          value: pg_trgm
+        - name: USERMAP_UID
+          value: "999"
+        - name: USERMAP_GID
+          value: "999"
         ports:
-        - name: redis
-          containerPort: 6379
+        - name: postgres
+          containerPort: 5432
         volumeMounts:
-        - mountPath: /var/lib/redis
+        - mountPath: /var/lib/postgresql
           name: data
-        livenessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
         readinessProbe:
           exec:
             command:
-            - redis-cli
-            - ping
+            - pg_isready
+            - -h
+            - localhost
+            - -U
+            - postgres
           initialDelaySeconds: 30
           timeoutSeconds: 1
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: gitlab-redis-pvc
+          claimName: gitlab-postgresql-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis
+  name: postgresql
   namespace: kube-ops
   labels:
-    name: redis
+    name: postgresql
 spec:
   ports:
-    - name: redis
-      port: 6379
-      targetPort: redis
+    - name: postgres
+      port: 5432
+      targetPort: postgres
   selector:
-    name: redis
+    name: postgresql
