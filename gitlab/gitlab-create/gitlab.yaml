@@ -192,7 +192,7 @@ metadata:
   namespace: kube-ops
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/proxy-body-size: "1024m"  # git界面需要上传下载文件，默认不够，改大点
+    nginx.ingress.kubernetes.io/proxy-body-size: "5000m"  # git界面需要上传下载文件，默认不够，改大点
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 spec:
