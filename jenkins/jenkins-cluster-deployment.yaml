@@ -1,37 +1,16 @@
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jenkins-pv
-spec:
-  storageClassName: local  # Local PV
-  capacity:
-    storage: 2Gi
-  volumeMode: Filesystem
-  accessModes:
-  - ReadWriteOnce
-  local:
-    path: /data/k8s/jenkins
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - k8s-node1
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jenkins-pvc
   namespace: kube-ops
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "jenkins-data"
 spec:
-  storageClassName: local
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
-      storage: 2Gi
+      storage: 5Gi
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -127,6 +106,8 @@ spec:
       labels:
         app: jenkins
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-node01
       serviceAccount: jenkins
       hostAliases:
       - ip: "127.0.0.1"
@@ -139,7 +120,7 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: jenkinshome
+        - name: data
           mountPath: /var/jenkins_home
       containers:
       - name: mirror
@@ -175,10 +156,10 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 12
         volumeMounts:
-        - name: jenkinshome
+        - name: data
           mountPath: /var/jenkins_home
       volumes:
-      - name: jenkinshome
+      - name: data
         persistentVolumeClaim:
           claimName: jenkins-pvc
       - name: nginx-conf
@@ -212,32 +193,28 @@ kind: Ingress
 metadata:
   name: jenkins
   namespace: kube-ops
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
-  - host: jenkins.cxs.com  # 将域名映射到 gitlab 服务
+  - host: jenkins.mieken.cn
     http:
       paths:
-      - pathType: Prefix
-        path: "/"
+      - path: "/"
+        pathType: Prefix
         backend:
           service:
             name: jenkins
             port:
               number: 8080
-# ---
-# apiVersion: traefik.containo.us/v1alpha1
-# kind: IngressRoute
-# metadata:
-#   name: jenkins
-#   namespace: kube-ops
-# spec:
-#   entryPoints:
-#   - web
-#   routes:
-#   - kind: Rule
-#     match: Host(`jenkins.k8s.local`)
-#     services:
-#     - name: jenkins
-#       port: 8080
+  ingressClassName: nginx #新增特性
+---
+# 新版本新增 IngressClass
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+  name: nginx
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: k8s.io/ingress-nginx
