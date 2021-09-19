@@ -35,11 +35,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: my-nginx
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
-  - host: ngdemo.cxs.com  # 将域名映射到 my-nginx 服务
+  - host: ngdemo.mieken.cn  # 将域名映射到 my-nginx 服务
     http:
       paths:
       - pathType: Prefix
@@ -49,3 +47,12 @@ spec:
             name: service
             port:
               number: 80
+  ingressClassName: nginx #新增特性
+---
+# 新版本新增 IngressClass
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: nginx
+spec:
+  controller: k8s.io/ingress-nginx
