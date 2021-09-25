@@ -40,13 +40,13 @@ spec:
       containers:
       - name: httpd
         image: harbor.mieken.cn/k8s/web:v1
-        imagePullPolicy: Always
+        imagePullPolicy: Always    # 始终拉取最新的镜像
         ports:
         - name: httpd
           containerPort: 80
         volumeMounts:
         - name: httpd-persistent-storage
-          mountPath: /usr/local/apache2/htdocs
+          mountPath: /usr/local/apache2/logs     # 测试持久化日志文件
       volumes:
       - name: httpd-persistent-storage
         persistentVolumeClaim:
