@@ -27,7 +27,7 @@ pipeline{
                 script{
                     println("获取代码")
                     println("${test}")
-                    mytools.PrintMes("获取代码",'red')
+                    mytools.PrintMes("获取代码",'green')
                 }
             }
             input {
@@ -39,11 +39,12 @@ pipeline{
                 }
             }
         }
-        //阶段2 获取代码
+        //阶段2 检查代码
         stage("CheckOut"){
             steps{
                 script{
                     println("检查代码")
+                    mytools.PrintMes("检查代码",'green')
                 }
             }
         }
@@ -51,10 +52,10 @@ pipeline{
         stage("Build"){
             steps{
                 script{
-                    println("运行构建")
+                    println("打包代码")
+                    mytools.PrintMes("打包代码",'green')
                     mvnHome = tool "maven-3.6.3"
                     println(mvnHome)
-
                     sh "${mvnHome}/bin/mvn -version"
                 }
             }

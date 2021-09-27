@@ -1,0 +1,69 @@
+def label = "slave-${UUID.randomUUID().toString()}"
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'golang', image: 'golang:1.14.2-alpine3.11', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'docker', image: 'docker:latest', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'kubectl', image: 'cnych/kubectl', command: 'cat', ttyEnabled: true)
+], serviceAccount: 'jenkins', volumes: [
+  hostPathVolume(mountPath: '/home/jenkins/.kube', hostPath: '/root/.kube'),
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+]) {
+  node(label) {
+    def myRepo = checkout scm
+    def gitCommit = myRepo.GIT_COMMIT
+    def gitBranch = myRepo.GIT_BRANCH
+
+    stage('单元测试') {
+      echo "测试阶段"
+    }
+    stage('代码编译打包') {
+      try {
+        container('golang') {
+          echo "2.代码编译打包阶段"
+          sh """
+            export GOPROXY=https://goproxy.cn
+            GOOS=linux GOARCH=amd64 go build -v -o demo-app
+            """
+        }
+      } catch (exc) {
+        println "构建失败 - ${currentBuild.fullDisplayName}"
+        throw(exc)
+      }
+    }
+    // 仓库地址
+    def registryUrl = "harbor.mieken.cn"
+    // 镜像名称
+    def imageEndpoint = "course/devops-demo"
+    // 镜像标签
+    def imageTag = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+//    script {
+//      env.imageTag = sh (script: 'git rev-parse --short HEAD ${GIT_COMMIT}', returnStdout: true).trim()
+//    }
+    // 镜像地址
+    def image = "${registryUrl}/${imageEndpoint}:${imageTag}"
+    stage('构建 Docker 镜像') {
+      withCredentials([[$class: 'UsernamePasswordMultiBinding',
+        credentialsId: 'docker-auth',
+        usernameVariable: 'DOCKER_USER',
+        passwordVariable: 'DOCKER_PASSWORD']]) {
+          container('docker') {
+            echo "3. 构建 Docker 镜像阶段"
+            sh """
+              docker login ${registryUrl} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+              docker build -t ${image} .
+              docker push ${image}
+              """
+          }
+      }
+    }
+    stage('运行 Kubectl') {
+      container('kubectl') {
+        withCredentials([file(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
+          echo "查看 K8S 集群 Pod 列表 !"
+          sh "mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config"
+          sh "kubectl get pods"
+        }
+      }
+    }
+  }
+}
