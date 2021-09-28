@@ -1,12 +1,23 @@
 #!groovy
 
+@Library('jenkins-sharelibrary') _
+
+def build = new org.devops.build()
+
 String buildShell = "${env.buildShell}"
 
 pipeline{
     agent{ node {label "master" }}
 
     stages{
-        stage("maven-build"){
+        stage("build"){
+            steps{
+                script{
+                    build.Build(buildType,buildShell)
+                }
+            }
+        }
+        /*stage("maven-build"){
             steps{
                 script{
                     mvnHome = tool "M2"
@@ -45,6 +56,6 @@ pipeline{
                     sh "${npmHome}/bin/npm ${buildShell}"
                 }
             }
-        }
+        }*/
     }
 }
