@@ -106,8 +106,8 @@ spec:
       labels:
         app: jenkins
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: k8s-node01
+#      nodeSelector:
+#        kubernetes.io/hostname: k8s-node01
       serviceAccount: jenkins
       hostAliases:
       - ip: "127.0.0.1"
@@ -132,7 +132,7 @@ spec:
           readOnly: true
           name: nginx-conf
       - name: jenkins
-        image: jenkins/jenkins:lts
+        image: jenkins/jenkins:2.300
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
