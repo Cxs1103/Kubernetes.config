@@ -1,9 +1,26 @@
 def label = "slave-${UUID.randomUUID().toString()}"
 
+def helmLint(String chartDir) {
+    println "校验 chart 模板"
+    sh "helm lint ${chartDir}"
+}
+
+def helmDeploy(Map args) {
+    if (args.debug) {
+        println "Debug 应用"
+        sh "helm upgrade --dry-run --debug --install ${args.name} ${args.chartDir} -f ${args.valuePath} --set image.tag=${args.imageTag} --namespace ${args.namespace}"
+    } else {
+        println "部署应用"
+        sh "helm upgrade --install ${args.name} ${args.chartDir} -f ${args.valuePath} --set image.tag=${args.imageTag} --namespace ${args.namespace}"
+        echo "应用 ${args.name} 部署成功. 可以使用 helm status ${args.name} 查看应用状态"
+    }
+}
+
 podTemplate(label: label, containers: [
   containerTemplate(name: 'golang', image: 'golang:1.14.2-alpine3.11', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'docker', image: 'docker:latest', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'kubectl', image: 'cnych/kubectl', command: 'cat', ttyEnabled: true)
+  containerTemplate(name: 'kubectl', image: 'cnych/kubectl', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'helm', image: 'cnych/helm', command: 'cat', ttyEnabled: true)
 ], serviceAccount: 'jenkins', volumes: [
   hostPathVolume(mountPath: '/home/jenkins/.kube', hostPath: '/root/.kube'),
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
@@ -56,12 +73,29 @@ podTemplate(label: label, containers: [
           }
       }
     }
-    stage('运行 Kubectl') {
-      container('kubectl') {
-        withCredentials([file(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
-          echo "查看 K8S 集群 Pod 列表 !"
+    stage('运行 Helm') {
+      withCredentials([file(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
+        container('helm') {
           sh "mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config"
-          sh "kubectl get pods"
+          echo "4.开始 Helm 部署"
+          helmDeploy(
+              debug       : false,
+              name        : "devops-demo",
+              chartDir    : "./helm",
+              namespace   : "kube-ops",
+              valuePath   : "./helm/my-value.yaml",
+              imageTag    : "${imageTag}"
+          )
+          echo "[INFO] Helm 部署应用成功..."
+        }
+      }
+    }
+    stage('运行 Kubectl') {
+      withCredentials([file(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
+        container('kubectl') {
+          sh "mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config"
+          echo "5.查看应用"
+          sh "kubectl get all -n kube-ops -l app=devops-demo"
         }
       }
     }

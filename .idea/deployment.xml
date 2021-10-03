@@ -5,7 +5,7 @@
       <paths name="root@121.5.226.138:22">
         <serverdata>
           <mappings>
-            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/kubernetes" local="$PROJECT_DIR$" web="" />
           </mappings>
         </serverdata>
       </paths>

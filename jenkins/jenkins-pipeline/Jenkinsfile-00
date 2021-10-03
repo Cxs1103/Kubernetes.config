@@ -1,9 +1,9 @@
 pipeline{
     //指定运行此流水线的节点
-    agent { node { label "jenkins-salve01"}}
-
+   //agent { node { label "jenkins-salve01"}}
+   agent{ node {label "master" }}
     tools {
-        maven 'maven-3.6.3'
+        maven 'M2'  // 全局工具配置中：maven选项
     }
 //   parameters { string(name: 'DEPLOY_ENV', defaultValue: 'staging', description: '')}
 
@@ -43,7 +43,7 @@ pipeline{
             steps{
                 script{
                     println("运行构建")
-                    mvnHome = tool "maven-3.6.3"
+                    mvnHome = tool "M2"
                     println(mvnHome)
 
                     sh "${mvnHome}/bin/mvn -version"
