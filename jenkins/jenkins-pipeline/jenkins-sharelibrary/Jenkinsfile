@@ -1,5 +1,6 @@
 #!groovy
 
+// jenkins2.292 版本有bug请勿使用==》 https://issues.jenkins.io/browse/JENKINS-65623
 @Library('jenkins-sharelibrary') _
 
 def mytools = new org.devops.tools()
@@ -8,10 +9,10 @@ hello()
 
 pipeline{
     //指定运行此流水线的节点
-    agent { node { label "jenkins-salve01"}}
+    agent{ node {label "master" }}
 
     tools {
-        maven 'maven-3.6.3'
+        maven 'M2'
     }
 //   parameters { string(name: 'DEPLOY_ENV', defaultValue: 'staging', description: '')}
 
@@ -54,7 +55,7 @@ pipeline{
                 script{
                     println("打包代码")
                     mytools.PrintMes("打包代码",'green')
-                    mvnHome = tool "maven-3.6.3"
+                    mvnHome = tool "M2"
                     println(mvnHome)
                     sh "${mvnHome}/bin/mvn -version"
                 }
