@@ -106,7 +106,7 @@ spec:
         - name: GITLAB_SECRETS_OTP_KEY_BASE
           value: long-and-random-alpha-numeric-string
         - name: GITLAB_ROOT_PASSWORD
-          value: Gitlab-admin321
+          value: Gitlab-xxxx
         - name: GITLAB_ROOT_EMAIL
           value: cxs1103@163.com
         - name: GITLAB_HOST
