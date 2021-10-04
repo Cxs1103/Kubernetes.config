@@ -1,0 +1,26 @@
+#!groovy
+
+String buildShell = "${env.buildShell}"  // 引用选项参数
+
+pipeline{
+    agent{ node {label "master" }}
+    stages{
+        stage("maven-build"){
+            steps{
+                script{
+                    mvnHome = tool "M2"
+                    //sh "${mvnHome}/bin/mvn -v"
+                    sh "${mvnHome}/bin/mvn ${env.buildShell}"
+                }
+            }
+        }
+        stage("ant-build"){
+            steps{
+                script{
+                    antHome = tool "ANT"
+                    sh "${antHome}/bin/ant ${env.buildShell}"
+                }
+            }
+        }
+    }
+}
