@@ -1,0 +1,6 @@
+node{
+    withCredentials([usernamePassword(credentialsId: 'gitlab-auth', passwordVariable: 'password', usernameVariable: 'username')]) {
+    println(username)
+    println(password)
+    }
+}
