@@ -6,6 +6,7 @@
 // 调用sharelibrary中的方法
 def build = new org.devops.build()
 def tools = new org.devops.tools()
+def gitlab = new org.devops.gitlab()
 
 // 变量
 String buildShell = "${env.buildShell}"  // 引用选项参数，打包命令
@@ -17,6 +18,8 @@ if ("${runOpts}" == "GitlabPush"){
     branchName = branch - "ref/heads/"
 
     currentBuild.description = "Trigger by ${userName} ${branch}"
+
+    gitlab.ChangeCommitStatus(projectId,commitSha,"running")
 }
 
 // 流水线
@@ -39,6 +42,31 @@ pipeline{
                     tools.PrintMes("打包代码","green1")
                     build.Build(buildType,buildShell)
                 }
+            }
+        }
+    }
+    post {
+        always{
+            script{
+                println("always")
+            }
+        }
+        success{
+            script{
+                println("success")
+                gitlab.ChangeCommitStatus(projectId,commitSha,"success")
+            }
+        }
+        failure{
+            script{
+                println("failure")
+                gitlab.ChangeCommitStatus(projectId,commitSha,"failed")
+            }
+        }
+        aborted{
+            script{
+                println("aborted")
+                gitlab.ChangeCommitStatus(projectId,commitSha,"canceled")
             }
         }
     }
