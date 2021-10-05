@@ -11,6 +11,11 @@ def tools = new org.devops.tools()
 String buildShell = "${env.buildShell}"  // 引用选项参数，打包命令
 String buildType = "${env.buildType}"  // 引用选项参数，构建类型
 String srcUrl = "${env.srcUrl}"  // 引用选项参数，仓库地址
+String branchName = "${env.branchName}"  // 引用选项参数，分支名称
+
+if ("${runOpts}" == "GitlabPush"){
+    branchName = branch - "ref/heads/"
+}
 
 // 流水线
 pipeline{
@@ -19,6 +24,8 @@ pipeline{
         stage("CheckOut"){
             steps{
                 script{
+                    println("${branchName}")
+
                     tools.PrintMes("获取代码","green1")
                     checkout([$class: 'GitSCM', branches: [[name: '${branchName}']], extensions: [], userRemoteConfigs: [[credentialsId: 'gitlab-auth', url: '${srcUrl}']]])
                 }
