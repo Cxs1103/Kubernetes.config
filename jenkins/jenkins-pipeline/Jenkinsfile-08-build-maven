@@ -1,0 +1,36 @@
+#!groovy
+
+// 引入共享库
+@Library('jenkins-sharelibrary') _
+
+// 调用sharelibrary中的方法
+def build = new org.devops.build()
+def tools = new org.devops.tools()
+
+// 变量
+String buildShell = "${env.buildShell}"  // 引用选项参数，打包命令
+String buildType = "${env.buildType}"  // 引用选项参数，构建类型
+String srcUrl = "${env.srcUrl}"  // 引用选项参数，仓库地址
+
+// 流水线
+pipeline{
+    agent{ node {label "master" }}
+    stages{
+        stage("CheckOut"){
+            steps{
+                script{
+                    tools.PrintMes("获取代码","green1")
+                    checkout([$class: 'GitSCM', branches: [[name: '${branchName}']], extensions: [], userRemoteConfigs: [[credentialsId: 'gitlab-auth', url: '${srcUrl}']]])
+                }
+            }
+        }
+        stage("Build"){
+            steps{
+                script{
+                    tools.PrintMes("打包代码","green1")
+                    build.Build(buildType,buildShell)
+                }
+            }
+        }
+    }
+}
