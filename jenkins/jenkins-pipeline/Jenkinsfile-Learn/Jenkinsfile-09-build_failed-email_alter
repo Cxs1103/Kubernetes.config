@@ -1,0 +1,79 @@
+#!groovy
+
+// 引入共享库
+@Library('jenkins-sharelibrary') _
+
+// 调用sharelibrary中的方法
+def build = new org.devops.build()
+def tools = new org.devops.tools()
+def gitlab = new org.devops.gitlab()
+def toemail = new org.devops.toemail()
+
+// 变量
+String buildShell = "${env.buildShell}"  // 引用选项参数，打包命令
+String buildType = "${env.buildType}"  // 引用选项参数，构建类型
+String srcUrl = "${env.srcUrl}"  // 引用选项参数，仓库地址
+String branchName = "${env.branchName}"  // 引用选项参数，分支名称
+
+if ("${runOpts}" == "GitlabPush"){
+    branchName = branch - "ref/heads/"
+
+    currentBuild.description = "Trigger by ${userName} ${branch}"
+
+    gitlab.ChangeCommitStatus(projectId,commitSha,"running")
+}
+
+// 流水线
+pipeline{
+    agent{ node {label "master" }}
+    stages{
+        stage("CheckOut"){
+            steps{
+                script{
+                    println("${branchName}")
+
+                    tools.PrintMes("获取代码","green1")
+                    checkout([$class: 'GitSCM', branches: [[name: '${branchName}']], extensions: [], userRemoteConfigs: [[credentialsId: 'gitlab-auth', url: '${srcUrl}']]])
+                }
+            }
+        }
+        stage("Build"){
+            steps{
+                script{
+                    tools.PrintMes("打包代码","green1")
+                    build.Build(buildType,buildShell)
+                }
+            }
+        }
+    }
+    post {
+        always{
+            script{
+                println("always")
+                gitlab.ChangeCommitStatus(projectId,commitSha,"success")
+                toemail.Email("流水线成功了！！","1103098721@qq.com")  // 设置总是接收的邮箱
+            }
+        }
+        success{
+            script{
+                println("success")
+                gitlab.ChangeCommitStatus(projectId,commitSha,"success")
+                toemail.Email("流水线成功了！！",userEmail)
+            }
+        }
+        failure{
+            script{
+                println("failure")
+                gitlab.ChangeCommitStatus(projectId,commitSha,"failed")
+                toemail.Email("流水线失败了！！！",userEmail)
+            }
+        }
+        aborted{
+            script{
+                println("aborted")
+                gitlab.ChangeCommitStatus(projectId,commitSha,"canceled")
+                toemail.Email("流水线被取消了！！",userEmail)
+            }
+        }
+    }
+}
