@@ -32,7 +32,7 @@ pipeline{
                     println("${branchName}")
 
                     tools.PrintMes("»ñÈ¡´úÂë","green1")
-                    checkout([$class: 'GitSCM', branches: [[name: '${branchName}']], extensions: [], userRemoteConfigs: [[credentialsId: 'gitlab-auth', url: '${srcUrl}']]])
+                    checkout([$class: "GitSCM", branches: [[name: "${branchName}"]], extensions: [], userRemoteConfigs: [[credentialsId: "gitlab-auth", url: "${srcUrl}"]]])
                 }
             }
         }
