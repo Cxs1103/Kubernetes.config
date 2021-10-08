@@ -15,7 +15,7 @@ String srcUrl = "${env.srcUrl}"  // 引用选项参数，仓库地址
 String branchName = "${env.branchName}"  // 引用选项参数，分支名称
 
 if ("${runOpts}" == "GitlabPush"){
-    branchName = branch - "ref/heads/"
+    branchName = branch - "refs/heads/"
 
     currentBuild.description = "Trigger by ${userName} ${branch}"
 
