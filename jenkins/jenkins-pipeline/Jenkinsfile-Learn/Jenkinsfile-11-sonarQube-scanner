@@ -49,7 +49,7 @@ pipeline{
         stage("QA"){
             steps{
                 script{
-                    scannerHome = tool "SONARSCANNER"
+                    def scannerHome = tool "SONARSCANNER"
                     tools.PrintMes("================¥˙¬Î…®√Ë================","green")
                     sonarscan.SonarScan("${JOB_NAME}","${JOB_NAME}","src","${scannerHome}/bin")
                 }
