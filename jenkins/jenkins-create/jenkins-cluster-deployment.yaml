@@ -122,6 +122,9 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /var/jenkins_home
+        - name: host-time
+          mountPath: /etc/localtime
+          readOnly: true
       containers:
       - name: mirror
         image: nginx:1.20.0
@@ -131,6 +134,9 @@ spec:
         - mountPath: /etc/nginx
           readOnly: true
           name: nginx-conf
+        - name: host-time
+          mountPath: /etc/localtime
+          readOnly: true
       - name: jenkins
         image: jenkins/jenkins:2.300
         imagePullPolicy: IfNotPresent
@@ -158,10 +164,16 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /var/jenkins_home
+        - name: host-time
+          mountPath: /etc/localtime
+          readOnly: true
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: jenkins-pvc
+      - name: host-time
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
       - name: nginx-conf
         configMap:
           name: jenkins-mirror-conf
