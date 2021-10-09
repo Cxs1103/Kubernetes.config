@@ -51,7 +51,7 @@ pipeline{
                 script{
                     def scannerHome = tool "SONARSCANNER"
                     tools.PrintMes("================¥˙¬Î…®√Ë================","green")
-                    sonarscan.SonarScan("${JOB_NAME}","${JOB_NAME}","src","${scannerHome}/bin")
+                    sonarscan.SonarScan("test","${JOB_NAME}","${JOB_NAME}","src","${scannerHome}/bin")
                 }
             }
         }
