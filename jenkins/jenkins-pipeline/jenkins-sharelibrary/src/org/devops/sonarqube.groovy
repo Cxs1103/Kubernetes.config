@@ -24,4 +24,9 @@ def SonarScan(sonarServer,projectName,projectDsec,projectPath,sonarScanHome){
             -Dsonar.java.surefire.report=target/surefire-reports
         """
     }
+    // 质量阈计算结果
+    def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
+    if (qg.status != 'OK') {
+      error "Pipeline aborted due to quality gate failure: ${qg.status}"
+    }
 }
