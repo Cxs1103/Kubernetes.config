@@ -59,9 +59,10 @@ pipeline{
                     println(result)
 
                     if (result == "false"){
-                        println("项目不存在！")
+                        println("${JOB_NAME}----项目不存在！准备创建项目：${JOB_NAME}！")
+                        sonarapi.CreateProject("${JOB_NAME}")
                     } else {
-                        println("项目已存在！")
+                        println("${JOB_NAME}---项目已存在！")
                     }
 
                     def scannerHome = tool "SONARSCANNER"
