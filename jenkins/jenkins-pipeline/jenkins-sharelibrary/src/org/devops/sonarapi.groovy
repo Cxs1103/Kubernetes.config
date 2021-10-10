@@ -25,3 +25,18 @@ def GetProjectStatus(projectName){
 
     return result
 }
+
+// ËÑË÷SonarÏîÄ¿
+def SearchProject(projectName){
+    apiUrl = "projects/search?project=${projectName}"
+    response = HttpReq("GET",apiUrl,'')
+
+    response = readJSON text: """${response.content}"""
+    result = response["paging"]["total"]
+
+    if (result.toString() == "0"){
+        return "false"
+    } else {
+        return "true"
+    }
+}
