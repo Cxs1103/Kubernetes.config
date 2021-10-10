@@ -25,8 +25,8 @@ def SonarScan(sonarServer,projectName,projectDsec,projectPath,sonarScanHome){
         """
     }
     // 质量阈计算结果
-    def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
-    if (qg.status != 'OK') {
-      error "Pipeline aborted due to quality gate failure: ${qg.status}"
-    }
+    //def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
+    //if (qg.status != 'OK') {
+    //  error "Pipeline aborted due to quality gate failure: ${qg.status}"
+    //}
 }
