@@ -65,8 +65,16 @@ pipeline{
                         println("${JOB_NAME}---项目已存在！")
                     }
 
+                    tools.PrintMes("==============配置项目质量规则=============","green")
+                    qpName = "${JOB_NAME}".split("-")[0]
+                    sonarapi.ConfigQualityProfiles("${JOB_NAME}","java","${qpName}")
+
+                    tools.PrintMes("==============配置项目质量阈=============","green")
+                    qpName = "${JOB_NAME}".split("-")[0]
+                    sonarapi.ConfigQualityGate("${JOB_NAME}","${qpName}")
+
                     //def scannerHome = tool "SONARSCANNER"
-                    tools.PrintMes("================代码扫描================","green")
+                    /*tools.PrintMes("================代码扫描================","green")
                     sonarscan.SonarScan("test","${JOB_NAME}","${JOB_NAME}","src")
 
                     tools.PrintMes("================获取扫描结果================","green")
@@ -80,7 +88,7 @@ pipeline{
                         error "代码质量阈错误，请及时修复！！"
                     } else {
                         println(result)
-                    }
+                    }*/
                 }
             }
         }

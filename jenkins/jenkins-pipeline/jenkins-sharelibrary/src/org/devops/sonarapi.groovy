@@ -46,3 +46,28 @@ def CreateProject(projectName){
     response = HttpReq("POST",apiUrl,'')
     println(response)
 }
+
+// 配置项目质量规则
+def ConfigQualityProfiles(projectName,language,qpname){
+    apiUrl = "qualityprofiles/add_project?language=${language}&project=${projectName}&qualityProfile=${qpname}"
+    response = HttpReq("POST",apiUrl,'')
+    println(response)
+}
+
+// 获取质量阈 gateId
+def GetQualityGateId(gateName){
+    apiUrl = "qualitygates/show?name=${gateName}"
+    response = HttpReq("GET",apiUrl,'')
+    response = readJSON text: """${response.content}"""
+    result = response["id"]
+
+    return result
+}
+
+// 配置项目质量阈
+def ConfigQualityGate(projectName,gateName){
+    gateId = GetQualityGateId(gateName)
+    apiUrl = "qualitygates/select?gateId=${gateId}&projectKey=${projectName}"
+    response = HttpReq("POST",apiUrl,'')
+    println(response)
+}
