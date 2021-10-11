@@ -1,7 +1,9 @@
 package org.devops
 
 //scanner
-def SonarScan(sonarServer,projectName,projectDsec,projectPath,sonarScanHome){
+def SonarScan(sonarServer,projectName,projectDsec,projectPath){
+
+    def sonarScanHome = tool "SONARSCANNER"
 
     // 定义sonar服务器列表
     def servers = ["test":"SonarQube","prod":"SonarQube-prod"]
@@ -11,7 +13,7 @@ def SonarScan(sonarServer,projectName,projectDsec,projectPath,sonarScanHome){
         sonarDate = sonarDate - "\n"
 
         sh """
-            ${sonarScanHome}/sonar-scanner -Dsonar.projectKey=${projectName} \
+            ${sonarScanHome}/bin/sonar-scanner -Dsonar.projectKey=${projectName} \
             -Dsonar.projectName=${projectName} \
             -Dsonar.projectVersion=${sonarDate} \
             -Dsonar.ws.timeout=30 \

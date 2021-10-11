@@ -42,7 +42,7 @@ def SearchProject(projectName){
 }
 // 创建sonar项目
 def CreateProject(projectName){
-    apiUrl = "projects/create?name={projectName}&project={projectName}"
+    apiUrl = "projects/create?name=${projectName}&project=${projectName}"
     response = HttpReq("POST",apiUrl,'')
     println(response)
 }

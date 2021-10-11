@@ -65,9 +65,9 @@ pipeline{
                         println("${JOB_NAME}---项目已存在！")
                     }
 
-                    def scannerHome = tool "SONARSCANNER"
+                    //def scannerHome = tool "SONARSCANNER"
                     tools.PrintMes("================代码扫描================","green")
-                    sonarscan.SonarScan("test","${JOB_NAME}","${JOB_NAME}","src","${scannerHome}/bin")
+                    sonarscan.SonarScan("test","${JOB_NAME}","${JOB_NAME}","src")
 
                     tools.PrintMes("================获取扫描结果================","green")
 
