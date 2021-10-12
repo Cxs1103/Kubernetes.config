@@ -3,3 +3,4 @@ kind: StorageClass
 metadata:
   name: jenkins-data
 provisioner: fuseim.pri/ifs
+reclaimPolicy: Retain
