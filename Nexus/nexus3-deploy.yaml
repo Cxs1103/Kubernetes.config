@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus-pvc
+  namespace: kube-ops
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nexus-data"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: nexus3
+  name: nexus3
+  namespace: kube-ops
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: nexus3
+  template:
+    metadata:
+      labels:
+        k8s-app: nexus3
+      namespace: kube-ops
+      name: nexus3
+    spec:
+      containers:
+        - name: nexus3
+          image: sonatype/nexus3:3.20.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8083
+              name: web2
+              protocol: TCP
+            - containerPort: 8081
+              name: web
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 100
+            periodSeconds: 30
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 100
+            periodSeconds: 30
+            failureThreshold: 6
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: nexus-data
+              mountPath: /nexus-data
+      volumes:
+        - name: nexus-data
+          persistentVolumeClaim:
+            claimName: nexus-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: nexus3
+ namespace: kube-ops
+ labels:
+   k8s-app: nexus3
+spec:
+ selector:
+   k8s-app: nexus3
+ type: NodePort
+ ports:
+ - name: web
+   port: 8081
+   targetPort: 8081
+ - name: web2
+   port: 8083
+   targetPort: 8083
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nexus3
+  namespace: kube-ops
+spec:
+  rules:
+  - host: nexus.mieken.cn
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: web
+            port:
+              number: 8081
+  ingressClassName: nginx #新增特性
+---
+# 新版本新增 IngressClass
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+  name: nginx
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: k8s.io/ingress-nginx
