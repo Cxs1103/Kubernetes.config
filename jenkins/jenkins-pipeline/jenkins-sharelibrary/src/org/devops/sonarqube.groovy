@@ -28,7 +28,7 @@ def SonarScan(sonarServer,projectName,projectDsec,projectPath,runOpts='',project
                 -Dsonar.projectName=${projectName} -Dsonar.projectVersion=${sonarDate} \
                 -Dsonar.ws.timeout=30 -Dsonar.projectDescription=${projectDsec} -Dsonar.links.homepage=http://www.baidu.com \
                 -Dsonar.sources=${projectPath} -Dsonar.sourceEncoding=UTF-8 -Dsonar.java.binaries=target/classes \
-                -Dsonar.java.test.binaries=target/test-classes -Dsonar.java.surefire.report=target/surefire-reports
+                -Dsonar.java.test.binaries=target/test-classes -Dsonar.java.surefire.report=target/surefire-reports -Dsonar.branch.name=${branchName} -X
             """
         }
     }
