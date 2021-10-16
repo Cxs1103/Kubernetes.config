@@ -9,7 +9,7 @@ def Email(status,emailUser){
             <meta charset="UTF-8">
             </head>
             <body leftmargin="8" marginwidth="0" topmargin="8" marginheight="4" offset="0">
-                <img src="http://gitlab.mieken.cn/uploads/-/system/user/avatar/1/avatar.png">
+                <img src="https://images1.h128.com/upload/201908/24/201908240008232455.jpg">
                 <table width="95%" cellpadding="0" cellspacing="0" style="font-size: 11pt; font-family: Tahoma, Arial, Helvetica, sans-serif">
                     <tr>
                         <td><br />
