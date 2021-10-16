@@ -62,7 +62,8 @@ pipeline{
 
                     println("${pomGroupId}-${pomArtifact}-${pomVersion}-${pomPackaging}")
 
-                    def mvnHome = tool "M2"
+                    // 集成shell命令上传制品
+                    /*def mvnHome = tool "M2"
                     sh  """
                         cd target/
                         ${mvnHome}/bin/mvn deploy:deploy-file -Dmaven.test.skip=true \
@@ -70,7 +71,22 @@ pipeline{
                                                               -DartifactId=${pomArtifact} -Dversion=${pomVersion} \
                                                               -Dpackaging=${pomPackaging} -DrepositoryId=maven-hostd \
                                                               -Durl=http://nexus.mieken.cn/repository/maven-hostd
-                        """
+                        """*/
+
+                    // 使用 nexus artifact uploader 上传制品
+                    def repoName = "maven-hostd"
+                    def filePath = "target/${jarName}"
+                    nexusArtifactUploader artifacts: [[artifactId: "${pomArtifact}",
+                                                        classifier: '',
+                                                        file: "${filePath}",
+                                                        type: "${pomPackaging}"]],
+                                            credentialsId: 'Nexus-auth',
+                                            groupId: "${pomGroupId}",
+                                            nexusUrl: 'nexus.mieken.cn',
+                                            nexusVersion: 'nexus3',
+                                            protocol: 'http',
+                                            repository: "${repoName}",
+                                            version: "${pomVersion}"
                 }
             }
         }
