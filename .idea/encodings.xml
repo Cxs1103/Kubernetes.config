@@ -3,6 +3,8 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/Artifactory/actifactory.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Nexus/nexus-storageclass.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Nexus/nexus3-deploy.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SonarQube/sonarqube-deploy.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/httpd/execute_shell.sh" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/httpd/httpd-storageclass.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/httpd/httpd.yaml" charset="UTF-8" />

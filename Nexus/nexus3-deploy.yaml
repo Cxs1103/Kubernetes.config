@@ -110,9 +110,9 @@ spec:
             name: nexus3
             port:
               number: 8081
-  ingressClassName: nginx #ĞÂÔöÌØĞÔ
+  ingressClassName: nginx #æ–°å¢ç‰¹æ€§
 ---
-# ĞÂ°æ±¾ĞÂÔö IngressClass
+# æ–°ç‰ˆæœ¬æ–°å¢ IngressClass
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
