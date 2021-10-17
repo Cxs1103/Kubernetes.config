@@ -1,0 +1,141 @@
+#!groovy
+
+// 引入共享库
+@Library('jenkins-sharelibrary') _
+
+// 调用sharelibrary中的方法
+def build = new org.devops.build()
+def tools = new org.devops.tools()
+def gitlab = new org.devops.gitlab()
+def toemail = new org.devops.toemail()
+def sonarscan= new org.devops.sonarqube()
+def sonarapi= new org.devops.sonarapi()
+def nexus = new org.devops.nexus()
+
+//def runOpts
+
+// 变量
+String buildShell = "${env.buildShell}"  // 引用选项参数，打包命令
+String buildType = "${env.buildType}"  // 引用选项参数，构建类型
+String srcUrl = "${env.srcUrl}"  // 引用选项参数，仓库地址
+String branchName = "${env.branchName}"  // 引用选项参数，分支名称
+String artifactUrl = "${env.artifactUrl}"  // 引用选项参数，发布制品
+
+if ("${runOpts}" == "GitlabPush"){
+    branchName = branch - "refs/heads/"
+
+    currentBuild.description = "Trigger by ${userName} ${branch}"
+
+    gitlab.ChangeCommitStatus(projectId,commitSha,"running")
+} else {
+    userEmail = "cxs1103@163.com"
+}
+
+// 流水线
+pipeline{
+    agent{ node {label "master" }}
+    stages{
+        stage("CheckOut"){
+            steps{
+                script{
+                    println("${branchName}")
+
+                    tools.PrintMes("================获取代码================","green")
+                    checkout([$class: "GitSCM", branches: [[name: "${branchName}"]], extensions: [], userRemoteConfigs: [[credentialsId: "gitlab-auth", url: "${srcUrl}"]]])
+                }
+            }
+        }
+        stage("Build"){
+            steps{
+                script{
+                    tools.PrintMes("================打包代码================","green")
+                    build.Build(buildType,buildShell)
+
+                    // 上传制品
+                    tools.PrintMes("================上传制品================","green")
+                    nexus.main("maven")
+                    //nexus.main("nexus")
+
+                    // 发布制品
+                    tools.PrintMes("================发布制品================","green")
+                    //sh " wget ${artifactUrl} && ls"
+                    //由于nginx做了反爬虫，禁止了 wget 直接获取并解析 url
+                    sh " wget -U 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15' -O 'my-app-1.1-20211016.165406-1.jar' http://nexus.mieken.cn/repository/maven-hostd/com/mycompany/app/my-app/1.1-SNAPSHOT/my-app-1.1-20211016.165406-1.jar  && ls"
+                }
+            }
+        }
+        stage("QA"){
+            steps{
+                script{
+                    tools.PrintMes("================搜索项目================","green")
+                    result = sonarapi.SearchProject("${JOB_NAME}")
+                    println(result)
+
+                    if (result == "false"){
+                        println("${JOB_NAME}----项目不存在！准备创建项目：${JOB_NAME}！")
+                        sonarapi.CreateProject("${JOB_NAME}")
+                    } else {
+                        println("${JOB_NAME}---项目已存在！")
+                    }
+
+                    tools.PrintMes("==============配置项目质量规则=============","green")
+                    qpName = "${JOB_NAME}".split("-")[0]
+                    sonarapi.ConfigQualityProfiles("${JOB_NAME}","java","${qpName}")
+
+                    tools.PrintMes("==============配置项目质量阈=============","green")
+                    sonarapi.ConfigQualityGate("${JOB_NAME}","${qpName}")
+
+                    tools.PrintMes("================代码扫描================","green")
+                    sonarscan.SonarScan("test","${JOB_NAME}","${JOB_NAME}","src","${runOpts}","${projectId}","${commitSha}","${branchName}")
+
+                    tools.PrintMes("================获取扫描结果================","green")
+                    result = sonarapi.GetProjectStatus("${JOB_NAME}")
+                    //println(result)
+
+                    /*if (result.toString() == "ERROR"){
+                        toemail.Email("代码质量阈错误，请及时修复！！！",userEmail)
+                        error "代码质量阈错误，请及时修复！！"
+                    } else {
+                        println(result)
+                    }*/
+                }
+            }
+        }
+    }
+    post {
+        always{
+            script{
+                println("always")
+                //gitlab.ChangeCommitStatus(projectId,commitSha,"success")
+                //toemail.Email("流水线成功了！！","1103098721@qq.com")  // 设置总是接收的邮箱
+            }
+        }
+        success{
+            script{
+                println("success")
+                if ("${runOpts}" == "GitlabPush"){
+                    gitlab.ChangeCommitStatus(projectId,commitSha,"success")
+                }
+                toemail.Email("流水线成功了！！",userEmail)
+            }
+        }
+        failure{
+            script{
+                println("failure")
+                if ("${runOpts}" == "GitlabPush"){
+                    gitlab.ChangeCommitStatus(projectId,commitSha,"failed")
+                }
+                toemail.Email("流水线失败了！！！",userEmail)
+            }
+        }
+        aborted{
+            script{
+                println("aborted")
+                if ("${runOpts}" == "GitlabPush"){
+                    gitlab.ChangeCommitStatus(projectId,commitSha,"canceled")
+                }
+                toemail.Email("流水线被取消了！！",userEmail)
+            }
+        }
+    }
+}
