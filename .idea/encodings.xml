@@ -1,6 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/Artifactory/actifactory.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Nexus/nexus-storageclass.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/httpd/execute_shell.sh" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/httpd/httpd-storageclass.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/httpd/httpd.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab-runner/gitlab-ci-token-secret.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab-runner/runner-cm.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab-runner/runner-rbac.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab-runner/runner-scripts-cm.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab-runner/runner-statefulset.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab/gitlab-create/gitlab-postgresql.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab/gitlab-create/gitlab-redis.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab/gitlab-create/gitlab-storageclass.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab/gitlab-sa.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/grafana/grafana.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/helm/harbor/helm-create-harbor/harbor-storageclass.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/helm/harbor/helm-create-harbor/harbor-values.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/helm/harbor/test-pull-harbor/harbor-secrets.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/helm/harbor/test-pull-harbor/pull-for-harbor-deploy.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ingress-nginx/ingress-nginx-0.26.1/ingress-nginx.svc.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ingress-nginx/ingress-nginx-1.0/deploy.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-create/jenkins-storageclass.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-00" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-01" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-02" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-03-maven" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-04-ant" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-05-gradle" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-06-node" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-07-build-encapsulation" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-08-build-maven" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-09-build_failed-email_alert" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-10-build_info-email_notify" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-11-sonarQube-scanner" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-11-sonarQube-search+create" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-12-Nexus" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-12-Nexus+sharelibrary" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-12-Nexus+sharelibrary+artifact" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-12-Nexus+sharelibrary+artifactUpdate" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/Jenkinsfile-Learn/Jenkinsfile-12-Nexus+sharelibrary+nexusapi" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-pipeline-go/Jenkinsfile" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/Jenkinsfile" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/build.groovy" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/gitlab.groovy" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/nexus.groovy" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/nexusapi.groovy" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/sonarapi.groovy" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/sonarqube.groovy" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/toemail.groovy" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/tools.groovy" charset="UTF-8" />
     <file url="PROJECT" charset="GBK" />
   </component>
 </project>

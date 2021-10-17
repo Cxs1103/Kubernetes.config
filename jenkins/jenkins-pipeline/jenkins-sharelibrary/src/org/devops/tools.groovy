@@ -1,6 +1,6 @@
 package org.devops
 
-//¸ñÊ½»¯Êä³ö
+//æ ¼å¼åŒ–è¾“å‡º
 def PrintMes(value,color){
     colors = ['red'   : "\033[40;31m >>>>>>>>>>>${value}<<<<<<<<<<< \033[0m",
               'blue'  : "\033[47;34m ${value} \033[0m",

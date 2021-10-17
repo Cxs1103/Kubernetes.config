@@ -1,6 +1,6 @@
 package org.devops
 
-//¶¨ÒåÓÊ¼şÄÚÈİ
+//å®šä¹‰é‚®ä»¶å†…å®¹
 def Email(status,emailUser){
     emailext body: """
             <!DOCTYPE html>
@@ -13,23 +13,23 @@ def Email(status,emailUser){
                 <table width="95%" cellpadding="0" cellspacing="0" style="font-size: 11pt; font-family: Tahoma, Arial, Helvetica, sans-serif">
                     <tr>
                         <td><br />
-                            <b><font color="#0B610B">¹¹½¨ĞÅÏ¢</font></b>
+                            <b><font color="#0B610B">æ„å»ºä¿¡æ¯</font></b>
                         </td>
                     </tr>
                     <tr>
                         <td>
                             <ul>
-                                <li>ÏîÄ¿Ãû³Æ£º${JOB_NAME}</li>
-                                <li>¹¹½¨±àºÅ£º${BUILD_ID}</li>
-                                <li>¹¹½¨×´Ì¬: ${status} </li>
-                                <li>ÏîÄ¿µØÖ·£º<a href="${BUILD_URL}">${BUILD_URL}</a></li>
-                                <li>¹¹½¨ÈÕÖ¾£º<a href="${BUILD_URL}console">${BUILD_URL}console</a></li>
+                                <li>é¡¹ç›®åç§°ï¼š${JOB_NAME}</li>
+                                <li>æ„å»ºç¼–å·ï¼š${BUILD_ID}</li>
+                                <li>æ„å»ºçŠ¶æ€: ${status} </li>
+                                <li>é¡¹ç›®åœ°å€ï¼š<a href="${BUILD_URL}">${BUILD_URL}</a></li>
+                                <li>æ„å»ºæ—¥å¿—ï¼š<a href="${BUILD_URL}console">${BUILD_URL}console</a></li>
                             </ul>
                         </td>
                     </tr>
                 </table>
             </body>
             </html>  """,
-            subject: "Jenkins-${JOB_NAME}ÏîÄ¿¹¹½¨ĞÅÏ¢ ",
+            subject: "Jenkins-${JOB_NAME}é¡¹ç›®æ„å»ºä¿¡æ¯ ",
             to: emailUser
 }

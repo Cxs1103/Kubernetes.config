@@ -1,18 +1,18 @@
 def label = "slave-${UUID.randomUUID().toString()}"
 
 def helmLint(String chartDir) {
-    println "Ğ£Ñé chart Ä£°å"
+    println "æ ¡éªŒ chart æ¨¡æ¿"
     sh "helm lint ${chartDir}"
 }
 
 def helmDeploy(Map args) {
     if (args.debug) {
-        println "Debug Ó¦ÓÃ"
+        println "Debug åº”ç”¨"
         sh "helm upgrade --dry-run --debug --install ${args.name} ${args.chartDir} -f ${args.valuePath} --set image.tag=${args.imageTag} --namespace ${args.namespace}"
     } else {
-        println "²¿ÊğÓ¦ÓÃ"
+        println "éƒ¨ç½²åº”ç”¨"
         sh "helm upgrade --install ${args.name} ${args.chartDir} -f ${args.valuePath} --set image.tag=${args.imageTag} --namespace ${args.namespace}"
-        echo "Ó¦ÓÃ ${args.name} ²¿Êğ³É¹¦. ¿ÉÒÔÊ¹ÓÃ helm status ${args.name} ²é¿´Ó¦ÓÃ×´Ì¬"
+        echo "åº”ç”¨ ${args.name} éƒ¨ç½²æˆåŠŸ. å¯ä»¥ä½¿ç”¨ helm status ${args.name} æŸ¥çœ‹åº”ç”¨çŠ¶æ€"
     }
 }
 
@@ -30,41 +30,41 @@ podTemplate(label: label, containers: [
     def gitCommit = myRepo.GIT_COMMIT
     def gitBranch = myRepo.GIT_BRANCH
 
-    stage('µ¥Ôª²âÊÔ') {
-      echo "²âÊÔ½×¶Î"
+    stage('å•å…ƒæµ‹è¯•') {
+      echo "æµ‹è¯•é˜¶æ®µ"
     }
-    stage('´úÂë±àÒë´ò°ü') {
+    stage('ä»£ç ç¼–è¯‘æ‰“åŒ…') {
       try {
         container('golang') {
-          echo "2.´úÂë±àÒë´ò°ü½×¶Î"
+          echo "2.ä»£ç ç¼–è¯‘æ‰“åŒ…é˜¶æ®µ"
           sh """
             export GOPROXY=https://goproxy.cn
             GOOS=linux GOARCH=amd64 go build -v -o demo-app
             """
         }
       } catch (exc) {
-        println "¹¹½¨Ê§°Ü - ${currentBuild.fullDisplayName}"
+        println "æ„å»ºå¤±è´¥ - ${currentBuild.fullDisplayName}"
         throw(exc)
       }
     }
-    // ²Ö¿âµØÖ·
+    // ä»“åº“åœ°å€
     def registryUrl = "harbor.mieken.cn"
-    // ¾µÏñÃû³Æ
+    // é•œåƒåç§°
     def imageEndpoint = "course/devops-demo"
-    // ¾µÏñ±êÇ©
+    // é•œåƒæ ‡ç­¾
     def imageTag = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 //    script {
 //      env.imageTag = sh (script: 'git rev-parse --short HEAD ${GIT_COMMIT}', returnStdout: true).trim()
 //    }
-    // ¾µÏñµØÖ·
+    // é•œåƒåœ°å€
     def image = "${registryUrl}/${imageEndpoint}:${imageTag}"
-    stage('¹¹½¨ Docker ¾µÏñ') {
+    stage('æ„å»º Docker é•œåƒ') {
       withCredentials([[$class: 'UsernamePasswordMultiBinding',
         credentialsId: 'docker-auth',
         usernameVariable: 'DOCKER_USER',
         passwordVariable: 'DOCKER_PASSWORD']]) {
           container('docker') {
-            echo "3. ¹¹½¨ Docker ¾µÏñ½×¶Î"
+            echo "3. æ„å»º Docker é•œåƒé˜¶æ®µ"
             sh """
               docker login ${registryUrl} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
               docker build -t ${image} .
@@ -73,11 +73,11 @@ podTemplate(label: label, containers: [
           }
       }
     }
-    stage('ÔËĞĞ Helm') {
+    stage('è¿è¡Œ Helm') {
       withCredentials([file(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
         container('helm') {
           sh "mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config"
-          echo "4.¿ªÊ¼ Helm ²¿Êğ"
+          echo "4.å¼€å§‹ Helm éƒ¨ç½²"
           helmDeploy(
               debug       : false,
               name        : "devops-demo",
@@ -86,15 +86,15 @@ podTemplate(label: label, containers: [
               valuePath   : "./helm/my-value.yaml",
               imageTag    : "${imageTag}"
           )
-          echo "[INFO] Helm ²¿ÊğÓ¦ÓÃ³É¹¦..."
+          echo "[INFO] Helm éƒ¨ç½²åº”ç”¨æˆåŠŸ..."
         }
       }
     }
-    stage('ÔËĞĞ Kubectl') {
+    stage('è¿è¡Œ Kubectl') {
       withCredentials([file(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
         container('kubectl') {
           sh "mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config"
-          echo "5.²é¿´Ó¦ÓÃ"
+          echo "5.æŸ¥çœ‹åº”ç”¨"
           sh "kubectl get all -n kube-ops -l app=devops-demo"
         }
       }

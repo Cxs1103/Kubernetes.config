@@ -1,10 +1,10 @@
 package org.devops
 
-// ¹¹½¨ÀàĞÍ
+// æ„å»ºç±»å‹
 def Build(buildType,buildShell){
     def buildTools = ["mvn":"M2","ant":"ANT","gradle":"GRADLE","npm":"NPM"]
 
-    println("µ±Ç°Ñ¡ÔñµÄ¹¹½¨ÀàĞÍÊÇ£º${buildType}")
+    println("å½“å‰é€‰æ‹©çš„æ„å»ºç±»å‹æ˜¯ï¼š${buildType}")
     buildHome = tool buildTools[buildType]
     if ( "${buildType}" == "npm" ){
         sh """

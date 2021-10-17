@@ -1,9 +1,9 @@
 #!groovy
 
-// ÒıÈë¹²Ïí¿â
+// å¼•å…¥å…±äº«åº“
 @Library('jenkins-sharelibrary') _
 
-// µ÷ÓÃsharelibraryÖĞµÄ·½·¨
+// è°ƒç”¨sharelibraryä¸­çš„æ–¹æ³•
 def build = new org.devops.build()
 def tools = new org.devops.tools()
 def gitlab = new org.devops.gitlab()
@@ -13,11 +13,11 @@ def sonarapi= new org.devops.sonarapi()
 
 //def runOpts
 
-// ±äÁ¿
-String buildShell = "${env.buildShell}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬´ò°üÃüÁî
-String buildType = "${env.buildType}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬¹¹½¨ÀàĞÍ
-String srcUrl = "${env.srcUrl}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬²Ö¿âµØÖ·
-String branchName = "${env.branchName}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬·ÖÖ§Ãû³Æ
+// å˜é‡
+String buildShell = "${env.buildShell}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œæ‰“åŒ…å‘½ä»¤
+String buildType = "${env.buildType}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œæ„å»ºç±»å‹
+String srcUrl = "${env.srcUrl}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œä»“åº“åœ°å€
+String branchName = "${env.branchName}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œåˆ†æ”¯åç§°
 
 if ("${runOpts}" == "GitlabPush"){
     branchName = branch - "refs/heads/"
@@ -29,7 +29,7 @@ if ("${runOpts}" == "GitlabPush"){
     userEmail = "cxs1103@163.com"
 }
 
-// Á÷Ë®Ïß
+// æµæ°´çº¿
 pipeline{
     agent{ node {label "master" }}
     stages{
@@ -38,7 +38,7 @@ pipeline{
                 script{
                     println("${branchName}")
 
-                    tools.PrintMes("================»ñÈ¡´úÂë================","green")
+                    tools.PrintMes("================è·å–ä»£ç ================","green")
                     checkout([$class: "GitSCM", branches: [[name: "${branchName}"]], extensions: [], userRemoteConfigs: [[credentialsId: "gitlab-auth", url: "${srcUrl}"]]])
                 }
             }
@@ -46,11 +46,11 @@ pipeline{
         stage("Build"){
             steps{
                 script{
-                    tools.PrintMes("================´ò°ü´úÂë================","green")
+                    tools.PrintMes("================æ‰“åŒ…ä»£ç ================","green")
                     build.Build(buildType,buildShell)
 
-                    // ÉÏ´«ÖÆÆ·
-                    tools.PrintMes("================ÉÏ´«ÖÆÆ·================","green")
+                    // ä¸Šä¼ åˆ¶å“
+                    tools.PrintMes("================ä¸Šä¼ åˆ¶å“================","green")
                     def jarName = sh returnStdout: true, script: "cd target;ls *.jar"
                     jarName = jarName - "\n"
 
@@ -62,7 +62,7 @@ pipeline{
 
                     println("${pomGroupId}-${pomArtifact}-${pomVersion}-${pomPackaging}")
 
-                    // ¼¯³ÉshellÃüÁîÉÏ´«ÖÆÆ·
+                    // é›†æˆshellå‘½ä»¤ä¸Šä¼ åˆ¶å“
                     /*def mvnHome = tool "M2"
                     sh  """
                         cd target/
@@ -73,7 +73,7 @@ pipeline{
                                                               -Durl=http://nexus.mieken.cn/repository/maven-hostd
                         """*/
 
-                    // Ê¹ÓÃ nexus artifact uploader ÉÏ´«ÖÆÆ·
+                    // ä½¿ç”¨ nexus artifact uploader ä¸Šä¼ åˆ¶å“
                     def repoName = "maven-hostd"
                     def filePath = "target/${jarName}"
                     nexusArtifactUploader artifacts: [[artifactId: "${pomArtifact}",
@@ -93,34 +93,34 @@ pipeline{
         stage("QA"){
             steps{
                 script{
-                    tools.PrintMes("================ËÑË÷ÏîÄ¿================","green")
+                    tools.PrintMes("================æœç´¢é¡¹ç›®================","green")
                     result = sonarapi.SearchProject("${JOB_NAME}")
                     println(result)
 
                     if (result == "false"){
-                        println("${JOB_NAME}----ÏîÄ¿²»´æÔÚ£¡×¼±¸´´½¨ÏîÄ¿£º${JOB_NAME}£¡")
+                        println("${JOB_NAME}----é¡¹ç›®ä¸å­˜åœ¨ï¼å‡†å¤‡åˆ›å»ºé¡¹ç›®ï¼š${JOB_NAME}ï¼")
                         sonarapi.CreateProject("${JOB_NAME}")
                     } else {
-                        println("${JOB_NAME}---ÏîÄ¿ÒÑ´æÔÚ£¡")
+                        println("${JOB_NAME}---é¡¹ç›®å·²å­˜åœ¨ï¼")
                     }
 
-                    tools.PrintMes("==============ÅäÖÃÏîÄ¿ÖÊÁ¿¹æÔò=============","green")
+                    tools.PrintMes("==============é…ç½®é¡¹ç›®è´¨é‡è§„åˆ™=============","green")
                     qpName = "${JOB_NAME}".split("-")[0]
                     sonarapi.ConfigQualityProfiles("${JOB_NAME}","java","${qpName}")
 
-                    tools.PrintMes("==============ÅäÖÃÏîÄ¿ÖÊÁ¿ãĞ=============","green")
+                    tools.PrintMes("==============é…ç½®é¡¹ç›®è´¨é‡é˜ˆ=============","green")
                     sonarapi.ConfigQualityGate("${JOB_NAME}","${qpName}")
 
-                    tools.PrintMes("================´úÂëÉ¨Ãè================","green")
+                    tools.PrintMes("================ä»£ç æ‰«æ================","green")
                     sonarscan.SonarScan("test","${JOB_NAME}","${JOB_NAME}","src","${runOpts}","${projectId}","${commitSha}","${branchName}")
 
-                    tools.PrintMes("================»ñÈ¡É¨Ãè½á¹û================","green")
+                    tools.PrintMes("================è·å–æ‰«æç»“æœ================","green")
                     result = sonarapi.GetProjectStatus("${JOB_NAME}")
                     //println(result)
 
                     /*if (result.toString() == "ERROR"){
-                        toemail.Email("´úÂëÖÊÁ¿ãĞ´íÎó£¬Çë¼°Ê±ĞŞ¸´£¡£¡£¡",userEmail)
-                        error "´úÂëÖÊÁ¿ãĞ´íÎó£¬Çë¼°Ê±ĞŞ¸´£¡£¡"
+                        toemail.Email("ä»£ç è´¨é‡é˜ˆé”™è¯¯ï¼Œè¯·åŠæ—¶ä¿®å¤ï¼ï¼ï¼",userEmail)
+                        error "ä»£ç è´¨é‡é˜ˆé”™è¯¯ï¼Œè¯·åŠæ—¶ä¿®å¤ï¼ï¼"
                     } else {
                         println(result)
                     }*/
@@ -133,7 +133,7 @@ pipeline{
             script{
                 println("always")
                 //gitlab.ChangeCommitStatus(projectId,commitSha,"success")
-                //toemail.Email("Á÷Ë®Ïß³É¹¦ÁË£¡£¡","1103098721@qq.com")  // ÉèÖÃ×ÜÊÇ½ÓÊÕµÄÓÊÏä
+                //toemail.Email("æµæ°´çº¿æˆåŠŸäº†ï¼ï¼","1103098721@qq.com")  // è®¾ç½®æ€»æ˜¯æ¥æ”¶çš„é‚®ç®±
             }
         }
         success{
@@ -142,7 +142,7 @@ pipeline{
                 if ("${runOpts}" == "GitlabPush"){
                     gitlab.ChangeCommitStatus(projectId,commitSha,"success")
                 }
-                toemail.Email("Á÷Ë®Ïß³É¹¦ÁË£¡£¡",userEmail)
+                toemail.Email("æµæ°´çº¿æˆåŠŸäº†ï¼ï¼",userEmail)
             }
         }
         failure{
@@ -151,7 +151,7 @@ pipeline{
                 if ("${runOpts}" == "GitlabPush"){
                     gitlab.ChangeCommitStatus(projectId,commitSha,"failed")
                 }
-                toemail.Email("Á÷Ë®ÏßÊ§°ÜÁË£¡£¡£¡",userEmail)
+                toemail.Email("æµæ°´çº¿å¤±è´¥äº†ï¼ï¼ï¼",userEmail)
             }
         }
         aborted{
@@ -160,7 +160,7 @@ pipeline{
                 if ("${runOpts}" == "GitlabPush"){
                     gitlab.ChangeCommitStatus(projectId,commitSha,"canceled")
                 }
-                toemail.Email("Á÷Ë®Ïß±»È¡ÏûÁË£¡£¡",userEmail)
+                toemail.Email("æµæ°´çº¿è¢«å–æ¶ˆäº†ï¼ï¼",userEmail)
             }
         }
     }

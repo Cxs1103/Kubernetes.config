@@ -1,6 +1,6 @@
 package org.devops
 
-//·â×°HTTPÇëÇó
+//å°è£…HTTPè¯·æ±‚
 def HttpReq(reqType,reqUrl,reqBody){
     def sonarServer = "http://sonar.mieken.cn/api"
 
@@ -15,7 +15,7 @@ def HttpReq(reqType,reqUrl,reqBody){
     return result
 }
 
-// »ñÈ¡SonarÖÊÁ¿ãĞ×´Ì¬
+// è·å–Sonarè´¨é‡é˜ˆçŠ¶æ€
 def GetProjectStatus(projectName){
     apiUrl = "project_branches/list?project=${projectName}"
     response = HttpReq("GET",apiUrl,'')
@@ -26,7 +26,7 @@ def GetProjectStatus(projectName){
     return result
 }
 
-// ËÑË÷SonarÏîÄ¿
+// æœç´¢Sonaré¡¹ç›®
 def SearchProject(projectName){
     apiUrl = "projects/search?project=${projectName}"
     response = HttpReq("GET",apiUrl,'')
@@ -40,21 +40,21 @@ def SearchProject(projectName){
         return "true"
     }
 }
-// ´´½¨sonarÏîÄ¿
+// åˆ›å»ºsonaré¡¹ç›®
 def CreateProject(projectName){
     apiUrl = "projects/create?name=${projectName}&project=${projectName}"
     response = HttpReq("POST",apiUrl,'')
     println(response)
 }
 
-// ÅäÖÃÏîÄ¿ÖÊÁ¿¹æÔò
+// é…ç½®é¡¹ç›®è´¨é‡è§„åˆ™
 def ConfigQualityProfiles(projectName,language,qpname){
     apiUrl = "qualityprofiles/add_project?language=${language}&project=${projectName}&qualityProfile=${qpname}"
     response = HttpReq("POST",apiUrl,'')
     println(response)
 }
 
-// »ñÈ¡ÖÊÁ¿ãĞ gateId
+// è·å–è´¨é‡é˜ˆ gateId
 def GetQualityGateId(gateName){
     apiUrl = "qualitygates/show?name=${gateName}"
     response = HttpReq("GET",apiUrl,'')
@@ -64,7 +64,7 @@ def GetQualityGateId(gateName){
     return result
 }
 
-// ÅäÖÃÏîÄ¿ÖÊÁ¿ãĞ
+// é…ç½®é¡¹ç›®è´¨é‡é˜ˆ
 def ConfigQualityGate(projectName,gateName){
     gateId = GetQualityGateId(gateName)
     apiUrl = "qualitygates/select?gateId=${gateId}&projectKey=${projectName}"

@@ -1,6 +1,6 @@
 #!groovy
 
-String buildShell = "${env.buildShell}"  // 引用选项参数
+String buildShell = "${env.buildShell}"  // 寮曠敤閫夐」鍙傛暟
 
 pipeline{
     agent{ node {label "master" }}

@@ -1,18 +1,18 @@
 #!groovy
 
-// ÒıÈë¹²Ïí¿â
+// å¼•å…¥å…±äº«åº“
 @Library('jenkins-sharelibrary') _
 
-// µ÷ÓÃsharelibraryÖĞµÄ·½·¨
+// è°ƒç”¨sharelibraryä¸­çš„æ–¹æ³•
 def build = new org.devops.build()
 def tools = new org.devops.tools()
 def gitlab = new org.devops.gitlab()
 
-// ±äÁ¿
-String buildShell = "${env.buildShell}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬´ò°üÃüÁî
-String buildType = "${env.buildType}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬¹¹½¨ÀàĞÍ
-String srcUrl = "${env.srcUrl}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬²Ö¿âµØÖ·
-String branchName = "${env.branchName}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬·ÖÖ§Ãû³Æ
+// å˜é‡
+String buildShell = "${env.buildShell}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œæ‰“åŒ…å‘½ä»¤
+String buildType = "${env.buildType}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œæ„å»ºç±»å‹
+String srcUrl = "${env.srcUrl}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œä»“åº“åœ°å€
+String branchName = "${env.branchName}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œåˆ†æ”¯åç§°
 
 if ("${runOpts}" == "GitlabPush"){
     branchName = branch - "refs/heads/"
@@ -22,7 +22,7 @@ if ("${runOpts}" == "GitlabPush"){
     gitlab.ChangeCommitStatus(projectId,commitSha,"running")
 }
 
-// Á÷Ë®Ïß
+// æµæ°´çº¿
 pipeline{
     agent{ node {label "master" }}
     stages{
@@ -32,7 +32,7 @@ pipeline{
 
                     println("${branchName}")
 
-                    tools.PrintMes("»ñÈ¡´úÂë","green")
+                    tools.PrintMes("è·å–ä»£ç ","green")
                     checkout([$class: "GitSCM", branches: [[name: "${branchName}"]], extensions: [], userRemoteConfigs: [[credentialsId: "gitlab-auth", url: "${srcUrl}"]]])
                 }
             }
@@ -40,7 +40,7 @@ pipeline{
         stage("Build"){
             steps{
                 script{
-                    tools.PrintMes("´ò°ü´úÂë","green")
+                    tools.PrintMes("æ‰“åŒ…ä»£ç ","green")
                     build.Build(buildType,buildShell)
                 }
             }
@@ -50,7 +50,7 @@ pipeline{
         always{
             emailext(
                 body: '${FILE,path="email.html"}',
-                subject: '¹¹½¨Í¨Öª£º${PROJECT_NAME} - Build # ${BUILD_NUMBER} - ${BUILD_STATUS}!',
+                subject: 'æ„å»ºé€šçŸ¥ï¼š${PROJECT_NAME} - Build # ${BUILD_NUMBER} - ${BUILD_STATUS}!',
                 to: 'cxs1103@163.com'
             )
         }
@@ -58,21 +58,21 @@ pipeline{
             script{
                 println("success")
                 gitlab.ChangeCommitStatus(projectId,commitSha,"success")
-                //toemail.Email("Á÷Ë®Ïß³É¹¦ÁË£¡£¡£¡",userEmail)
+                //toemail.Email("æµæ°´çº¿æˆåŠŸäº†ï¼ï¼ï¼",userEmail)
             }
         }
         failure{
             script{
                 println("failure")
                 gitlab.ChangeCommitStatus(projectId,commitSha,"failed")
-               // toemail.Email("Á÷Ë®ÏßÊ§°ÜÁË£¡£¡£¡",userEmail)
+               // toemail.Email("æµæ°´çº¿å¤±è´¥äº†ï¼ï¼ï¼",userEmail)
             }
         }
         aborted{
             script{
                 println("aborted")
                 gitlab.ChangeCommitStatus(projectId,commitSha,"canceled")
-                //toemail.Email("Á÷Ë®Ïß±»È¡ÏûÁË£¡£¡!£¡£¡",userEmail)
+                //toemail.Email("æµæ°´çº¿è¢«å–æ¶ˆäº†ï¼ï¼!ï¼ï¼",userEmail)
             }
         }
     }

@@ -1,6 +1,6 @@
 package org.devops
 
-//·â×°HTTPÇëÇó
+//å°è£…HTTPè¯·æ±‚
 def HttpReq(reqType,reqUrl,reqBody){
     def gitServer = "http://gitlab.mieken.cn/api/v4"
     withCredentials([string(credentialsId: 'gitlab-token', variable: 'gitlabToken')]) {
@@ -16,7 +16,7 @@ def HttpReq(reqType,reqUrl,reqBody){
     return result
 }
 
-//¸ü¸ÄÌá½»×´Ì¬
+//æ›´æ”¹æäº¤çŠ¶æ€
 def ChangeCommitStatus(projectId,commitSha,status){
     commitApi = "projects/${projectId}/statuses/${commitSha}?state=${status}"
     response = HttpReq('POST',commitApi,'')

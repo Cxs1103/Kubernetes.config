@@ -1,12 +1,12 @@
 #!groovy
 
-// ÒıÈë¹²Ïí¿â
+// å¼•å…¥å…±äº«åº“
 @Library('jenkins-sharelibrary') _
 
 def build = new org.devops.build()
 
-String buildShell = "${env.buildShell}"  // ÒıÓÃÑ¡Ïî²ÎÊı
-String buildType = "${env.buildType}"  // ÒıÓÃÑ¡Ïî²ÎÊı
+String buildShell = "${env.buildShell}"  // å¼•ç”¨é€‰é¡¹å‚æ•°
+String buildType = "${env.buildType}"  // å¼•ç”¨é€‰é¡¹å‚æ•°
 
 pipeline{
     agent{ node {label "master" }}
@@ -30,7 +30,7 @@ pipeline{
         stage("ant-build"){
             steps{
                 script{
-                    try {   // ÒòÎªÃ»ÓĞbuild.xml£¬ant»á±¨´í£¬ËùÓĞÌí¼Ótry-catch£¬·µ»ØÒì³£
+                    try {   // å› ä¸ºæ²¡æœ‰build.xmlï¼Œantä¼šæŠ¥é”™ï¼Œæ‰€æœ‰æ·»åŠ try-catchï¼Œè¿”å›å¼‚å¸¸
                         antHome = tool "ANT"
                         sh "${antHome}/bin/ant ${env.buildShell}"
                     }catch (e){

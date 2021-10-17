@@ -1,8 +1,8 @@
 #!/bin/bash
 backupcode="/data/backcode/$JOB_NAME/$BUILD_NUMBER"
-mkdir -p $backupcode     #jenkins´´½¨ÉÏÊöÄ¿Â¼
+mkdir -p $backupcode     #jenkinsåˆ›å»ºä¸Šè¿°ç›®å½•
 chmod 644 "$JENKINS_HOME"/workspace/"$JOB_NAME"/*
-rsync -acP   "$JENKINS_HOME"/workspace/"$JOB_NAME"/*  $backupcode #$JENKINS_HOMEºÍ$JOB_NAMEÍ¬²½×îÐÂÏûÏ¢
+rsync -acP   "$JENKINS_HOME"/workspace/"$JOB_NAME"/*  $backupcode #$JENKINS_HOMEå’Œ$JOB_NAMEåŒæ­¥æœ€æ–°æ¶ˆæ¯
 #ssh -p22206 root@192.168.0.81 sed -i 's/v1/v2/g' /root/k8s/app/httpd.yaml
 echo From harbor.mieken.cn/k8s/web:v1 > "$JENKINS_HOME"/workspace/Dockerfile
 echo COPY ./"$JOB_NAME"/* /usr/local/apache2/htdocs/ >> "$JENKINS_HOME"/workspace/Dockerfile

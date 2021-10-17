@@ -1,6 +1,6 @@
 package org.devops
 
-//·â×°HTTPÇëÇó
+//å°è£…HTTPè¯·æ±‚
 def HttpReq(reqType,reqUrl,reqBody){
     def sonarServer = "http://nexus.mieken.cn/service/rest"
 
@@ -15,20 +15,20 @@ def HttpReq(reqType,reqUrl,reqBody){
     return result
 }
 
-// »ñÈ¡²Ö¿âÖĞËùÓĞ×é¼ş
+// è·å–ä»“åº“ä¸­æ‰€æœ‰ç»„ä»¶
 def GetRepoComponents(repoName){
-    println("===============»ñÈ¡²Ö¿âÖĞËùÓĞ×é¼şĞÅÏ¢===============")
+    println("===============è·å–ä»“åº“ä¸­æ‰€æœ‰ç»„ä»¶ä¿¡æ¯===============")
     apiUrl = "v1/components/?repository=${repoName}"
     response = HttpReq("GET",apiUrl,'')
     response = readJSON text: """${response.content}"""
 
-    println("===============»ñÈ¡²Ö¿âÖĞËùÓĞ×é¼ş¸öÊı===============")
+    println("===============è·å–ä»“åº“ä¸­æ‰€æœ‰ç»„ä»¶ä¸ªæ•°===============")
     println(response["items"].size())
 
     return response["items"]
 }
 
-// »ñÈ¡µ¥¸ö×é¼ş
+// è·å–å•ä¸ªç»„ä»¶
 def GetComponentsId(repoName,groupId,actifactId,version){
     result = GetRepoComponents(repoName)
 
@@ -36,19 +36,19 @@ def GetComponentsId(repoName,groupId,actifactId,version){
         if (component["group"] == groupId && component["name"] == actifactId && component["version"] == version){
 
             componentId = component["id"]
-            println("===============»ñÈ¡µ¥¸ö×é¼şID===============")
-            println("ID£º${componentId}")
+            println("===============è·å–å•ä¸ªç»„ä»¶ID===============")
+            println("IDï¼š${componentId}")
             return componentId
         }
     }
 }
 
-// »ñÈ¡µ¥¸ö×é¼şĞÅÏ¢
+// è·å–å•ä¸ªç»„ä»¶ä¿¡æ¯
 def GetSingleComponents(repoName,groupId,actifactId,version){
     componentId = GetComponentsId(repoName,groupId,actifactId,version)
     apiUrl = "v1/components/${componentId}"
     response = HttpReq("GET",apiUrl,'')
     response = readJSON text: """${response.content}"""
-    println("===============»ñÈ¡µ¥¸ö×é¼şĞÅÏ¢===============")
+    println("===============è·å–å•ä¸ªç»„ä»¶ä¿¡æ¯===============")
     println(response["assets"]["downloadUrl"])
 }

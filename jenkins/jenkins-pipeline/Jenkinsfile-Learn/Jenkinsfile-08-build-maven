@@ -1,18 +1,18 @@
 #!groovy
 
-// ÒıÈë¹²Ïí¿â
+// å¼•å…¥å…±äº«åº“
 @Library('jenkins-sharelibrary') _
 
-// µ÷ÓÃsharelibraryÖĞµÄ·½·¨
+// è°ƒç”¨sharelibraryä¸­çš„æ–¹æ³•
 def build = new org.devops.build()
 def tools = new org.devops.tools()
 def gitlab = new org.devops.gitlab()
 
-// ±äÁ¿
-String buildShell = "${env.buildShell}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬´ò°üÃüÁî
-String buildType = "${env.buildType}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬¹¹½¨ÀàĞÍ
-String srcUrl = "${env.srcUrl}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬²Ö¿âµØÖ·
-String branchName = "${env.branchName}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬·ÖÖ§Ãû³Æ
+// å˜é‡
+String buildShell = "${env.buildShell}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œæ‰“åŒ…å‘½ä»¤
+String buildType = "${env.buildType}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œæ„å»ºç±»å‹
+String srcUrl = "${env.srcUrl}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œä»“åº“åœ°å€
+String branchName = "${env.branchName}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œåˆ†æ”¯åç§°
 
 if ("${runOpts}" == "GitlabPush"){
     branchName = branch - "refs/heads/"
@@ -22,7 +22,7 @@ if ("${runOpts}" == "GitlabPush"){
     gitlab.ChangeCommitStatus(projectId,commitSha,"running")
 }
 
-// Á÷Ë®Ïß
+// æµæ°´çº¿
 pipeline{
     agent{ node {label "master" }}
     stages{
@@ -31,7 +31,7 @@ pipeline{
                 script{
                     println("${branchName}")
 
-                    tools.PrintMes("»ñÈ¡´úÂë","green1")
+                    tools.PrintMes("è·å–ä»£ç ","green1")
                     checkout([$class: "GitSCM", branches: [[name: "${branchName}"]], extensions: [], userRemoteConfigs: [[credentialsId: "gitlab-auth", url: "${srcUrl}"]]])
                 }
             }
@@ -39,7 +39,7 @@ pipeline{
         stage("Build"){
             steps{
                 script{
-                    tools.PrintMes("´ò°ü´úÂë","green1")
+                    tools.PrintMes("æ‰“åŒ…ä»£ç ","green1")
                     build.Build(buildType,buildShell)
                 }
             }

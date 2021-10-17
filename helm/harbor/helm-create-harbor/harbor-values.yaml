@@ -16,9 +16,9 @@ persistence:
   resourcePolicy: "keep"
   persistentVolumeClaim:
     registry:
-      # Èç¹ûĞèÒª×ö¸ß¿ÉÓÃ£¬¶à¸ö¸±±¾µÄ×é¼şÔòĞèÒªÊ¹ÓÃÖ§³Ö ReadWriteMany µÄºó¶Ë£¬ceph rbd ÊÇ²»Ö§³ÖµÄ£¬¿ÉÒÔÊ¹ÓÃ cephfs£¬¿ÉÒÔ»»³ÉÇ°ÃæÎÒÃÇÊ¹ÓÃµÄ rook-ceph-fs
+      # å¦‚æœéœ€è¦åšé«˜å¯ç”¨ï¼Œå¤šä¸ªå‰¯æœ¬çš„ç»„ä»¶åˆ™éœ€è¦ä½¿ç”¨æ”¯æŒ ReadWriteMany çš„åç«¯ï¼Œceph rbd æ˜¯ä¸æ”¯æŒçš„ï¼Œå¯ä»¥ä½¿ç”¨ cephfsï¼Œå¯ä»¥æ¢æˆå‰é¢æˆ‘ä»¬ä½¿ç”¨çš„ rook-ceph-fs
       storageClass: "gitlab-data"
-      # Èç¹ûÊÇ¸ß¿ÉÓÃµÄ£¬¶à¸ö¸±±¾×é¼şĞèÒªÊ¹ÓÃ ReadWriteMany£¬Ä¬ÈÏÎª ReadWriteOnce
+      # å¦‚æœæ˜¯é«˜å¯ç”¨çš„ï¼Œå¤šä¸ªå‰¯æœ¬ç»„ä»¶éœ€è¦ä½¿ç”¨ ReadWriteManyï¼Œé»˜è®¤ä¸º ReadWriteOnce
       accessMode: ReadWriteOnce
       size: 10Gi
     chartmuseum:
@@ -47,7 +47,7 @@ redis:
   external:
     addr: "redis.kube-ops.svc.cluster.local:6379"
 
-# Ä¬ÈÏÎªÒ»¸ö¸±±¾£¬Èç¹ûÒª×ö¸ß¿ÉÓÃ£¬Ö»ĞèÒªÉèÖÃÎª replicas >= 2 ¼´¿É
+# é»˜è®¤ä¸ºä¸€ä¸ªå‰¯æœ¬ï¼Œå¦‚æœè¦åšé«˜å¯ç”¨ï¼Œåªéœ€è¦è®¾ç½®ä¸º replicas >= 2 å³å¯
 portal:
   replicas: 1
 core:

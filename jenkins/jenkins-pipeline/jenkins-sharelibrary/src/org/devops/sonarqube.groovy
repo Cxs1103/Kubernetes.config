@@ -5,7 +5,7 @@ def SonarScan(sonarServer,projectName,projectDsec,projectPath,runOpts='',project
 
     def sonarScanHome = tool "SONARSCANNER"
 
-    // ¶¨Òåsonar·şÎñÆ÷ÁĞ±í
+    // å®šä¹‰sonaræœåŠ¡å™¨åˆ—è¡¨
     def servers = ["test":"SonarQube","prod":"SonarQube-prod"]
 
     withSonarQubeEnv("${servers[sonarServer]}"){
@@ -32,7 +32,7 @@ def SonarScan(sonarServer,projectName,projectDsec,projectPath,runOpts='',project
             """
         }
     }
-    // ÖÊÁ¿ãĞ¼ÆËã½á¹û
+    // è´¨é‡é˜ˆè®¡ç®—ç»“æœ
     //def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
     //if (qg.status != 'OK') {
     //  error "Pipeline aborted due to quality gate failure: ${qg.status}"

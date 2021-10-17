@@ -1,23 +1,23 @@
 pipeline{
-    //Ö¸¶¨ÔËĞĞ´ËÁ÷Ë®ÏßµÄ½Úµã
+    //æŒ‡å®šè¿è¡Œæ­¤æµæ°´çº¿çš„èŠ‚ç‚¹
    //agent { node { label "jenkins-salve01"}}
    agent{ node {label "master" }}
     tools {
-        maven 'M2'  // È«¾Ö¹¤¾ßÅäÖÃÖĞ£ºmavenÑ¡Ïî
+        maven 'M2'  // å…¨å±€å·¥å…·é…ç½®ä¸­ï¼šmavené€‰é¡¹
     }
 //   parameters { string(name: 'DEPLOY_ENV', defaultValue: 'staging', description: '')}
 
     options {
         timeout(time: 1, unit: 'HOURS')
     }
-    //Á÷Ë®ÏßµÄ½×¶Î
+    //æµæ°´çº¿çš„é˜¶æ®µ
     stages{
-        //½×¶Î1 »ñÈ¡´úÂë
+        //é˜¶æ®µ1 è·å–ä»£ç 
         stage("GetCode"){
             when { environment name: 'test', value: 'abcd' }
             steps{
                 script{
-                    println("»ñÈ¡´úÂë")
+                    println("è·å–ä»£ç ")
                     println("${test}")
                 }
             }
@@ -30,19 +30,19 @@ pipeline{
                 }
             }
         }
-        //½×¶Î2 »ñÈ¡´úÂë
+        //é˜¶æ®µ2 è·å–ä»£ç 
         stage("CheckOut"){
             steps{
                 script{
-                    println("¼ì²é´úÂë")
+                    println("æ£€æŸ¥ä»£ç ")
                 }
             }
         }
-        //½×¶Î3 ´ò°ü´úÂë
+        //é˜¶æ®µ3 æ‰“åŒ…ä»£ç 
         stage("Build"){
             steps{
                 script{
-                    println("ÔËĞĞ¹¹½¨")
+                    println("è¿è¡Œæ„å»º")
                     mvnHome = tool "M2"
                     println(mvnHome)
 
@@ -50,7 +50,7 @@ pipeline{
                 }
             }
         }
-        // ²¢ĞĞ²âÊÔ
+        // å¹¶è¡Œæµ‹è¯•
         stage('Parallel Stage') {
            failFast true
            parallel {
@@ -71,25 +71,25 @@ pipeline{
     post {
         always{
             script{
-                println("Á÷Ë®Ïß½áÊøºó£¬¾­³£×öµÄÊÂÇé")
+                println("æµæ°´çº¿ç»“æŸåï¼Œç»å¸¸åšçš„äº‹æƒ…")
             }
         }
 
         success{
             script{
-                println("Á÷Ë®Ïß³É¹¦ºó£¬Òª×öµÄÊÂÇé")
+                println("æµæ°´çº¿æˆåŠŸåï¼Œè¦åšçš„äº‹æƒ…")
             }
 
         }
         failure{
             script{
-                println("Á÷Ë®ÏßÊ§°Üºó£¬Òª×öµÄÊÂÇé")
+                println("æµæ°´çº¿å¤±è´¥åï¼Œè¦åšçš„äº‹æƒ…")
             }
         }
 
         aborted{
             script{
-                println("Á÷Ë®ÏßÈ¡Ïûºó£¬Òª×öµÄÊÂÇé")
+                println("æµæ°´çº¿å–æ¶ˆåï¼Œè¦åšçš„äº‹æƒ…")
             }
 
         }

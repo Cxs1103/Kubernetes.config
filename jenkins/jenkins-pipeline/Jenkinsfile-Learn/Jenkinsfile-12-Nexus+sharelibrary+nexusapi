@@ -1,26 +1,26 @@
 #!groovy
 
-// ÒıÈë¹²Ïí¿â
+// å¼•å…¥å…±äº«åº“
 @Library('jenkins-sharelibrary') _
 
-// µ÷ÓÃsharelibraryÖĞµÄ·½·¨
+// è°ƒç”¨sharelibraryä¸­çš„æ–¹æ³•
 def nexus = new org.devops.nexus()
 def tools = new org.devops.tools()
 def nexusapi = new org.devops.nexusapi()
 
-// ±äÁ¿
-String artifactUrl = "${env.artifactUrl}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬·¢²¼ÖÆÆ·
-String updateType = "${env.updateType}"  // ÒıÓÃÑ¡Ïî²ÎÊı£¬¸üĞÂÖÆÆ·
-String pkgVersion = "${env.pkgVersion}"  // ÒıÓÃ×Ö·û²ÎÊı£¬°æ±¾Ñ¡Ôñ
+// å˜é‡
+String artifactUrl = "${env.artifactUrl}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œå‘å¸ƒåˆ¶å“
+String updateType = "${env.updateType}"  // å¼•ç”¨é€‰é¡¹å‚æ•°ï¼Œæ›´æ–°åˆ¶å“
+String pkgVersion = "${env.pkgVersion}"  // å¼•ç”¨å­—ç¬¦å‚æ•°ï¼Œç‰ˆæœ¬é€‰æ‹©
 
-// Á÷Ë®Ïß
+// æµæ°´çº¿
 pipeline{
     agent{ node {label "master" }}
     stages{
         stage("ArtifactUpdate"){
             steps{
                 script{
-                    //tools.PrintMes("================¸üĞÂÖÆÆ·================","green")
+                    //tools.PrintMes("================æ›´æ–°åˆ¶å“================","green")
                     //nexus.ArtifactUpdate(updateType,artifactUrl)
 
                     //nexusapi.GetRepoComponents("maven-hostd")

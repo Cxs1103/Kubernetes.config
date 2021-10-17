@@ -35,7 +35,7 @@ metadata:
     app.kubernetes.io/component: controller
   name: ingress-nginx-controller
   namespace: ingress-nginx
-data:    # ĞŞ¸ÄnginxÏà¹ØĞÅÏ¢£¬ÉÏ´«ÎÄ¼ş´óĞ¡£¬Á¬½Ó³¬Ê±µÈ
+data:    # ä¿®æ”¹nginxç›¸å…³ä¿¡æ¯ï¼Œä¸Šä¼ æ–‡ä»¶å¤§å°ï¼Œè¿æ¥è¶…æ—¶ç­‰
   fastcgi_connect_timeout: 600s
   fastcgi_read_timeout: 600s
   fastcgi_send_timeout: 600s
@@ -299,7 +299,7 @@ spec:
 # Source: ingress-nginx/templates/controller-deployment.yaml
 apiVersion: apps/v1
 #kind: Deployment
-kind: DaemonSet   # Æô¶¯¶à¸öingress-nginx£¬¸ºÔØ¾ùºâµÄ×÷ÓÃ
+kind: DaemonSet   # å¯åŠ¨å¤šä¸ªingress-nginxï¼Œè´Ÿè½½å‡è¡¡çš„ä½œç”¨
 metadata:
   labels:
     helm.sh/chart: ingress-nginx-4.0.1
@@ -325,14 +325,14 @@ spec:
         app.kubernetes.io/instance: ingress-nginx
         app.kubernetes.io/component: controller
     spec:
-      tolerations:  # master½ÚµãÒ²½øĞĞingress-nginx²¿Êğ
+      tolerations:  # masterèŠ‚ç‚¹ä¹Ÿè¿›è¡Œingress-nginxéƒ¨ç½²
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
-      hostNetwork: true   # Ä¬ÈÏingress-nginx Ëæ»úÌá¹©node port ¶Ë¿Ú£¬ÌåÑé²»ºÃ£¬Òò´ËĞè¿ªÆôhostNetwork ÆôÓÃ80¡¢443¶Ë¿Ú
+      hostNetwork: true   # é»˜è®¤ingress-nginx éšæœºæä¾›node port ç«¯å£ï¼Œä½“éªŒä¸å¥½ï¼Œå› æ­¤éœ€å¼€å¯hostNetwork å¯ç”¨80ã€443ç«¯å£
       dnsPolicy: ClusterFirst
       containers:
         - name: controller
-          image: koala2020/ingress-nginx-controller:v1   # ĞŞ¸ÄÎªµÚÈı·½¾µÏñ
+          image: koala2020/ingress-nginx-controller:v1   # ä¿®æ”¹ä¸ºç¬¬ä¸‰æ–¹é•œåƒ
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -347,7 +347,7 @@ spec:
             - --validating-webhook=:8443
             - --validating-webhook-certificate=/usr/local/certificates/cert
             - --validating-webhook-key=/usr/local/certificates/key
-            - --watch-ingress-without-class=true  # ÓÉÓÚĞÂ°æ±¾ÌØĞÔ£¬ĞèÒªingress-nginx ĞèÒªÔö¼Ó ingressClass£¬Èç¹ûÀÏÏîÄ¿Ã»ÓĞ ingressClass £¬Èç¹û²»¹ØĞÄ ingressClass£¬»òÕßºÜ¶àÃ»ÓĞ ingressClass ÅäÖÃµÄ ingress ¶ÔÏó£¬ĞèÒªÌí¼Ó²ÎÊı ingress-controller --watch-ingress-without-class=true¡£
+            - --watch-ingress-without-class=true  # ç”±äºæ–°ç‰ˆæœ¬ç‰¹æ€§ï¼Œéœ€è¦ingress-nginx éœ€è¦å¢åŠ  ingressClassï¼Œå¦‚æœè€é¡¹ç›®æ²¡æœ‰ ingressClass ï¼Œå¦‚æœä¸å…³å¿ƒ ingressClassï¼Œæˆ–è€…å¾ˆå¤šæ²¡æœ‰ ingressClass é…ç½®çš„ ingress å¯¹è±¡ï¼Œéœ€è¦æ·»åŠ å‚æ•° ingress-controller --watch-ingress-without-class=trueã€‚
           securityContext:
             capabilities:
               drop:
@@ -614,7 +614,7 @@ spec:
     spec:
       containers:
         - name: create
-          image: koala2020/ingress-nginx-kube-webhook-certgen:v1   # ĞŞ¸ÄÎªµÚÈı·½¾µÏñ
+          image: koala2020/ingress-nginx-kube-webhook-certgen:v1   # ä¿®æ”¹ä¸ºç¬¬ä¸‰æ–¹é•œåƒ
           imagePullPolicy: IfNotPresent
           args:
             - create
@@ -664,7 +664,7 @@ spec:
     spec:
       containers:
         - name: patch
-          image: koala2020/ingress-nginx-kube-webhook-certgen:v1   # ĞŞ¸ÄÎªµÚÈı·½¾µÏñ
+          image: koala2020/ingress-nginx-kube-webhook-certgen:v1   # ä¿®æ”¹ä¸ºç¬¬ä¸‰æ–¹é•œåƒ
           imagePullPolicy: IfNotPresent
           args:
             - patch

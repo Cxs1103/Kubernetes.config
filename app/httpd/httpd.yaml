@@ -40,13 +40,13 @@ spec:
       containers:
       - name: httpd
         image: harbor.mieken.cn/k8s/web:v1
-        imagePullPolicy: Always    # Ê¼ÖÕÀ­È¡×îĞÂµÄ¾µÏñ
+        imagePullPolicy: Always    # å§‹ç»ˆæ‹‰å–æœ€æ–°çš„é•œåƒ
         ports:
         - name: httpd
           containerPort: 80
         volumeMounts:
         - name: httpd-persistent-storage
-          mountPath: /usr/local/apache2/logs     # ²âÊÔ³Ö¾Ã»¯ÈÕÖ¾ÎÄ¼ş
+          mountPath: /usr/local/apache2/logs     # æµ‹è¯•æŒä¹…åŒ–æ—¥å¿—æ–‡ä»¶
       volumes:
       - name: httpd-persistent-storage
         persistentVolumeClaim:

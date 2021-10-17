@@ -1,6 +1,6 @@
 #!groovy
 
-// jenkins2.292 °æ±¾ÓĞbugÇëÎğÊ¹ÓÃ==¡· https://issues.jenkins.io/browse/JENKINS-65623
+// jenkins2.292 ç‰ˆæœ¬æœ‰bugè¯·å‹¿ä½¿ç”¨==ã€‹ https://issues.jenkins.io/browse/JENKINS-65623
 @Library('jenkins-sharelibrary') _
 
 def mytools = new org.devops.tools()
@@ -8,7 +8,7 @@ def mytools = new org.devops.tools()
 hello()
 
 pipeline{
-    //Ö¸¶¨ÔËĞĞ´ËÁ÷Ë®ÏßµÄ½Úµã
+    //æŒ‡å®šè¿è¡Œæ­¤æµæ°´çº¿çš„èŠ‚ç‚¹
     agent{ node {label "master" }}
 
     tools {
@@ -19,16 +19,16 @@ pipeline{
     options {
         timeout(time: 1, unit: 'HOURS')
     }
-    //Á÷Ë®ÏßµÄ½×¶Î
+    //æµæ°´çº¿çš„é˜¶æ®µ
     stages{
-        //½×¶Î1 »ñÈ¡´úÂë
+        //é˜¶æ®µ1 è·å–ä»£ç 
         stage("GetCode"){
             when { environment name: 'test', value: 'abcd' }
             steps{
                 script{
-                    println("»ñÈ¡´úÂë")
+                    println("è·å–ä»£ç ")
                     println("${test}")
-                    mytools.PrintMes("»ñÈ¡´úÂë",'green')
+                    mytools.PrintMes("è·å–ä»£ç ",'green')
                 }
             }
             input {
@@ -40,21 +40,21 @@ pipeline{
                 }
             }
         }
-        //½×¶Î2 ¼ì²é´úÂë
+        //é˜¶æ®µ2 æ£€æŸ¥ä»£ç 
         stage("CheckOut"){
             steps{
                 script{
-                    println("¼ì²é´úÂë")
-                    mytools.PrintMes("¼ì²é´úÂë",'green')
+                    println("æ£€æŸ¥ä»£ç ")
+                    mytools.PrintMes("æ£€æŸ¥ä»£ç ",'green')
                 }
             }
         }
-        //½×¶Î3 ´ò°ü´úÂë
+        //é˜¶æ®µ3 æ‰“åŒ…ä»£ç 
         stage("Build"){
             steps{
                 script{
-                    println("´ò°ü´úÂë")
-                    mytools.PrintMes("´ò°ü´úÂë",'green')
+                    println("æ‰“åŒ…ä»£ç ")
+                    mytools.PrintMes("æ‰“åŒ…ä»£ç ",'green')
                     mvnHome = tool "M2"
                     println(mvnHome)
                     sh "${mvnHome}/bin/mvn -version"
@@ -66,25 +66,25 @@ pipeline{
     post {
         always{
             script{
-                println("Á÷Ë®Ïß½áÊøºó£¬¾­³£×öµÄÊÂÇé")
+                println("æµæ°´çº¿ç»“æŸåï¼Œç»å¸¸åšçš„äº‹æƒ…")
             }
         }
 
         success{
             script{
-                println("Á÷Ë®Ïß³É¹¦ºó£¬Òª×öµÄÊÂÇé")
+                println("æµæ°´çº¿æˆåŠŸåï¼Œè¦åšçš„äº‹æƒ…")
             }
 
         }
         failure{
             script{
-                println("Á÷Ë®ÏßÊ§°Üºó£¬Òª×öµÄÊÂÇé")
+                println("æµæ°´çº¿å¤±è´¥åï¼Œè¦åšçš„äº‹æƒ…")
             }
         }
 
         aborted{
             script{
-                println("Á÷Ë®ÏßÈ¡Ïûºó£¬Òª×öµÄÊÂÇé")
+                println("æµæ°´çº¿å–æ¶ˆåï¼Œè¦åšçš„äº‹æƒ…")
             }
 
         }

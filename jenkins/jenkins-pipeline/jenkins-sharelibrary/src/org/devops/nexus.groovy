@@ -1,6 +1,6 @@
 package org.devops
 
-// 获取POM文件中的坐标
+// 鑾峰彇POM鏂囦欢涓殑鍧愭爣
 def GetGav(){
     def jarName = sh returnStdout: true, script: "cd target;ls *.jar"
     env.jarName = jarName - "\n"
@@ -16,7 +16,7 @@ def GetGav(){
     return ["${pomGroupId}","${pomArtifact}","${pomVersion}","${pomPackaging}"]
 }
 
-// 集成Maven命令上传制品
+// 闆嗘垚Maven鍛戒护涓婁紶鍒跺搧
 def MavenUpload(){
 def mvnHome = tool "M2"
 sh  """
@@ -29,7 +29,7 @@ sh  """
     """
 }
 
-// 使用 nexus artifact uploader 上传制品
+// 浣跨敤 nexus artifact uploader 涓婁紶鍒跺搧
 def NexusUpload(){
 nexusArtifactUploader artifacts: [[artifactId: "${pomArtifact}",
                                     classifier: '',
@@ -44,17 +44,17 @@ nexusArtifactUploader artifacts: [[artifactId: "${pomArtifact}",
                         version: "${pomVersion}"
 }
 
-// 制品晋级
+// 鍒跺搧鏅嬬骇
 def ArtifactUpdate(updateType,artifactUrl){
 
-    // 晋级策略
+    // 鏅嬬骇绛栫暐
     if ("${updateType}" == "snapshot -> release"){
         println("snapshot -> release")
 
-        // 下载原始制品
+        // 涓嬭浇鍘熷鍒跺搧
         sh " rm -rf updates && mkdir updates && cd updates && wget ${artifactUrl} && ls -l"
 
-        // 获取artifactID
+        // 鑾峰彇artifactID
         artifactUrl = artifactUrl - "http://nexus.mieken.cn/repository/maven-hostd/"
         artifactUrl = artifactUrl.split("/").toList()
 
@@ -69,10 +69,10 @@ def ArtifactUpdate(updateType,artifactUrl){
         println("${pomGroupId}###${pomArtifact}###${pomVersion}###${pomPackaging}")
         env.newJarName = "${pomArtifact}-${pomVersion}.${pomPackaging}"
 
-        // 更改名称
+        // 鏇存敼鍚嶇О
         sh "cd updates && mv ${jarName} ${newJarName}"
 
-        // 使用Nexus artifact uploader 上传制品
+        // 浣跨敤Nexus artifact uploader 涓婁紶鍒跺搧
         env.repoName = "maven-releases"
         env.filePath = "updates/${newJarName}"
         NexusUpload()
@@ -81,10 +81,10 @@ def ArtifactUpdate(updateType,artifactUrl){
 }
 
 def main(uploadType){
-    // 读取pom
+    // 璇诲彇pom
     GetGav()
 
-    // 判断上传方式
+    // 鍒ゆ柇涓婁紶鏂瑰紡
     if ("${uploadType}" == "maven"){
         MavenUpload()
     } else if("${uploadType}" == "nexus"){
