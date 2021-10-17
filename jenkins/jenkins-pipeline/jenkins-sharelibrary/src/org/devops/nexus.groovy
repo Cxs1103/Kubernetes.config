@@ -29,11 +29,8 @@ sh  """
     """
 }
 
-
 // 使用 nexus artifact uploader 上传制品
 def NexusUpload(){
-def repoName = "maven-hostd"
-def filePath = "target/${jarName}"
 nexusArtifactUploader artifacts: [[artifactId: "${pomArtifact}",
                                     classifier: '',
                                     file: "${filePath}",
@@ -47,6 +44,42 @@ nexusArtifactUploader artifacts: [[artifactId: "${pomArtifact}",
                         version: "${pomVersion}"
 }
 
+// 制品晋级
+def ArtifactUpdate(updateType,artifactUrl){
+
+    // 晋级策略
+    if ("${updateType}" == "snapshot -> release"){
+        println("snapshot -> release")
+
+        // 下载原始制品
+        sh " rm -rf updates && mkdir updates && cd updates && wget ${artifactUrl} && ls -l"
+
+        // 获取artifactID
+        artifactUrl = artifactUrl - "http://nexus.mieken.cn/repository/maven-hostd/"
+        artifactUrl = artifactUrl.split("/").toList()
+
+        env.jarName = artifactUrl[-1]
+        env.pomVersion = artifactUrl[-2].replace("SNAPSHOT","RELEASE")
+        env.pomArtifact = artifactUrl[-3]
+        pomPackaging = artifactUrl[-1].split("\\.").toList()[-1]
+        env.pomPackaging = pomPackaging
+        env.pomPackage = "/${pomArtifact}/${pomVersion}/${jarName}"
+        env.pomGroupId = artifactUrl[0..-4].join(".")
+
+        println("${pomGroupId}###${pomArtifact}###${pomVersion}###${pomPackaging}")
+        env.newJarName = "${pomArtifact}-${pomVersion}.${pomPackaging}"
+
+        // 更改名称
+        sh "cd updates && mv ${jarName} ${newJarName}"
+
+        // 使用Nexus artifact uploader 上传制品
+        env.repoName = "maven-releases"
+        env.filePath = "updates/${newJarName}"
+        NexusUpload()
+    }
+
+}
+
 def main(uploadType){
     // 读取pom
     GetGav()
@@ -55,6 +88,8 @@ def main(uploadType){
     if ("${uploadType}" == "maven"){
         MavenUpload()
     } else if("${uploadType}" == "nexus"){
+        env.repoName = "maven-hostd"
+        env.filePath = "target/${jarName}"
         NexusUpload()
     }
 }

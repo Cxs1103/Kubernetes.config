@@ -58,9 +58,9 @@ pipeline{
 
                     // 发布制品
                     tools.PrintMes("================发布制品================","green")
-                    //sh " wget ${artifactUrl} && ls"
+                    sh " wget ${artifactUrl} && ls"
                     //由于nginx做了反爬虫，禁止了 wget 直接获取并解析 url
-                    sh " wget -U 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15' -O 'my-app-1.1-20211016.165406-1.jar' http://nexus.mieken.cn/repository/maven-hostd/com/mycompany/app/my-app/1.1-SNAPSHOT/my-app-1.1-20211016.165406-1.jar  && ls"
+                    //sh " wget -U 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15' -O 'my-app-1.1-20211016.165406-1.jar' http://nexus.mieken.cn/repository/maven-hostd/com/mycompany/app/my-app/1.1-SNAPSHOT/my-app-1.1-20211016.165406-1.jar  && ls"
                 }
             }
         }

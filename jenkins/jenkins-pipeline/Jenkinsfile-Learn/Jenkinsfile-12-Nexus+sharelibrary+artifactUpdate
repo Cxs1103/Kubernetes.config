@@ -1,0 +1,27 @@
+#!groovy
+
+// 引入共享库
+@Library('jenkins-sharelibrary') _
+
+// 调用sharelibrary中的方法
+def nexus = new org.devops.nexus()
+def tools = new org.devops.tools()
+
+// 变量
+String artifactUrl = "${env.artifactUrl}"  // 引用选项参数，发布制品
+String updateType = "${env.updateType}"  // 引用选项参数，更新制品
+
+// 流水线
+pipeline{
+    agent{ node {label "master" }}
+    stages{
+        stage("ArtifactUpdate"){
+            steps{
+                script{
+                    tools.PrintMes("================更新制品================","green")
+                    nexus.ArtifactUpdate(updateType,artifactUrl)
+                }
+            }
+        }
+    }
+}
