@@ -53,6 +53,6 @@
     <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/sonarqube.groovy" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/toemail.groovy" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/jenkins/jenkins-pipeline/jenkins-sharelibrary/src/org/devops/tools.groovy" charset="UTF-8" />
-    <file url="PROJECT" charset="GBK" />
+    <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>
