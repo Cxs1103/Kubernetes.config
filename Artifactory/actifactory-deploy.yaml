@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-app: artifactory
   name: artifactory
-  namespace: devops
+  namespace: kube-ops
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -34,27 +34,55 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
-            - name: arthome
+            - name: artifactory-data
               mountPath: /var/opt/jfrog/artifactory
       volumes:
-        - name: arthome
-          hostPath:
-            path: /data/devops/artifactory
-            type: Directory
+        - name: artifactory-data
+          persistentVolumeClaim:
+            claimName: artifactory-data
 ---
 apiVersion: v1
 kind: Service
 metadata:
  name: artifactory
- namespace: devops
+ namespace: kube-ops
  labels:
    k8s-app: artifactory
 spec:
  selector:
    k8s-app: artifactory
- type: NodePort
  ports:
  - name: web
    port: 8081
    targetPort: 8081
-   nodePort: 30082
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: artifactory
+  namespace: kube-ops
+spec:
+  rules:
+  - host: artifactory.mieken.cn
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: artifactory
+            port:
+              number: 8081
+  ingressClassName: nginx #新增特性
+---
+# 新版本新增 IngressClass
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+  name: nginx
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: k8s.io/ingress-nginx
