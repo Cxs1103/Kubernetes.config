@@ -1,6 +1,5 @@
 package org.devops
 
-
 //封装HTTP请求
 def HttpReq(reqType,reqUrl,reqBody){
     def apiServer = "https://192.168.0.81:6443/apis/apps/v1"
