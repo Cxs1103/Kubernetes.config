@@ -1,0 +1,177 @@
+#!groovy
+
+// 此文件以脚本式编写
+
+// 引入共享库
+@Library('jenkins-sharelibrary') _
+
+//func from shareibrary
+def build = new org.devops.build()
+def deploy = new org.devops.deploy()
+def tools = new org.devops.tools()
+def gitlab = new org.devops.gitlab()
+def toemail = new org.devops.toemail()
+//def sonar = new org.devops.sonarqube()
+//def sonarapi = new org.devops.sonarapi()
+//def nexus = new org.devops.nexus()
+//def artifactory = new org.devops.artifactory()
+def k8s = new org.devops.kubernetes()
+
+def runOpts
+//env
+String buildType = "${env.buildType}"
+String buildShell = "${env.buildShell}"
+//String deployHosts = "${env.deployHosts}"
+String srcUrl = "${env.srcUrl}"
+String branchName = "${env.branchName}"
+//String artifactUrl = "${env.artifactUrl}"
+
+if ("${runOpts}" == "GitlabPush"){
+    branchName = branch - "refs/heads/"
+
+    currentBuild.description = "Trigger by ${userName} ${branch}"
+    gitlab.ChangeCommitStatus(projectId,commitSha,"running")
+    env.runOpts = "GitlabPush"
+
+} else {
+   userEmail = "cxs1103@163.com"
+}
+
+//pipeline
+def label = "k8s-slave-${UUID.randomUUID().toString()}"
+
+podTemplate(label: label, containers: [
+        containerTemplate(name: 'jnlp', image: 'jenkinsci/jnlp-slave:3.36-1', alwaysPullImage: false, privileged: true,
+                args: '${computer.jnlpmac} ${computer.name}'),
+        containerTemplate(name: 'npm', image: 'node:14.18.3-bullseye', ttyEnabled: true,  privileged: true),
+        containerTemplate(name: 'docker', image: 'docker:latest', command: 'cat', ttyEnabled: true,  privileged: true),
+        containerTemplate(name: 'kubectl', image: 'cnych/kubectl', command: 'cat', ttyEnabled: true, privileged: true),
+],
+        namespace: 'kube-ops',serviceAccount: 'jenkins',automountServiceAccountToken: 'true',
+        volumes: [
+                hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+                hostPathVolume(mountPath: '/home/jenkins/.kube', hostPath: '/root/.kube')
+        ]) {
+            node(label) {
+               stage("GetCode"){
+                    script{
+                        println("${branchName}")
+                        tools.PrintMes("获取代码","green")
+                        checkout([$class: 'GitSCM', branches: [[name: "${branchName}"]],
+                                          doGenerateSubmoduleConfigurations: false,
+                                          extensions: [],
+                                          submoduleCfg: [],
+                                          userRemoteConfigs: [[credentialsId: 'gitlab-auth', url: "${srcUrl}"]]])
+                    }
+                }
+
+               // 打包和测试项目
+               stage("Build&Test"){
+                   container('npm') {
+                       script{
+                           tools.PrintMes("执行打包","green")
+                           //build.Build(buildType,buildShell)
+                           sh "${buildType} ${buildShell}"
+                       }
+                   }
+                }
+
+                // 项目检查
+                stage("QA"){
+                    script{
+                        tools.PrintMes("搜索项目","green")
+                        /*result = sonarapi.SerarchProject("${JOB_NAME}")
+                        println(result)
+
+                        if (result == "false"){
+                            println("${JOB_NAME}---项目不存在,准备创建项目---> ${JOB_NAME}！")
+                            sonarapi.CreateProject("${JOB_NAME}")
+                        } else {
+                            println("${JOB_NAME}---项目已存在！")
+                        }
+
+                        tools.PrintMes("配置项目质量规则","green")
+                        qpName="${JOB_NAME}".split("-")[0]   //Sonar%20way
+                        sonarapi.ConfigQualityProfiles("${JOB_NAME}","java",qpName)
+
+                        tools.PrintMes("配置质量阈","green")
+                        sonarapi.ConfigQualityGates("${JOB_NAME}",qpName)
+
+                        tools.PrintMes("代码扫描","green")
+                        sonar.SonarScan("test","${JOB_NAME}","${JOB_NAME}","src","${branchName}")
+
+                        sleep 30
+                        tools.PrintMes("获取扫描结果","green")
+                        result = sonarapi.GetProjectStatus("${JOB_NAME}")
+
+                        println(result)
+                        if (result.toString() == "ERROR"){
+                            toemail.Email("代码质量阈错误！请及时修复！",userEmail)
+                            error " 代码质量阈错误！请及时修复！"
+                        } else {
+                            println(result)
+                        }*/
+                    }
+                }
+
+                //构建镜像
+                stage("BuildImages"){
+                    container('docker') {
+                        script{
+                            tools.PrintMes("构建上传镜像","green")
+                            env.serviceName = "${JOB_NAME}".split("_")[0]
+
+                            withCredentials([usernamePassword(credentialsId: 'harbor-auth', passwordVariable: 'password', usernameVariable: 'username')]) {
+                                env.dockerImage = "harbor.mieken.cn/k8s/${serviceName}:${branchName}"
+                                   println("serviceName:${serviceName}")
+                                   println("branchName:${branchName}")
+                                   sh """
+                                       docker login -u ${username} -p ${password} http://harbor.mieken.cn
+                                       docker build -t harbor.mieken.cn/k8s/${serviceName}:${branchName} .
+                                       sleep 1
+                                       docker push harbor.mieken.cn/k8s/${serviceName}:${branchName}
+                                       sleep 1
+                                       #docker rmi harbor.mieken.cn/k8s/${serviceName}:${branchName}
+                                    """
+                            }
+                        }
+                    }
+                }
+
+                //发布
+                stage("Deploy"){
+                    script{
+                        tools.PrintMes("发布应用","green")
+
+                        //获取旧镜像
+                        yamlData = readYaml file: "demo-npm.yaml"
+
+                        println(yamlData[0])
+                        println(yamlData[0]["spec"]["template"]["spec"]["containers"][0]["image"])
+
+                        oldImage = yamlData[0]["spec"]["template"]["spec"]["containers"][0]["image"]
+
+                        //替换镜像
+                        sourceData = readFile file: 'demo-npm.yaml'
+                        println(sourceData)
+                        println(sourceData.getClass())
+                        sourceData = sourceData.replace(oldImage,dockerImage)
+                        println(sourceData)
+
+                        writeFile file: 'demo-npm.yaml', text: """${sourceData}"""
+
+                        sh """
+                            #cat demo-npm.yaml
+                            kubectl apply -f demo-npm.yaml
+                        """
+                    }
+                }
+
+                //接口自动化测试
+                stage("InterfaceTest"){
+                    script{
+                        tools.PrintMes("接口测试","green")
+                    }
+                }
+            }
+        }

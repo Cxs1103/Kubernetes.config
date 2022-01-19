@@ -1,0 +1,6 @@
+projectKey=demo-maven-service
+serverUrl=http://192.168.0.83:9099
+serverVersion=7.9.2.30863
+dashboardUrl=http://192.168.0.83:9099/dashboard?id=demo-maven-service
+ceTaskId=AXxbbLoF95AOypcAKcGf
+ceTaskUrl=http://192.168.0.83:9099/api/ce/task?id=AXxbbLoF95AOypcAKcGf

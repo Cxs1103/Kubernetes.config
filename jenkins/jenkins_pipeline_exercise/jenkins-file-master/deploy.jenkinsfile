@@ -1,0 +1,50 @@
+#!groovy
+
+// 此文件以脚本式编写
+
+// 引入共享库
+@Library('jenkins-sharelibrary') _
+
+String stackName = "${env.stackName}"
+String releaseVersion = "${env.releaseVersion}"
+
+def tools = new org.devops.tools()
+def gitlab = new org.devops.gitlab()
+def k8s = new org.devops.kubernetes()
+
+tools.PrintMes("${stackName}","green")
+tools.PrintMes("${releaseVersion}","green")
+
+//pipeline
+def label = "k8s-slave-${UUID.randomUUID().toString()}"
+
+podTemplate(label: label, containers: [
+        containerTemplate(
+                name: 'jnlp',
+                image: 'jenkinsci/jnlp-slave:3.36-1',
+                alwaysPullImage: false,
+                privileged: true,
+                args: '${computer.jnlpmac} ${computer.name}'),
+        containerTemplate(name: 'maven', image: 'maven:3.6-jdk-8-alpine', command: 'cat', ttyEnabled: true,  privileged: true),
+        containerTemplate(name: 'docker', image: 'docker:latest', command: 'cat', ttyEnabled: true,  privileged: true),
+        containerTemplate(name: 'kubectl', image: 'cnych/kubectl', command: 'cat', ttyEnabled: true, privileged: true),
+],
+        namespace: 'kube-ops',serviceAccount: 'jenkins',automountServiceAccountToken: 'true',
+        volumes: [
+                hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+                hostPathVolume(mountPath: '/home/jenkins/.kube', hostPath: '/root/.kube'),
+                hostPathVolume(hostPath: '/root/.m2', mountPath: '/root/.m2'),
+                hostPathVolume(hostPath: '/root/tools', mountPath: '/home/jenkins/agent/tools')
+        ]) {
+            node(label) {
+                stage("Deploy"){
+                    script{
+                        //获取版本文件
+                        stack = "${stackName}".toLowerCase()
+                        response = gitlab.GetRepoFile(5,"demo-${stack}%2f${releaseVersion}-${stack}.yaml")
+                        //发布应用
+                        k8s.UpdateDeployment("kube-${stack}","httpd",response)
+                    }
+                }
+            }
+        }
