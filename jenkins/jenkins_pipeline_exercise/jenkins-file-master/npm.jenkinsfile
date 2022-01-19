@@ -43,14 +43,17 @@ def label = "k8s-slave-${UUID.randomUUID().toString()}"
 podTemplate(label: label, containers: [
         containerTemplate(name: 'jnlp', image: 'jenkinsci/jnlp-slave:3.36-1', alwaysPullImage: false, privileged: true,
                 args: '${computer.jnlpmac} ${computer.name}'),
-        containerTemplate(name: 'npm', image: 'node:14.18.3-bullseye', ttyEnabled: true,  privileged: true),
         containerTemplate(name: 'docker', image: 'docker:latest', command: 'cat', ttyEnabled: true,  privileged: true),
         containerTemplate(name: 'kubectl', image: 'cnych/kubectl', command: 'cat', ttyEnabled: true, privileged: true),
+        containerTemplate(name: 'npm', image: 'node:latest', command: 'cat', ttyEnabled: true,  privileged: true)
 ],
         namespace: 'kube-ops',serviceAccount: 'jenkins',automountServiceAccountToken: 'true',
         volumes: [
                 hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
-                hostPathVolume(mountPath: '/home/jenkins/.kube', hostPath: '/root/.kube')
+                hostPathVolume(hostPath: '/root/.kube', mountPath: '/home/jenkins/.kube'),
+                hostPathVolume(hostPath: '/usr/local/nodejs', mountPath: '/usr/local/node'),
+                hostPathVolume(hostPath: '/root/.m2', mountPath: '/root/.m2'),
+                hostPathVolume(hostPath: '/root/tools', mountPath: '/home/jenkins/agent/tools')
         ]) {
             node(label) {
                stage("GetCode"){
@@ -67,13 +70,14 @@ podTemplate(label: label, containers: [
 
                // 打包和测试项目
                stage("Build&Test"){
-                   container('npm') {
+                  // container('npm') {
                        script{
                            tools.PrintMes("执行打包","green")
                            //build.Build(buildType,buildShell)
-                           sh "${buildType} ${buildShell}"
+                           //sh "${buildType} ${buildShell}"
+                           sh "/usr/local/node/bin/npm -v"
                        }
-                   }
+                   //}
                 }
 
                 // 项目检查
