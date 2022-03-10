@@ -124,8 +124,8 @@ pipeline{
            }
         }*/
 
-        //发布
-        /*stage("Deploy"){
+        //发布APK文件到FIR平台
+        stage("Deploy"){
             steps{
                 script{
                     tools.PrintMes("发布应用","green")
@@ -143,7 +143,7 @@ pipeline{
                     currentBuild.description = "<img src=${imageUrl}"
                 }
             }
-        }*/
+        }
 
     }
     post {

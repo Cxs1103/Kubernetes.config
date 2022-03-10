@@ -16,7 +16,7 @@ def HttpReq(reqType,reqUrl,reqBody,reqFile='',contentType="APPLICATION_JSON"){
 
 //FIR 获取上传凭证
 def GetCert(appType,bundleId){
-    reqUrl = "http://api.fir.im/apps"
+    reqUrl = "http://api.bq04.com/apps"
     withCredentials([string(credentialsId: 'fir-admin-token', variable: 'firadmintoken')]) {
         reqBody = """{"type":"${appType}","bundle_id":"${bundleId}","apiToken":"${firadmintoken}"}"""
     }
