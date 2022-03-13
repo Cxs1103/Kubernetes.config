@@ -54,8 +54,8 @@ def UploadFir(appType,bundleId,appName,appVersion,appPath){
 //puer
 def UploadPgyer(appPath){
     reqUrl = "https://upload.pgyer.com/apiv1/app/upload"
-    /*reqBody = """{" uKey" : '7b70873bb4d6e11143f94af9611d2ae5',
-                    "_api_key" : 'a9acab611e1556015382c5cae360a5ab'}  """*/
+    /*reqBody = """{" uKey" : 'e17bb1c473bddd631bdc8d729a2bf272',
+                    "_api_key" : '4f750de0637dc9533ab4b5557e84b0a7'}  """*/
 
     withCredentials([usernamePassword(credentialsId: 'pgyer-admin-token', passwordVariable: 'apikey', usernameVariable: 'ukey')]) {
 
