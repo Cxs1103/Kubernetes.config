@@ -51,7 +51,7 @@ def UploadFir(appType,bundleId,appName,appVersion,appPath){
 
 
 
-//puer
+//蒲公英平台API接口1.0版本
 def UploadPgyer(appPath){
     reqUrl = "https://upload.pgyer.com/apiv1/app/upload"
     /*reqBody = """{" uKey" : 'e17bb1c473bddd631bdc8d729a2bf272',
