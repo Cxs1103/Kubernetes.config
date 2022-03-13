@@ -42,18 +42,25 @@ def label = "k8s-slave-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [
         containerTemplate(name: 'jnlp', image: 'jenkinsci/jnlp-slave:3.36-1', alwaysPullImage: false, privileged: true,
-                args: '${computer.jnlpmac} ${computer.name}'),
+                args: '${computer.jnlpmac} ${computer.name}',envVars: [
+            envVar(key: 'HTTP_PROXY', value: 'null'),
+            envVar(key: 'HTTPS_PROXY', value: 'null')
+        ],),
         containerTemplate(name: 'docker', image: 'docker:latest', command: 'cat', ttyEnabled: true,  privileged: true),
         containerTemplate(name: 'kubectl', image: 'cnych/kubectl', command: 'cat', ttyEnabled: true, privileged: true),
-        containerTemplate(name: 'npm', image: 'node:latest', command: 'cat', ttyEnabled: true,  privileged: true)
-],
+        containerTemplate(name: 'npm', image: 'node:latest', command: 'cat', ttyEnabled: true,  privileged: true,envVars: [
+            envVar(key: 'HTTP_PROXY', value: 'null'),
+            envVar(key: 'HTTPS_PROXY', value: 'null')
+        ],)
+        ],
+
         namespace: 'kube-ops',serviceAccount: 'jenkins',automountServiceAccountToken: 'true',
         volumes: [
                 hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
                 hostPathVolume(hostPath: '/root/.kube', mountPath: '/home/jenkins/.kube'),
-                hostPathVolume(hostPath: '/usr/local/nodejs', mountPath: '/usr/local/node'),
-                hostPathVolume(hostPath: '/root/.m2', mountPath: '/root/.m2'),
-                hostPathVolume(hostPath: '/root/tools', mountPath: '/home/jenkins/agent/tools')
+                //hostPathVolume(hostPath: '/usr/local/nodejs', mountPath: '/usr/local/node'),
+                //hostPathVolume(hostPath: '/root/.m2', mountPath: '/root/.m2'),
+                //hostPathVolume(hostPath: '/root/tools', mountPath: '/home/jenkins/agent/tools')
         ]) {
             node(label) {
                stage("GetCode"){
@@ -70,14 +77,27 @@ podTemplate(label: label, containers: [
 
                // 打包和测试项目
                stage("Build&Test"){
-                  // container('npm') {
+                    /*script{
+                           tools.PrintMes("执行打包","green")
+                           nodeHome = '/usr/local/node'
+                           sh "export NODE_HOME=${nodeHome} && export PATH=\$NODE_HOME/bin:\$PATH && ${nodeHome}/bin/${buildType} config set registry 'https://registry.npm.taobao.org' && ${nodeHome}/bin/npm ${buildShell}"
+                       }*/
+                   container('npm') {
                        script{
                            tools.PrintMes("执行打包","green")
                            //build.Build(buildType,buildShell)
-                           //sh "${buildType} ${buildShell}"
-                           sh "/usr/local/node/bin/npm -v"
+                           sh "${buildType} ${buildShell}"
+                           //sh "/usr/local/node/bin/npm -v"
+                           //nodeHome = '/usr/local/node'
+
+                           //sh "${nodeHome}/bin/node -v"
+                           // sh "${nodeHome}/bin/npm ${env.buildShell}"
+                           //sh "export NODE_HOME=${nodeHome} && export PATH=\$NODE_HOME/bin:\$PATH && ${nodeHome}/bin/${buildType} config set registry 'https://registry.npm.taobao.org' && ${nodeHome}/bin/npm ${buildShell}"
+                           //sh "export NODE_HOME=${nodeHome} && export PATH=\$NODE_HOME/bin:\$PATH"
+                           //sh "${nodeHome}/bin/${buildType} config set registry 'https://registry.npm.taobao.org'"
+                           //sh "${nodeHome}/bin/${buildType} ${buildShell}"
                        }
-                   //}
+                   }
                 }
 
                 // 项目检查
