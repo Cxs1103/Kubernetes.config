@@ -1,0 +1,71 @@
+String branchName = "${env.branchName}"
+pipeline {
+    agent {node {label "master"}}
+
+    stages {
+        stage('Hello') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+
+        stage('CreateSQLFile') {
+            steps {
+                script{
+                    sh """
+                        echo 'select * from user;' > v${branchName}-user.sql
+                        ls -l
+                        cat v${branchName}-user.sql
+                    """
+                }
+            }
+        }
+
+        stage("SoarSQL"){
+            steps{
+                script{
+                    sh """
+                        soar -report-type html -query  v${branchName}-user.sql > testsql.html
+                        cat testsql.html
+                    """
+
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: '', reportFiles: 'testsql.html', reportName: 'SQLReport', reportTitles: ''])
+                    Email("SQL扫描完成！！<a href='http://192.168.0.84:8080/jenkins/job/SQLTest/SQLReport/'>审核报告</a>","cxs1103@163.com")
+                }
+            }
+        }
+    }
+}
+        //定义邮件内容
+def Email(status,emailUser){
+    emailext body: """
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="UTF-8">
+            </head>
+            <body leftmargin="8" marginwidth="0" topmargin="8" marginheight="4" offset="0">
+                <img src="https://images1.h128.com/upload/201908/24/201908240008232455.jpg">
+                <table width="95%" cellpadding="0" cellspacing="0" style="font-size: 11pt; font-family: Tahoma, Arial, Helvetica, sans-serif">
+                    <tr>
+                        <td><br />
+                            <b><font color="#0B610B">构建信息</font></b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul>
+                                <li>项目名称：${JOB_NAME}</li>
+                                <li>构建编号：${BUILD_ID}</li>
+                                <li>构建状态: ${status} </li>
+                                <li>项目地址：<a href="${BUILD_URL}">${BUILD_URL}</a></li>
+                                <li>构建日志：<a href="${BUILD_URL}console">${BUILD_URL}console</a></li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>  """,
+            subject: "Jenkins-${JOB_NAME}-SQL扫描信息 ",
+            to: emailUser
+}
