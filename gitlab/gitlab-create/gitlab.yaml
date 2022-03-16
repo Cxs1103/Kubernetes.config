@@ -92,7 +92,8 @@ spec:
           mountPath: /home/git/data
       containers:
       - name: gitlab
-        image: sameersbn/gitlab:12.1.6
+        #image: sameersbn/gitlab:12.1.6
+        image: gitlab/gitlab-ce:14.6.0-ce.0
         imagePullPolicy: IfNotPresent
         env:
         - name: TZ
@@ -106,7 +107,7 @@ spec:
         - name: GITLAB_SECRETS_OTP_KEY_BASE
           value: long-and-random-alpha-numeric-string
         - name: GITLAB_ROOT_PASSWORD
-          value: Gitlab-xxxx
+          value: Gitlab-admin321
         - name: GITLAB_ROOT_EMAIL
           value: cxs1103@163.com
         - name: GITLAB_HOST
@@ -139,6 +140,22 @@ spec:
           value: redis
         - name: REDIS_PORT
           value: "6379"
+        - name: GITLAB_OMNIBUS_CONFIG
+          value: |
+            # 关闭 promethues
+            prometheus['enable'] = false
+            # 关闭 grafana
+            grafana['enable'] = false
+            # 关闭监控
+            prometheus_monitoring['enable'] = false
+            alertmanager['enable'] = false
+            node_exporter['enable'] = false
+            redis_exporter['enable'] = false
+            postgres_exporter['enable'] = false
+            pgbouncer_exporter['enable'] = false
+            gitlab_exporter['enable'] = false
+            grafana['enable'] = false
+            sidekiq['metrics_enabled'] = false
         ports:
         - name: http
           containerPort: 80
@@ -151,15 +168,15 @@ spec:
           httpGet:
             path: /users/sign_in
             port: 80
-          initialDelaySeconds: 350
-          timeoutSeconds: 5
+          initialDelaySeconds: 600
+          timeoutSeconds: 60
           failureThreshold: 12
         readinessProbe:
           httpGet:
             path: /users/sign_in
             port: 80
-          initialDelaySeconds: 350
-          timeoutSeconds: 5
+          initialDelaySeconds: 600
+          timeoutSeconds: 60
       volumes:
       - name: data
         persistentVolumeClaim:
