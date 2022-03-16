@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/Artifactory/actifactory.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Nexus/nexus-storageclass.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Nexus/nexus3-deploy.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SonarQube/sonarqube-deploy.yaml" charset="UTF-8" />
@@ -16,7 +15,7 @@
     <file url="file://$PROJECT_DIR$/gitlab/gitlab-create/gitlab-postgresql.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gitlab/gitlab-create/gitlab-redis.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gitlab/gitlab-create/gitlab-storageclass.yaml" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/gitlab/gitlab-sa.yaml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gitlab/other/gitlab-sa.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/grafana/grafana.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/helm/harbor/helm-create-harbor/harbor-storageclass.yaml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/helm/harbor/helm-create-harbor/harbor-values.yaml" charset="UTF-8" />
