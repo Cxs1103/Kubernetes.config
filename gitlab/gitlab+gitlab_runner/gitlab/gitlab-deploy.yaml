@@ -1,3 +1,4 @@
+## 转载自：http://www.sunrisenan.com/docs/boge/boge-1d5f8uble7t8s
 # restore gitlab data command example:
 #   kubectl -n gitlab-ver130806 exec -it $(kubectl -n gitlab-ver130806 get pod|grep -v runner|grep gitlab|awk '{print $1}') -- gitlab-rake gitlab:backup:restore BACKUP=1602889879_2020_10_17_12.9.2
 #   kubectl -n gitlab-ver130806 exec -it $(kubectl -n gitlab-ver130806 get pod|grep -v runner|grep gitlab|awk '{print $1}') -- gitlab-ctl reconfigure
