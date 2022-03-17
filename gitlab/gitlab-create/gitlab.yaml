@@ -93,7 +93,7 @@ spec:
       containers:
       - name: gitlab
         #image: sameersbn/gitlab:12.1.6
-        image: gitlab/gitlab-ce:14.6.0-ce.0
+        image: gitlab/gitlab-ce:14.6.0-ce.0 
         imagePullPolicy: IfNotPresent
         env:
         - name: TZ
@@ -142,6 +142,8 @@ spec:
           value: "6379"
         - name: GITLAB_OMNIBUS_CONFIG
           value: |
+            # 连接地址
+            external_url 'http://gitlab.mieken.cn'
             # 关闭 promethues
             prometheus['enable'] = false
             # 关闭 grafana
