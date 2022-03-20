@@ -1,0 +1,126 @@
+image:
+  name: golang:1.10.3-stretch
+  entrypoint: ["/bin/sh", "-c"]
+
+# The problem is that to be able to use go get, one needs to put
+# the repository in the $GOPATH. So for example if your gitlab domain
+# is mydomainperso.com, and that your repository is repos/projectname, and
+# the default GOPATH being /go, then you'd need to have your
+# repository in /go/src/mydomainperso.com/repos/projectname
+# Thus, making a symbolic link corrects this.
+before_script:
+  - mkdir -p "/go/src/gitlab.mieken.cn/${CI_PROJECT_NAMESPACE}"
+  - ln -sf "${CI_PROJECT_DIR}" "/go/src/gitlab.mieken.cn/${CI_PROJECT_PATH}"
+  - cd "/go/src/gitlab.mieken.cn/${CI_PROJECT_PATH}/"
+
+stages:
+  - test
+  - build
+  - release
+  - review
+  - deploy
+
+test:
+  stage: test
+  script:
+    - make test
+
+test2:
+  stage: test
+  script:
+    - sleep 3
+    - echo "We did it! Something else runs in parallel!"
+
+compile:
+  stage: build
+  script:
+    # Add here all the dependencies, or use glide/govendor/...
+    # to get them automatically.
+    - make build
+  artifacts:
+    paths:
+      - app
+
+image_build:
+  stage: release
+  image: docker:latest
+  variables:
+    DOCKER_DRIVER: overlay
+    DOCKER_HOST: tcp://localhost:2375
+  services:
+    - name: docker:17.03-dind
+      command: ["--insecure-registry=registry.qikqiak.com"]
+  script:
+    - docker info
+    - docker login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" registry.qikqiak.com
+    - docker build -t "${CI_REGISTRY_IMAGE}:latest" .
+    - docker tag "${CI_REGISTRY_IMAGE}:latest" "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
+    - test ! -z "${CI_COMMIT_TAG}" && docker push "${CI_REGISTRY_IMAGE}:latest"
+    - docker push "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
+
+deploy_review:
+  image: cnych/kubectl
+  stage: review
+  only:
+    - branches
+  except:
+    - tags
+  environment:
+    name: dev
+    url: https://dev-gitlab-k8s-demo.qikqiak.com
+    on_stop: stop_review
+  script:
+    - kubectl version
+    - cd manifests/
+    - sed -i "s/__CI_ENVIRONMENT_SLUG__/${CI_ENVIRONMENT_SLUG}/" deployment.yaml ingress.yaml service.yaml
+    - sed -i "s/__VERSION__/${CI_COMMIT_REF_NAME}/" deployment.yaml ingress.yaml service.yaml
+    - |
+      if kubectl apply -f deployment.yaml | grep -q unchanged; then
+          echo "=> Patching deployment to force image update."
+          kubectl patch -f deployment.yaml -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"ci-last-updated\":\"$(date +'%s')\"}}}}}"
+      else
+          echo "=> Deployment apply has changed the object, no need to force image update."
+      fi
+    - kubectl apply -f service.yaml || true
+    - kubectl apply -f ingress.yaml
+    - kubectl rollout status -f deployment.yaml
+    - kubectl get all,ing -l ref=${CI_ENVIRONMENT_SLUG}
+
+stop_review:
+  image: cnych/kubectl
+  stage: review
+  variables:
+    GIT_STRATEGY: none
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+    - tags
+  environment:
+    name: dev
+    action: stop
+  script:
+    - kubectl version
+    - kubectl delete ing -l ref=${CI_ENVIRONMENT_SLUG}
+    - kubectl delete all -l ref=${CI_ENVIRONMENT_SLUG}
+
+deploy_live:
+  image: cnych/kubectl
+  stage: deploy
+  environment:
+    name: live
+    url: https://live-gitlab-k8s-demo.qikqiak.com
+  only:
+    - tags
+  when: manual
+  script:
+    - kubectl version
+    - cd manifests/
+    - sed -i "s/__CI_ENVIRONMENT_SLUG__/${CI_ENVIRONMENT_SLUG}/" deployment.yaml ingress.yaml service.yaml
+    - sed -i "s/__VERSION__/${CI_COMMIT_REF_NAME}/" deployment.yaml ingress.yaml service.yaml
+    - kubectl apply -f deployment.yaml
+    - kubectl apply -f service.yaml
+    - kubectl apply -f ingress.yaml
+    - kubectl rollout status -f deployment.yaml
+    - kubectl get all,ing -l ref=${CI_ENVIRONMENT_SLUG}

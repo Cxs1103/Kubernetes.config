@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-k8s-demo-__CI_ENVIRONMENT_SLUG__
+  namespace: gitlab
+  labels:
+    app: gitlab-k8s-demo
+    ref: __CI_ENVIRONMENT_SLUG__
+    track: stable
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gitlab-k8s-demo
+      ref: __CI_ENVIRONMENT_SLUG__
+  template:
+    metadata:
+      labels:
+        app: gitlab-k8s-demo
+        ref: __CI_ENVIRONMENT_SLUG__
+        track: stable
+    spec:
+      imagePullSecrets:
+        - name: myregistry
+      containers:
+      - name: app
+        image: registry.qikqiak.com/gitdemo/gitlab-k8s:__VERSION__
+        imagePullPolicy: Always
+        ports:
+        - name: http-metrics
+          protocol: TCP
+          containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 3
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 3
+          timeoutSeconds: 2

@@ -1,0 +1,20 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gitlab-k8s-demo-__CI_ENVIRONMENT_SLUG__
+  namespace: gitlab
+  labels:
+    app: gitlab-k8s-demo
+    ref: __CI_ENVIRONMENT_SLUG__
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: __CI_ENVIRONMENT_SLUG__-gitlab-k8s-demo.qikqiak.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: gitlab-k8s-demo-__CI_ENVIRONMENT_SLUG__
+          servicePort: 8000

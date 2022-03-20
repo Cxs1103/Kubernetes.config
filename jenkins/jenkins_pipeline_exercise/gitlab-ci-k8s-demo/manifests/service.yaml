@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitlab-k8s-demo-__CI_ENVIRONMENT_SLUG__
+  namespace: gitlab
+  labels:
+    app: gitlab-k8s-demo
+    ref: __CI_ENVIRONMENT_SLUG__
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/scheme: "http"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-metrics
+      port: 8000
+      protocol: TCP
+  selector:
+    app: gitlab-k8s-demo
+    ref: __CI_ENVIRONMENT_SLUG__
