@@ -124,4 +124,4 @@ deploy_live:
     - kubectl apply -f service.yaml
     - kubectl apply -f ingress.yaml
     - kubectl rollout status -f deployment.yaml
-    - kubectl get all,ing -l ref=${CI_ENVIRONMENT_SLUG}
+    - kubectl -n gitlab get all,ing -l ref=${CI_ENVIRONMENT_SLUG}
