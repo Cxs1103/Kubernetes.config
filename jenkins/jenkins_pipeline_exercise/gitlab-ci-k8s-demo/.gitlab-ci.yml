@@ -9,6 +9,7 @@ image:
 # repository in /go/src/mydomainperso.com/repos/projectname
 # Thus, making a symbolic link corrects this.
 before_script:
+  - echo "${CI_PROJECT_NAMESPACE}"
   - mkdir -p "/go/src/gitlab.mieken.cn/${CI_PROJECT_NAMESPACE}"
   - ln -sf "${CI_PROJECT_DIR}" "/go/src/gitlab.mieken.cn/${CI_PROJECT_PATH}"
   - cd "/go/src/gitlab.mieken.cn/${CI_PROJECT_PATH}/"
@@ -49,14 +50,14 @@ image_build:
     DOCKER_HOST: tcp://localhost:2375
   services:
     - name: docker:17.03-dind
-      command: ["--insecure-registry=registry.qikqiak.com"]
+      command: ["--insecure-registry=harbor.mieken.cn"]
   script:
     - docker info
-    - docker login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" registry.qikqiak.com
+    - docker login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" harbor.mieken.cn
     - docker build -t "${CI_REGISTRY_IMAGE}:latest" .
-    - docker tag "${CI_REGISTRY_IMAGE}:latest" "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
+    - docker tag "${CI_REGISTRY_IMAGE}:latest" "${CI_REGISTRY}/${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
     - test ! -z "${CI_COMMIT_TAG}" && docker push "${CI_REGISTRY_IMAGE}:latest"
-    - docker push "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
+    - docker push "${CI_REGISTRY}/${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
 
 deploy_review:
   image: cnych/kubectl
@@ -67,7 +68,7 @@ deploy_review:
     - tags
   environment:
     name: dev
-    url: https://dev-gitlab-k8s-demo.qikqiak.com
+    url: https://dev-gitlab-k8s-demo.mieken.cn
     on_stop: stop_review
   script:
     - kubectl version
@@ -84,7 +85,7 @@ deploy_review:
     - kubectl apply -f service.yaml || true
     - kubectl apply -f ingress.yaml
     - kubectl rollout status -f deployment.yaml
-    - kubectl get all,ing -l ref=${CI_ENVIRONMENT_SLUG}
+    - kubectl -n gitlab get all,ing -l ref=${CI_ENVIRONMENT_SLUG}
 
 stop_review:
   image: cnych/kubectl
@@ -110,7 +111,7 @@ deploy_live:
   stage: deploy
   environment:
     name: live
-    url: https://live-gitlab-k8s-demo.qikqiak.com
+    url: https://live-gitlab-k8s-demo.mieken.cn
   only:
     - tags
   when: manual

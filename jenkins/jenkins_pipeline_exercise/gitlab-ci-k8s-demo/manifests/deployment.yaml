@@ -25,7 +25,7 @@ spec:
         - name: myregistry
       containers:
       - name: app
-        image: registry.qikqiak.com/gitdemo/gitlab-k8s:__VERSION__
+        image: harbor.mieken.cn/library/gitlab-ci-k8s-demo:__VERSION__
         imagePullPolicy: Always
         ports:
         - name: http-metrics
