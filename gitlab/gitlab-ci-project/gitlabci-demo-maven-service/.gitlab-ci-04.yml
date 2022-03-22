@@ -1,0 +1,112 @@
+image:
+  name: golang:1.10.3-stretch
+  entrypoint: ["/bin/sh", "-c"]
+  
+before_script:
+  - echo "before-script!!"
+
+variables:
+  # 切换值进行rules测试
+  DOMAIN: example.com
+  #DOMAIN: aexample.com
+  #DOMAIN: abexample.com
+workflow:
+  rules:
+    - if: '$DOMAIN == "example.com"'
+      when: always
+    - when: never
+
+stages:
+  - build
+  - test
+  - codescan
+  - deploy
+
+build:
+  before_script:
+    - echo "before-script in job"
+  stage: build
+  script:
+    - echo "mvn clean "
+    - echo "mvn install"
+    - echo "$DOMAIN"
+  after_script:
+    - echo "after script in buildjob"
+
+unittest:
+  stage: test
+  script:
+    - ech "run test"
+  when: delayed
+  start_in: '5'
+  allow_failure: true
+  tags:
+    - build
+  only:
+    - master
+  retry:
+    max: 2
+    when:
+      - script_failure
+
+deploy:
+  stage: deploy
+  script:
+    - echo "hello deploy"
+    - sleep 2;
+  when: manual
+  
+codescan:
+  stage: codescan
+  script:
+    - echo "codescan"
+    - sleep 5;
+  when: on_success
+  #parallel: 5
+  # 测试if
+  #rules:
+    # - if: '$DOMAIN == "example.com"'
+    #   when: manual
+    # - if: '$DOMAIN == "aexample.com"'
+    #   when: delayed
+    #   start_in: '5'
+    # - when: on_failure
+
+  # 测试changes
+  # rules:
+  #   - exists:
+  #     - Dockerfile
+  #     when: manual
+  #   - changes:
+  #     - Dockerfile
+  #     when: manual
+  #   - if: '$DOMAIN == "example.com"'
+  #     when: on_success
+  #   - when: on_success
+
+  # 测试exists
+  # rules:
+  #   - exists:
+  #     - Dockerfile
+  #     when: manual
+  #   - if: '$DOMAIN == "example.com"'
+  #     when: on_success
+  #   - when: on_success
+
+  # 测试allow_failure(if判断有问题，导致codescan这条job都不运行)
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: manual
+      allow_failure: true
+
+job:
+  stage: test
+  script: echo "Hello, Rules!"
+  rules:
+    - if: '$DOMAIN == "example.com"'
+      when: manual
+      allow_failure: true
+
+after_script:
+  - echo "after-script"
+  - ech

@@ -1,0 +1,47 @@
+image:
+  name: golang:1.10.3-stretch
+  entrypoint: ["/bin/sh", "-c"]
+  
+before_script:
+  - echo "before-script!!"
+
+variables:
+  DOMAIN: example.com
+  
+stages:
+  - build
+  - test
+  - codescan
+  - deploy
+
+build:
+  before_script:
+    - echo "before-script in job"
+  stage: build
+  script:
+    - echo "mvn clean "
+    - echo "mvn install"
+    - echo "$DOMAIN"
+  after_script:
+    - echo "after script in buildjob"
+
+unittest:
+  stage: test
+  script:
+    - echo "run test"
+
+deploy:
+  stage: deploy
+  script:
+    - echo "hello deploy"
+    - sleep 2;
+  
+codescan:
+  stage: codescan
+  script:
+    - echo "codescan"
+    - sleep 5;
+ 
+after_script:
+  - echo "after-script"
+  - ech

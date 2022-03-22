@@ -1,0 +1,26 @@
+image:
+  name: golang:1.10.3-stretch
+  entrypoint: ["/bin/sh", "-c"]
+  
+stages:
+  - build
+  - deploy
+ 
+build:
+  stage: build
+  tags:
+    - build
+  only:
+    - master
+  script:
+    - echo "mvn clean "
+    - echo "mvn install"
+
+deploy:
+  stage: deploy
+  tags:
+    - deploy
+  only:
+    - master
+  script:
+    - echo "hello deploy"
