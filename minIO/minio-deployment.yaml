@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # This name uniquely identifies the Deployment
+  name: minio-deployment
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        # Label is used as selector in the service.
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        # Pulls the default Minio image from Docker Hub
+        image: minio/minio:latest
+        args: ["server","/storage","--console-address",":9090","--address",":9000"]
+        env:
+        # Minio access key and secret key
+        - name: MINIO_ROOT_USER
+          value: "DJTMMHJ9RPRZ93CSUV8M"
+        - name: MINIO_ROOT_PASSWORD
+          value: "kKMtnwLnoakOVewv5X1ybrscLdViUdSs7nDvVFLl"       
+        ports:
+        - name: api
+          containerPort: 9000
+        - name: web
+          containerPort: 9090
+        # Mount the volume into the pod
+        volumeMounts:
+        - name: storage # must match the volume name, above
+          mountPath: "/storage"
+      volumes:
+      - name: storage
+        hostPath:
+          path: /mnt/storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+spec:
+  type: NodePort
+  selector:
+    app: minio
+  ports:
+    - name: web
+      port: 9090
+      targetPort: web 
+      nodePort: 30090
+    - name: api
+      port: 9000
+      targetPort: api
+      nodePort: 30009

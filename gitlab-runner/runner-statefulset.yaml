@@ -26,7 +26,7 @@ spec:
               - key: kubernetes.io/hostname
                 operator: In
                 values:
-                - k8s-node1
+                - k8s-node04
       volumes:
       - name: gitlab-ci-runner-scripts
         projected:
@@ -53,6 +53,22 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: CACHE_TYPE
+          value: "s3"
+        - name: CACHE_PATH
+          value: "cache"
+        - name: CACHE_SHARED
+          value: "true"
+        - name: CACHE_S3_SERVER_ADDRESS
+          value: "192.168.0.83:30009"  #注意：这里填写是API接口地址，不是console_address地址
+        - name: CACHE_S3_ACCESS_KEY
+          value: "DJTMMHJ9RPRZ93CSUV8M"
+        - name: CACHE_S3_SECRET_KEY
+          value: "kKMtnwLnoakOVewv5X1ybrscLdViUdSs7nDvVFLl"
+        - name: CACHE_S3_BUCKET_NAME
+          value: "gitlab"     #跟手工创建的 bucket 名称一致
+        - name: CACHE_S3_INSECURE
+          value: "true"
         ports:
         - containerPort: 9100
           name: http-metrics
