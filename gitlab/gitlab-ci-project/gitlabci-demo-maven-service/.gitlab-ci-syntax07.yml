@@ -1,0 +1,34 @@
+image:
+  name: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  entrypoint: ["/bin/sh", "-c"]
+
+stages:
+  - build
+  - test
+  - deploy
+
+module-a-build:
+  stage: build
+  script:
+    - echo "hello3a"
+    - sleep 10
+    
+module-b-build:
+  stage: build
+  script:
+    - echo "hello3b"
+    - sleep 10
+
+module-a-test:
+  stage: test
+  script:
+    - echo "hello3a"
+    - sleep 10
+  needs: ["module-a-build"]
+    
+module-b-test:
+  stage: test
+  script:
+    - echo "hello3b"
+    - sleep 10
+  needs: ["module-b-build"]
