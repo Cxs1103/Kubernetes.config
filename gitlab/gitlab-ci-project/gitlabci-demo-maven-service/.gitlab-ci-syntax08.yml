@@ -1,0 +1,39 @@
+image:
+  name: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  entrypoint: ["/bin/sh", "-c"]
+
+# include 测试本地引入文件
+# include:
+  #local: 'ci/localci.yml'
+
+# include 测试引入其他项目文件
+# include:
+#   - project: demo/demo-java-service
+#     ref: master
+#     file: 'ci/child01.yml'
+
+# include测试远程引入文件
+include:
+  remote: 'http://gitlab.mieken.cn/root/demo-java-service/-/raw/master/ci/child01.yml'
+
+# include测试使用官方提供的模板
+# include:
+#   - template: Auto-DevOps.gitlab-ci.yml
+
+stages:
+  - build
+  - test
+  - deploy
+  
+buildjob:
+  stage: build
+  script: ls
+  
+testjob:
+  stage: test
+  script: ls
+
+deployjob:
+  stage: deploy
+  script:
+    - echo 'deploy2222'

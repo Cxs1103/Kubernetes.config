@@ -5,12 +5,12 @@ deployjob:
   stage: deploy
   script:
     - echo 'deploy'
-  only:
-    - dev
+#   only:
+#     - dev
 
-.template:
-  stage: build
-  script: 
-    - echo "build"
-  only:
-    - master
+# .template:
+#   stage: build
+#   script: 
+#     - echo "build"
+#   only:
+#     - master
