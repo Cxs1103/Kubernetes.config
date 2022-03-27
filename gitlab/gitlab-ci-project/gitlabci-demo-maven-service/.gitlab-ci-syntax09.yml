@@ -1,0 +1,22 @@
+image:
+  name: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  entrypoint: ["/bin/sh", "-c"]
+
+stages:
+  - test
+variables:
+  RSPEC: 'test'
+
+.tests:
+  script: echo "mvn test"
+  stage: test
+  only:
+    refs:
+      - branches
+
+testjob:
+  extends: .tests
+  script: echo "mvn clean test"
+  only:
+    variables:
+      - $RSPEC
