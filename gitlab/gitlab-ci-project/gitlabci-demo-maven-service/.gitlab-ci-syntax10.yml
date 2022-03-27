@@ -1,0 +1,34 @@
+image:
+  name: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  entrypoint: ["/bin/sh", "-c"]
+
+include:
+  local: 'ci/localci.yml'
+
+stages:
+  - test
+  - build 
+  - deploy
+  
+variables:
+  RSPEC: 'test'
+
+.tests:
+  script: echo "mvn test"
+  stage: test
+  only:
+    refs:
+      - branches
+
+testjob:
+  extends: .tests
+  script: echo "mvn clean test"
+  only:
+    variables:
+      - $RSPEC
+      
+
+newbuildjob:
+  script:
+    - echo "123"
+  extends: .template
