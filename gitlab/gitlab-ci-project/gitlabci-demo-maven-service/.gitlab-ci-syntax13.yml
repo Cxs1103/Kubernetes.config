@@ -1,0 +1,29 @@
+image:
+  name: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  entrypoint: ["/bin/sh", "-c"]
+
+stages:
+  - build
+  - deploy
+  - test
+
+before_script:
+  - ls
+  
+build:
+  image: harbor.mieken.cn/library/3.8.4-jdk-11-aliyun
+  stage: build
+  tags:
+    - build
+  script:
+    - ls
+    - sleep 2
+    - echo "mvn clean "
+    - sleep 10
+
+deploy:
+  stage: deploy
+  tags:
+    - deploy
+  script:
+    - echo "deploy"
