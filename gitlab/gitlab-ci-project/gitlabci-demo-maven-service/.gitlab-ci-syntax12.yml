@@ -1,0 +1,37 @@
+image:
+  name: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  entrypoint: ["/bin/sh", "-c"]
+
+stages:
+  - build
+  - deploy
+  - test
+
+build-job:
+  stage: build
+  script:
+    - echo "This is build-job"
+    - sleep 10
+
+staging1:
+  variables:
+    ENVIRONMENT: staging
+  stage: deploy
+  trigger:
+    project: demo/demo-java-service
+    branch: master
+    strategy: depend
+
+staging2:
+  variables:
+    ENVIRONMENT: staging
+  stage: deploy
+  trigger:
+    include: ci/child01.yml
+    strategy: depend
+
+test-job:
+  stage: test
+  script:
+    - echo "This is test-job"
+    - sleep 10
