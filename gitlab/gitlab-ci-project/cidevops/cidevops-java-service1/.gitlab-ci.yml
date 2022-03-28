@@ -1,0 +1,12 @@
+image:
+  name: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  entrypoint: ["/bin/sh", "-c"]
+
+include:
+    - project: 'cidevops/cidevops-gitlabci-service'
+      ref: master
+      file: 'templates/java-pipeline.yml'
+  
+  
+variables:
+  BUILD_SHELL: 'mvn clean package  -DskipTests'  
