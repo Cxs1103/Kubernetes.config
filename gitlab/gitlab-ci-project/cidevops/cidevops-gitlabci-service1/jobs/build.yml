@@ -1,0 +1,7 @@
+.build:
+  stage: build
+  tags:
+    - build
+  script:
+    - $BUILD_SHELL
+    - ls

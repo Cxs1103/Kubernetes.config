@@ -1,0 +1,29 @@
+include:
+  - project: 'cidevops/cidevops-gitlabci-service'
+    ref: master
+    file: 'jobs/build.yml'
+  - project: 'cidevops/cidevops-gitlabci-service'
+    ref: master
+    file: 'jobs/test.yml'
+
+variables:
+  BUILD_SHELL: 'mvn clean package  -DskipTests'  ##构建命令
+  CACHE_DIR: 'target/'
+  TEST_SHELL : 'mvn test'                                   ##测试命令
+  JUNIT_REPORT_PATH: 'target/surefire-reports/TEST-*.xml'   ##单元测试报告
+  
+cache:
+  paths:
+    - ${CACHE_DIR}
+    
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  extends: .build
+
+test:
+  stage: test
+  extends: .test
