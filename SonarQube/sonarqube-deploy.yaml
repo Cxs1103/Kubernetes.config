@@ -29,6 +29,17 @@ spec:
       labels:
         app: sonarqube
     spec:
+      affinity: # 亲和性配置
+        podAntiAffinity: # Pod反亲和性
+         requiredDuringSchedulingIgnoredDuringExecution: # 硬限制
+           - labelSelector:
+               matchExpressions:
+                 - key: name
+                   operator: In
+                   values:
+                     - "jenkins"
+                     - "gitlab"
+             topologyKey: kubernetes.io/hostname
       initContainers:
       - name: init-sysctl
         image: busybox
@@ -39,6 +50,7 @@ spec:
       containers:
       - name: sonarqube
         image: sonarqube:7.9.2-community
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9000
         env:
@@ -52,14 +64,14 @@ spec:
           httpGet:
             path: /sessions/new
             port: 9000
-          initialDelaySeconds: 60
-          periodSeconds: 30
+          initialDelaySeconds: 600
+          periodSeconds: 300
         readinessProbe:
           httpGet:
             path: /sessions/new
             port: 9000
-          initialDelaySeconds: 60
-          periodSeconds: 30
+          initialDelaySeconds: 600
+          periodSeconds: 300
           failureThreshold: 6
         resources:
           limits:
