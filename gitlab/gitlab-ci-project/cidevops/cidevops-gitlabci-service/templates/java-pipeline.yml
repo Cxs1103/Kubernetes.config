@@ -1,3 +1,7 @@
+image:
+  name: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  entrypoint: ["/bin/sh", "-c"]
+
 include:
   - project: 'cidevops/cidevops-gitlabci-service'
     ref: master
@@ -5,13 +9,20 @@ include:
   - project: 'cidevops/cidevops-gitlabci-service'
     ref: master
     file: 'jobs/test.yml'
+  - project: 'cidevops/cidevops-gitlabci-service'
+    ref: master
+    file: 'jobs/codeanalysis.yml'
 
 variables:
   BUILD_SHELL: 'mvn clean package  -DskipTests'  ##构建命令
   CACHE_DIR: 'target/'
   TEST_SHELL : 'mvn test'                                   ##测试命令
   JUNIT_REPORT_PATH: 'target/surefire-reports/TEST-*.xml'   ##单元测试报告
-  
+  # 代码扫描
+  #SCANNER_HOME : "/usr/local/buildtools/sonar-scanner-3.2.0.1227-linux"
+  SCAN_DIR : "src"
+  ARTIFACT_PATH : 'target/*.jar'                            ##制品目录
+
 cache:
   paths:
     - ${CACHE_DIR}
@@ -19,11 +30,21 @@ cache:
 stages:
   - build
   - test
+  - code_analysis
 
 build:
   stage: build
   extends: .build
+  rules:
+    - when: on_success
 
 test:
   stage: test
   extends: .test
+  rules:
+    - when: on_success
+  
+code_analysis:
+  image: sonarsource/sonar-scanner-cli:4
+  stage: code_analysis
+  extends: .codeanalysis-java

@@ -1,0 +1,23 @@
+.codeanalysis-java:
+  stage: code_analysis
+  tags:
+    - build
+  script:
+    - echo $CI_MERGE_REQUEST_IID $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME  $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - "sonar-scanner -Dsonar.projectKey=${CI_PROJECT_NAME} \
+                                      -Dsonar.host.url=http://sonar.mieken.cn \
+                                      -Dsonar.login=${SONAR_TOKEN} \
+                                      -Dsonar.projectName=${CI_PROJECT_NAME} \
+                                      -Dsonar.projectVersion=${CI_COMMIT_REF_NAME} \
+                                      -Dsonar.ws.timeout=30 \
+                                      -Dsonar.projectDescription=${CI_PROJECT_TITLE} \
+                                      -Dsonar.links.homepage=${CI_PROJECT_URL} \
+                                      -Dsonar.sources=${SCAN_DIR} \
+                                      -Dsonar.sourceEncoding=UTF-8 \
+                                      -Dsonar.java.binaries=target/classes \
+                                      -Dsonar.java.test.binaries=target/test-classes \
+                                      -Dsonar.java.surefire.report=target/surefire-reports \
+                                      -Dsonar.branch.name=${CI_COMMIT_REF_NAME}" # sonarqube社区版不能使用这个功能，需要手动下载sonarqube-community-branch-plugin-1.3.2.jar然后上传到sonar的/extensions/plugins/目录中
+  artifacts:
+    paths:
+      - "$ARTIFACT_PATH"
