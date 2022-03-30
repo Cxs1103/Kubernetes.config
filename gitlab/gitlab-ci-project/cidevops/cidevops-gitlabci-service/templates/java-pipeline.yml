@@ -48,3 +48,8 @@ code_analysis:
   image: sonarsource/sonar-scanner-cli:4
   stage: code_analysis
   extends: .codeanalysis-java
+
+codeanalysis_mr:
+  image: sonarsource/sonar-scanner-cli:4
+  stage: code_analysis
+  extends: .codeanalysis-mr
