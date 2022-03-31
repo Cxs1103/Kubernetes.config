@@ -53,3 +53,12 @@ codeanalysis_mr:
   image: sonarsource/sonar-scanner-cli:4
   stage: code_analysis
   extends: .codeanalysis-mr
+
+deploy_artifact:
+  image: docker.bintray.io/jfrog/artifactory-oss:latest
+  stage: parallel01
+  extends: .deploy-artifact
+
+down_artifact:  
+  stage: down_artifact
+  extends: .down-artifact

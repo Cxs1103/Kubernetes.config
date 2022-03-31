@@ -1,3 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: artifactory-pvc
+  namespace: kube-ops
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "artifactory-data"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,7 +29,7 @@ spec:
     metadata:
       labels:
         k8s-app: artifactory
-      namespace: devops
+      namespace: kube-ops
       name: artifactory
     spec:
       containers:

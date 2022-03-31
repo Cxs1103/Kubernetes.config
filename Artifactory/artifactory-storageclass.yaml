@@ -3,3 +3,4 @@ kind: StorageClass
 metadata:
   name: artifactory-data
 provisioner: fuseim.pri/ifs
+reclaimPolicy: Retain
