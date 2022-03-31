@@ -20,3 +20,17 @@
   script:
     - curl -u${ARTIFACT_USER}:${ARTIFACT_PASSWD} -O "$ARTIFACTORY_URL/$ARTIFACTORY_NAME/$TARGET_FILE_PATH/$TARGET_ARTIFACT_NAME"
     - ls
+
+.build-docker:
+  stage: buildimage
+  tags:
+    - build
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWD  $CI_REGISTRY
+    - docker build -t ${IMAGE_NAME} -f ${DOCKER_FILE_PATH} .
+    - docker push ${IMAGE_NAME} 
+    - docker rmi ${IMAGE_NAME} 
+
+
+
+
