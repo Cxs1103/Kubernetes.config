@@ -18,10 +18,24 @@ variables:
   CACHE_DIR: 'target/'
   TEST_SHELL : 'mvn test'                                   ##测试命令
   JUNIT_REPORT_PATH: 'target/surefire-reports/TEST-*.xml'   ##单元测试报告
+  
   # 代码扫描
   #SCANNER_HOME : "/usr/local/buildtools/sonar-scanner-3.2.0.1227-linux"
   SCAN_DIR : "src"
   ARTIFACT_PATH : 'target/*.jar'                            ##制品目录
+
+  #上传制品库
+  ARTIFACTORY_URL: "http://artifactory.mieken.cn/artifactory/cidevops-cidevops"
+  ARTIFACTORY_NAME: "cidevops"
+  TARGET_FILE_PATH: "$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID"
+  TARGET_ARTIFACT_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID.jar"
+
+  #构建镜像
+  CI_REGISTRY: 'registry.cn-beijing.aliyuncs.com'
+  CI_REGISTRY_USER: '610556220zy'
+  #CI_REGISTRY_PASSWD: 'xxxxxxxx.'
+  IMAGE_NAME: "$CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID"
+  DOCKER_FILE_PATH: "./Dockerfile"
 
 cache:
   paths:
@@ -31,6 +45,8 @@ stages:
   - build
   - test
   - code_analysis
+  - parallel01
+  - down_artifact
 
 build:
   stage: build
@@ -46,16 +62,15 @@ test:
   
 code_analysis:
   image: sonarsource/sonar-scanner-cli:4
-  stage: code_analysis
+  stage: parallel01
   extends: .codeanalysis-java
 
 codeanalysis_mr:
   image: sonarsource/sonar-scanner-cli:4
-  stage: code_analysis
+  stage: parallel01
   extends: .codeanalysis-mr
 
 deploy_artifact:
-  image: docker.bintray.io/jfrog/artifactory-oss:latest
   stage: parallel01
   extends: .deploy-artifact
 
