@@ -1,4 +1,4 @@
-FROM httpd:latest
+FROM registry.cn-hangzhou.aliyuncs.com/cxs1103/httpd:latest
 MAINTAINER devops
 
 ADD target/*.jar /app.jar

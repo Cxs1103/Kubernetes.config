@@ -31,10 +31,12 @@ variables:
   TARGET_ARTIFACT_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID.jar"
 
   #构建镜像
-  CI_REGISTRY: 'registry.cn-beijing.aliyuncs.com'
-  CI_REGISTRY_USER: '610556220zy'
-  #CI_REGISTRY_PASSWD: 'xxxxxxxx.'
-  IMAGE_NAME: "$CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID"
+  CI_REGISTRY: 'registry.cn-hangzhou.aliyuncs.com'
+  # CI_REGISTRY_USER: 'xxxxxxxx'
+  # CI_REGISTRY_PASSWD: 'xxxxxxxx.'
+  # CI_NAMESPACE: 'xxxxxx'  阿里云镜像站：命名空间
+  # IMAGE_NAME: "$CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID"  # harbor可以使用这种
+  IMAGE_NAME: "$CI_REGISTRY/$CI_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID" # 阿里云可以使用这种
   DOCKER_FILE_PATH: "./Dockerfile"
 
 cache:
@@ -77,3 +79,14 @@ deploy_artifact:
 down_artifact:  
   stage: down_artifact
   extends: .down-artifact
+
+build_image:
+  image: docker:latest
+  variables:
+    DOCKER_DRIVER: overlay
+    DOCKER_HOST: tcp://localhost:2375
+  services:
+    - name: docker:17.03-dind
+      command: ["--insecure-registry=harbor.mieken.cn"]
+  stage: parallel01
+  extends: .build-docker
