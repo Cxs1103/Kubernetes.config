@@ -1,0 +1,28 @@
+stages:
+  - tests
+  - deploy
+  
+
+
+interface_test:
+  stage: tests
+  tags:
+    - build
+  script:
+    - ant -Djmeter.home=/usr/local/buildtools/apache-jmeter-5.2.1
+  artifacts:
+    paths:
+      - result/htmlfile/
+  
+pages:
+  stage: deploy
+  dependencies:
+    - interface_test
+  script:
+    - mv result/htmlfile/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  only:
+    - master
