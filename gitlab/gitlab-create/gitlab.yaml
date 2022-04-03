@@ -158,6 +158,13 @@ spec:
             gitlab_exporter['enable'] = false
             grafana['enable'] = false
             sidekiq['metrics_enabled'] = false
+
+            # GitLab Pages
+            pages_external_url "http://pages.gitlab.com/"
+            gitlab_pages['enable'] = true
+            gitlab_pages['inplace_chroot'] = true
+
+
         ports:
         - name: http
           containerPort: 80
