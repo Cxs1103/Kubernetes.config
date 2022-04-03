@@ -1,15 +1,18 @@
+image:
+  name: registry.cn-hangzhou.aliyuncs.com/cxs1103/jmeter5.4.3_ant1.10.11:v1
+  entrypoint: ["/bin/sh", "-c"]
+
 stages:
   - tests
   - deploy
-  
-
 
 interface_test:
   stage: tests
   tags:
     - build
   script:
-    - ant -Djmeter.home=/usr/local/buildtools/apache-jmeter-5.2.1
+    #- cp /usr/local/apache-jmeter-5.4.3/extras/ant-jmeter-1.1.1.jar /usr/local/apache-ant-1.10.11/lib/
+    - /usr/local/apache-ant-1.10.11/bin/ant -Djmeter.home=/usr/local/apache-jmeter-5.4.3
   artifacts:
     paths:
       - result/htmlfile/

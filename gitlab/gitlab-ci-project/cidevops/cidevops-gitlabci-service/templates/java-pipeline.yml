@@ -90,3 +90,7 @@ build_image:
       command: ["--insecure-registry=harbor.mieken.cn"]
   stage: parallel01
   extends: .build-docker
+
+interfact_test:
+  stage: interface_test
+  extends: .interfacetest
