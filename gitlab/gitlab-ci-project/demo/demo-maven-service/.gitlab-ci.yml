@@ -1,0 +1,29 @@
+image: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+
+before_script:
+  - ls
+  
+services:
+  - name: registry.cn-hangzhou.aliyuncs.com/cxs1103/mysql:5.7.34
+    alias: mysql-1  
+  
+build:
+  image: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  stage: build
+  tags:
+    - k8s
+  script:
+    - ls
+    - sleep 2
+    - mvn clean package -DskipTests -Dmaven.repo.local=/home/gitlab-runner/ci-build-cache/maven
+    - sleep 10
+
+deploy:
+  stage: deploy
+  tags:
+    - k8s
+  script:
+    - echo "deploy"
+  environment:
+    name: production
+    url: http://www.baidu.com

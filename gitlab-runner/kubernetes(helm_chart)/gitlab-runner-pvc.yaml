@@ -1,0 +1,29 @@
+# 使用pvc本地缓存的时候，运行此文件
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ci-build-cache-pv
+  namespace: kube-ops
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/opt/ci-build-cache"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ci-build-cache-pvc
+  namespace: kube-ops
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
