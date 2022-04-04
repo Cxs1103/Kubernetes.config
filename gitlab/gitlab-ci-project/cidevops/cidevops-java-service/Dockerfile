@@ -1,4 +1,4 @@
-FROM registry.cn-hangzhou.aliyuncs.com/cxs1103/httpd:latest
+FROM registry.cn-hangzhou.aliyuncs.com/cxs1103/openjdk:8-alpine
 MAINTAINER devops
 
 ADD target/*.jar /app.jar
