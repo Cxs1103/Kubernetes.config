@@ -1,5 +1,5 @@
 image:
-  name: registry.cn-hangzhou.aliyuncs.com/cxs1103/jmeter5.4.3_ant1.10.11:v1
+  name: registry.cn-hangzhou.aliyuncs.com/cxs1103/jmeter5.4.3_ant1.10.11:v3
   entrypoint: ["/bin/sh", "-c"]
 
 stages:
