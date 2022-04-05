@@ -84,6 +84,9 @@ data:
       [[runners.kubernetes.volumes.pvc]]
       name = "{{.Values.cibuild.cache.pvcName}}"
       mount_path = "{{.Values.cibuild.cache.mountPath}}"
+      [[runners.kubernetes.volumes.pvc]]
+      name = "{{.Values.cibuild.builds.pvcName}}"
+      mount_path = "{{.Values.cibuild.builds.mountPath}}"
     EOF
 
     # Start the runner

@@ -1,5 +1,8 @@
 image: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
 
+variables:
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_PIPELINE_ID
+
 before_script:
   - ls
   
@@ -15,7 +18,26 @@ build:
   script:
     - ls
     - sleep 2
+    - echo $CI_BUILDS_DIR
+    - echo $CI_PROJECT_NAMESPACE
+    - echo $CI_PROJECT_NAME
+    - echo $CI_PIPELINE_ID
     - mvn clean package -DskipTests -Dmaven.repo.local=/home/gitlab-runner/ci-build-cache/maven
+    - ls target/
+    - sleep 10
+
+test:
+  variables:
+    GIT_CHECKOUT: "false" 
+  image: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  stage: test
+  tags:
+    - k8s
+  script:
+    - ls
+    - ls target/
+    - sleep 2
+    - mvn test -Dmaven.repo.local=/home/gitlab-runner/ci-build-cache/maven
     - sleep 10
 
 deploy:

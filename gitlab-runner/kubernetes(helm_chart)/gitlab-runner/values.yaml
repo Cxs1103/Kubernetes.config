@@ -80,6 +80,9 @@ cibuild:
   cache:
     pvcName: ci-build-cache-pvc
     mountPath: /home/gitlab-runner/ci-build-cache
+  builds:
+    pvcName: ci-build-dir-pvc
+    mountPath: /home/gitlab-runner/ci-build-dir/builds
 
 ## Set the certsSecretName in order to pass custom certficates for GitLab Runner to use
 ## Provide resource name for a Kubernetes Secret Object in the same namespace,
@@ -366,7 +369,7 @@ runners:
   ##
   ## ref: https://docs.gitlab.com/ee/ci/runners/configure_runners.html#use-tags-to-control-which-jobs-a-runner-can-run
   ##
-  tags: "k8s"
+  tags: "k8s,kubernetes"
 
   ## Specify the name for the runner.
   ##
@@ -632,6 +635,11 @@ tolerations: []
 # envVars:
 #   - name: RUNNER_EXECUTOR
 #     value: kubernetes
+envVars:
+  - name: RUNNER_BUILDS_DIR
+    value: "/home/gitlab-runner/ci-build-dir/"
+  - name: CUSTOM_BUILD_DIR_ENABLED
+    value: true
 
 ## list of hosts and IPs that will be injected into the pod's hosts file
 hostAliases: []
