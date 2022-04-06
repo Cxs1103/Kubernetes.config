@@ -164,6 +164,24 @@ spec:
             gitlab_pages['enable'] = true
             gitlab_pages['inplace_chroot'] = true
 
+            ### GitLab email server settings
+            ###! Docs: https://docs.gitlab.com/omnibus/settings/smtp.html
+            ###! **Use smtp instead of sendmail/postfix.**
+
+            gitlab_rails['smtp_enable'] = true
+            gitlab_rails['smtp_address'] = "smtp.163.com"
+            gitlab_rails['smtp_port'] = 465
+            gitlab_rails['smtp_user_name'] = "cxs1103@163.com"
+            gitlab_rails['smtp_password'] = "KNXXXXGJZPXXXXXXX"
+            gitlab_rails['smtp_domain'] = "smtp.163.com"
+            gitlab_rails['smtp_authentication'] = "login"
+            gitlab_rails['smtp_enable_starttls_auto'] = true
+            gitlab_rails['smtp_tls'] = true
+
+            ### Email Settings
+            gitlab_rails['gitlab_email_enabled'] = true
+            gitlab_rails['gitlab_email_from'] = 'cxs1103@163.com'
+            gitlab_rails['gitlab_email_display_name'] = 'GitLab Admin'
 
         ports:
         - name: http
