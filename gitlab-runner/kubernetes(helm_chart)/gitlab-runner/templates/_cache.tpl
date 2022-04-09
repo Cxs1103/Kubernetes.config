@@ -15,10 +15,8 @@
   value: {{ default "" .Values.runners.cache.s3BucketName | quote }}
 - name: CACHE_S3_BUCKET_LOCATION
   value: {{ default "" .Values.runners.cache.s3BucketLocation | quote }}
-{{-       if .Values.runners.cache.s3CacheInsecure }}
 - name: CACHE_S3_INSECURE
-  value: "true"
-{{-       end }}
+  value: {{ default "" .Values.runners.cache.s3CacheInsecure | quote }}
 {{-     end }}
 {{-     if eq .Values.runners.cache.cacheType "gcs" }}
 - name: CACHE_GCS_BUCKET_NAME

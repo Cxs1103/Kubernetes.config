@@ -49,7 +49,7 @@ gitlabUrl: http://gitlab.mieken.cn/
 ## be retrieved from your GitLab Instance.
 ## ref: https://docs.gitlab.com/ce/ci/runners/README.html
 ##
-runnerRegistrationToken: "56yxE6gxyJ-zjWD2Wq5H"
+runnerRegistrationToken: "gDL8VaqG8Yu2Vh6LrEjM"
 
 ## The Runner Token for adding new Runners to the GitLab Server. This must
 ## be retrieved from your GitLab Instance. It is token of already registered runner.
@@ -462,26 +462,27 @@ runners:
   ##   --from-literal=azure-account-key="YourAccountKey"
   ## ref: https://kubernetes.io/docs/concepts/configuration/secret/
 
-  cache: {}
+  cache: 
     ## General settings
     ## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration and https://docs.gitlab.com/runner/install/kubernetes.html#using-cache-with-configuration-template
-    # cacheType: s3
-    # cachePath: "gitlab_runner"
-    # cacheShared: true
+    cacheType: s3
+    cachePath: "gitlab_runner"
+    cacheShared: true
 
     ## S3 settings
     ## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration and https://docs.gitlab.com/runner/install/kubernetes.html#using-cache-with-configuration-template
-    # s3ServerAddress: s3.amazonaws.com
-    # s3BucketName:
-    # s3BucketLocation:
-    # s3CacheInsecure: false
+    s3ServerAddress: 192.168.0.81:32000
+    #s3ServerAddress: api.minio.mieken.cn  # 域名有问题，暂时不知道什么问题，但是console.minio.mieken.cn可以访问
+    s3BucketName: runner
+    s3BucketLocation:
+    s3CacheInsecure: false
 
     ## GCS settings
     ## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration and https://docs.gitlab.com/runner/install/kubernetes.html#using-cache-with-configuration-template
     # gcsBucketName:
 
     ## S3 the name of the secret.
-    # secretName: s3access
+    secretName: s3access
     ## Use this line for access using gcs-access-id and gcs-private-key
     # secretName: gcsaccess
     ## Use this line for access using google-application-credentials file
