@@ -1,0 +1,55 @@
+image: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+
+cache:
+  paths:
+    - target/
+
+before_script:
+  - ls
+  
+services:
+  - name: registry.cn-hangzhou.aliyuncs.com/cxs1103/mysql:5.7.34
+    alias: mysql-1  
+  
+build:
+  image: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  stage: build
+  tags:
+    - k8s
+  script:
+    - mvn clean package
+    - ls 
+    - sleep 10
+
+test:
+  variables:
+    GIT_CHECKOUT: "false" 
+  image: harbor.mieken.cn/library/maven:3.8-jdk-8-aliyun
+  stage: test
+  tags:
+    - k8s
+  script:
+    - ls
+    - ls target/
+    - sleep 2
+    - mvn test
+    - sleep 10
+
+deploy:
+  stage: deploy
+  tags:
+    - k8s
+  script:
+    - echo "deploy"
+  environment:
+    name: production
+    url: http://www.baidu.com
+
+dingding:
+  stage: post
+  tags:
+    - k8s
+  script:
+    - " curl 'https://oapi.dingtalk.com/robot/send?access_token=3f556e31d61694749b26028c4a7130fb388bd55f869e6841ba8713d01354a99a&secret=SEC7143979c0baca070b335ad41696a0c42007436ed4146c794ac090e4b13dbe06a' \
+        -H 'Content-Type: application/json' \
+        -d '{\"msgtype\": \"text\",\"text\": {\"content\": \"CICD我就是我, 是不一样的烟火 @1xxxx2\"},\"at\": {\"atMobiles\": [\"15xxxxx72\"], \"isAtAll\": false}}'"
