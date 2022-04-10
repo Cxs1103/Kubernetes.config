@@ -471,8 +471,8 @@ runners:
 
     ## S3 settings
     ## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration and https://docs.gitlab.com/runner/install/kubernetes.html#using-cache-with-configuration-template
-    s3ServerAddress: 192.168.0.81:32000
-    #s3ServerAddress: api.minio.mieken.cn  # 域名有问题，暂时不知道什么问题，但是console.minio.mieken.cn可以访问
+    #s3ServerAddress: 192.168.0.81:32000
+    s3ServerAddress: api.minio.mieken.cn
     s3BucketName: runner
     s3BucketLocation:
     s3CacheInsecure: false
