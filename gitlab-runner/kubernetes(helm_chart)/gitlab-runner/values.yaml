@@ -35,7 +35,7 @@ imagePullPolicy: IfNotPresent
 ##
 ## Note: Using more than one replica is not supported with a runnerToken. Use a runnerRegistrationToken
 ## to create multiple runner replicas.
-replicas: 2
+replicas: 2 
 
 ## How many old ReplicaSets for this Deployment you want to retain
 # revisionHistoryLimit: 10
@@ -49,7 +49,7 @@ gitlabUrl: http://gitlab.mieken.cn/
 ## be retrieved from your GitLab Instance.
 ## ref: https://docs.gitlab.com/ce/ci/runners/README.html
 ##
-runnerRegistrationToken: "gDL8VaqG8Yu2Vh6LrEjM"
+runnerRegistrationToken: "JnR714MqSDMSc4ECrBP7"
 
 ## The Runner Token for adding new Runners to the GitLab Server. This must
 ## be retrieved from your GitLab Instance. It is token of already registered runner.
@@ -369,7 +369,7 @@ runners:
   ##
   ## ref: https://docs.gitlab.com/ee/ci/runners/configure_runners.html#use-tags-to-control-which-jobs-a-runner-can-run
   ##
-  tags: "k8s,kubernetes"
+  tags: "k8s,kubernetes,build,deploy"
 
   ## Specify the name for the runner.
   ##
@@ -614,7 +614,8 @@ affinity: {}
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ##
-nodeSelector: {}
+nodeSelector: 
+  kubernetes.io/hostname: k8s-node04
   # Example: The gitlab runner manager should not run on spot instances so you can assign
   # them to the regular worker nodes only.
   # node-role.kubernetes.io/worker: "true"
