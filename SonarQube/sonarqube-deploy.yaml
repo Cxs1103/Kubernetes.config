@@ -90,9 +90,6 @@ spec:
         - mountPath: /opt/sonarqube/extensions
           name: data
           subPath: extensions
-        - mountPath: /opt/sonarqube/lib/common
-          name: data
-          subPath: common
       volumes:
       - name: data
         persistentVolumeClaim:
