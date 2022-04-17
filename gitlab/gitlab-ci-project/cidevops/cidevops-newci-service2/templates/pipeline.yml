@@ -1,0 +1,105 @@
+include:
+  - project: 'cidevops/cidevops-newci-service'
+    ref: master
+    file: 'jobs/build.yml'
+  - project: 'cidevops/cidevops-newci-service'
+    ref: master
+    file: 'jobs/test.yml'  
+  - project: 'cidevops/cidevops-newci-service'
+    ref: master
+    file: 'jobs/code_analysis.yml'  
+
+variables:
+  ## 全局配置 
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_PIPELINE_ID
+  GIT_CHECKOUT: "false"
+
+  ## 容器镜像
+  BUILD_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/maven:3.8-jdk-8-aliyun
+  SONAR_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/sonar-scanner-cli:4
+
+  ## 构建测试参数
+  MVN_OPTS: "-Dmaven.repo.local=/home/gitlab-runner/ci-build-cache/maven"
+  BUILD_SHELL: 'mvn clean package  -DskipTests --settings=./settings.xml'  ##构建命令
+  TEST_SHELL : 'mvn test --settings=./settings.xml'                        ##测试命令
+  JUNIT_REPORT_PATH: 'target/surefire-reports/TEST-*.xml'   ##单元测试报告
+
+  ## 代码扫描
+  SONAR_PROJECT_LANG: "JAVA"
+  SONAR_SOURCE_DIR : "src" 
+  SONAR_SERVER_URL: "http://192.168.0.85:30003" 
+  SONAR_TOKEN: "3a8cd7d1707fd10e9e3e572a491d514fd3e63652" 
+  SONAR_SCAN_ARGS: "-Dsonar.sources=${SONAR_SOURCE_DIR} 
+                   -Dsonar.java.binaries=target/classes 
+                   -Dsonar.java.test.binaries=target/test-classes 
+                   -Dsonar.java.surefire.report=target/surefire-reports "
+
+  #构建镜像
+  CI_REGISTRY: 'registry.cn-hangzhou.aliyuncs.com'
+  CI_REGISTRY_USER: 'cxs_1103'
+  CI_REGISTRY_PASSWD: 'Ywj13052522516'
+  CI_NAMESPACE: 'cxs1103'  #阿里云镜像站：命名空间
+  # IMAGE_NAME: "$CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID"  # harbor可以使用这种
+  IMAGE_NAME: "$CI_REGISTRY/$CI_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID" # 阿里云可以使用这种
+  DOCKER_FILE_PATH: "./Dockerfile"
+
+stages:
+  - build
+  - test
+  - parallel01
+
+cache:
+  paths:
+    - target/
+
+################# Jobs Configure #####################
+# 构建作业
+build:
+  stage: build
+  variables:
+    GIT_CHECKOUT: "true"
+  image: ${BUILD_IMAGE}
+  extends: .build
+
+# 测试作业
+test:
+  stage: test
+  image: ${BUILD_IMAGE}
+  extends: .test
+  before_script:
+    - ls
+    - ls target/
+
+## 代码扫描
+code_analysis:
+  stage: parallel01
+  image: ${SONAR_IMAGE}
+  extends: .code_analysis
+
+## 构建镜像
+## 1.在 Kubernetes 中启用 TLS 的 Docker-in-Docker
+build_image:
+  image: registry.cn-hangzhou.aliyuncs.com/cxs1103/docker:19.03.12
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  services:
+    - name: docker:19.03.12-dind
+      command: ["--tls=false"]
+  stage: build_image
+  extends: .build-docker
+
+## 2.在 Kubernetes 中不启用 【TLS】 的 Docker-in-Docker
+# build_image:
+#   image: registry.cn-hangzhou.aliyuncs.com/cxs1103/docker:19.03.12
+#   variables:
+#     DOCKER_HOST: tcp://localhost:2375
+      # TLS值为空
+#     DOCKER_TLS_CERTDIR: "" 
+#   services:
+#     - name: docker:19.03.12-dind
+#       command: ["--tls=false"]
+#   stage: build_image
+#   extends: .build-docker
