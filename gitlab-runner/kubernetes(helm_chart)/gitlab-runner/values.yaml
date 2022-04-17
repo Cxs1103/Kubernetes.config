@@ -333,7 +333,13 @@ runners:
       [runners.kubernetes]
         namespace = "{{.Release.Namespace}}"
         image = "ubuntu:16.04"
-
+        privileged = true
+      # 将 Kubernetes 执行器与 Docker-in-Docker 一起使用, 在 Kubernetes 中启用 TLS 的 Docker-in-Docker,此功能在 GitLab Runner Helm Chart 0.23.0 中引入 。
+      # 要在 Kubernetes 中使用启用了 TLS 的 Docker-in-Docker：使用 Helm 图表，更新 values.yml文件 以指定卷挂载。
+      [[runners.kubernetes.volumes.empty_dir]]
+        name = "docker-certs"
+        mount_path = "/certs/client"
+        medium = "Memory"
   ## Which executor should be used
   ##
   # executor: kubernetes
