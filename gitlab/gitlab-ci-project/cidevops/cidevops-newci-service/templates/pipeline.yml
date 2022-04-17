@@ -8,6 +8,9 @@ include:
   - project: 'cidevops/cidevops-newci-service'
     ref: master
     file: 'jobs/code_analysis.yml'  
+  - project: 'cidevops/cidevops-newci-service'
+    ref: master
+    file: 'jobs/deploy.yml'
 
 variables:
   ## 全局配置 
@@ -37,16 +40,27 @@ variables:
   #构建镜像
   CI_REGISTRY: 'registry.cn-hangzhou.aliyuncs.com'
   CI_REGISTRY_USER: 'cxs_1103'
-  CI_REGISTRY_PASSWD: 'xxxxxxx'
+  CI_REGISTRY_PASSWD: 'Ywj13052522516'
   CI_NAMESPACE: 'cxs1103'  #阿里云镜像站：命名空间
   # IMAGE_NAME: "$CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID"  # harbor可以使用这种
   IMAGE_NAME: "$CI_REGISTRY/$CI_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID" # 阿里云可以使用这种
   DOCKER_FILE_PATH: "./Dockerfile"
 
+  #部署应用k8s
+  RUN_DEPLOY: "yes"
+  APP_NAME: "$CI_PROJECT_NAME"
+  CONTAINER_PORT: 8081
+  #NODE_PORT: 30185
+  NAMESPACE: "$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_ENVIRONMENT_SLUG"
+
+## 运行阶段  
 stages:
   - build
   - test
   - parallel01
+  - deploy
+  - rollout
+
 
 cache:
   paths:
@@ -87,8 +101,7 @@ build_image:
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   services:
     - name: docker:19.03.12-dind
-      command: ["--tls=false"]
-  stage: build_image
+  stage: parallel01
   extends: .build-docker
 
 ## 2.在 Kubernetes 中不启用 【TLS】 的 Docker-in-Docker
@@ -103,3 +116,17 @@ build_image:
 #       command: ["--tls=false"]
 #   stage: build_image
 #   extends: .build-docker
+
+## 发布应用
+deploy_k8s:
+  variables:
+    GIT_CHECKOUT: "true"
+  stage: deploy
+  image: registry.cn-hangzhou.aliyuncs.com/cxs1103/kubectl
+  extends: .deploy_k8s
+
+## 应用回滚
+rollout_k8s:
+  stage: rollout
+  image: registry.cn-hangzhou.aliyuncs.com/cxs1103/kubectl
+  extends: .rollout_k8s
