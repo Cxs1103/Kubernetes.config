@@ -53,6 +53,13 @@ variables:
   #NODE_PORT: 30185
   NAMESPACE: "$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_ENVIRONMENT_SLUG"
 
+## 流水线控制
+workflow:
+  rules:
+    - if: $CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"
+      when: never
+    - when: always
+
 ## 运行阶段  
 stages:
   - build
@@ -65,6 +72,10 @@ stages:
 cache:
   paths:
     - target/
+
+# 只要使用export命令就可以把gitlab变量显示出来
+before_script:
+    - export
 
 ################# Jobs Configure #####################
 # 构建作业
