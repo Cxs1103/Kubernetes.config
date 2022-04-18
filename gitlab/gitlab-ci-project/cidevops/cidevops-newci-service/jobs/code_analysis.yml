@@ -57,7 +57,23 @@
             then
               echo "${SONAR_SCAN_RESULT}"
               SONAR_SCAN_RESULT=SUCCESS
-              break;
+
+              curl -k -u "${SONAR_TOKEN}":"" "${SONAR_SERVER_URL}/api/qualitygates/project_status?projectKey=$CI_PROJECT_NAME&branch=$CI_COMMIT_REF_NAME" -o result.txt  -s
+              echo "result info ---->>>>>"
+              cat result.txt
+              result=`cat result.txt | awk -F ':' '{print $3}' | awk -F '"' '{print$2}'`
+              
+              echo $result
+              if [ $result == 'ERROR' ]                 
+                then 
+                  echo "${result}"
+                  exit 122
+                  break;
+              else
+                  echo "success!"
+                  break;
+              fi
+            
           else
             SONAR_SCAN_RESULT='ERROR'
             echo "第$i次获取结果信息，不是成功状态，睡眠10秒！"
