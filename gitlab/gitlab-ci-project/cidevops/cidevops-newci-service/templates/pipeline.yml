@@ -20,6 +20,10 @@ variables:
   ## 容器镜像
   BUILD_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/maven:3.8-jdk-8-aliyun
   SONAR_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/sonar-scanner-cli:4
+  CURL_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/curl:7.70.0
+  DOCKER_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/docker:19.03.12
+  DOCKER_DIND_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/docker:19.03.12-dind
+  KUBECTL_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/kubectl
 
   ## 构建测试参数
   MVN_OPTS: "-Dmaven.repo.local=/home/gitlab-runner/ci-build-cache/maven"
@@ -66,6 +70,7 @@ stages:
   - build
   - test
   - parallel01
+  - get_analysis_result
   - deploy
   - rollout
 
@@ -73,6 +78,7 @@ stages:
 cache:
   paths:
     - target/
+    - .scannerwork/
 
 # 只要使用export命令就可以把gitlab变量显示出来
 before_script:
@@ -102,10 +108,17 @@ code_analysis:
   image: ${SONAR_IMAGE}
   extends: .code_analysis
 
+## 获取构建结果
+get_analysis_result:
+  image: ${CURL_IMAGE}
+  extends: .get_analysis_result
+  needs:
+    - code_analysis
+
 ## 构建镜像
 ## 1.在 Kubernetes 中启用 TLS 的 Docker-in-Docker
 build_image:
-  image: registry.cn-hangzhou.aliyuncs.com/cxs1103/docker:19.03.12
+  image: ${DOCKER_IMAGE}
   variables:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
@@ -134,11 +147,11 @@ deploy_k8s:
   variables:
     GIT_CHECKOUT: "true"
   stage: deploy
-  image: registry.cn-hangzhou.aliyuncs.com/cxs1103/kubectl
+  image: ${KUBECTL_IMAGE}
   extends: .deploy_k8s
 
 ## 应用回滚
 rollout_k8s:
   stage: rollout
-  image: registry.cn-hangzhou.aliyuncs.com/cxs1103/kubectl
+  image: ${KUBECTL_IMAGE}
   extends: .rollout_k8s

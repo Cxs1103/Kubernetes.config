@@ -40,6 +40,8 @@
         fi 
         
 .get_analysis_result:
+  tags:
+    - build
   stage: get_analysis_result
   script:
     - |
@@ -48,7 +50,7 @@
                 
         for i in {1..10}
         do
-          curl -k -u "ee2bcb37deeb6dfe3a07fe08fb529559b00c1b7b":"" ${SONAR_REPORT_URL}  -o sonar_result.txt -s
+          curl -k -u "${SONAR_TOKEN}":"" ${SONAR_REPORT_URL}  -o sonar_result.txt -s
           grep '"status":"SUCCESS"' sonar_result.txt  && SONAR_SCAN_RESULT='SUCCESS'
         
           if [ ${SONAR_SCAN_RESULT} == 'SUCCESS' ]
