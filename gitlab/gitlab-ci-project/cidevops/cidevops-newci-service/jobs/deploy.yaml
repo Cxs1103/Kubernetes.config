@@ -4,7 +4,6 @@
 .deploy_k8s:
   tags:
     - build
-  stage: deploy
   script:
     - echo $KUBE_TOKEN
     - kubectl config set-cluster my-cluster --server=${KUBE_URL} --certificate-authority="${KUBE_CA_PEM_FILE}"
@@ -33,7 +32,6 @@
 .rollout_k8s:
   tags:
     - build
-  stage: rollout
   script:
     - rm -rf $HOME/.kube
     - kubectl config set-cluster my-cluster --server=${KUBE_URL} --certificate-authority="${KUBE_CA_PEM_FILE}"

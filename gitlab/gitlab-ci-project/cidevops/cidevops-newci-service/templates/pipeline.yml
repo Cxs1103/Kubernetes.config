@@ -17,6 +17,14 @@ variables:
   GIT_CLONE_PATH: $CI_BUILDS_DIR/builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_PIPELINE_ID
   GIT_CHECKOUT: "false"
 
+  ## 作业控制
+  RUN_PIPELINE_BUILD: ""     #是否运行构建 yes/no 
+  RUN_PIPELINE_TEST: ""      #是否运行测试 yes/no 
+  RUN_CODE_ANALYSIS: ""      #是否代码扫描 yes/no 
+  RUN_BUILD_IMAGE: ""        #是否生成镜像 yes/no
+  RUN_DEPLOY_ARTIFACTS: ""   #是否上传制品 yes/no
+  RUN_DEPLOY_K8S: ""         #是否发布K8S yes/no
+
   ## 容器镜像
   BUILD_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/maven:3.8-jdk-8-aliyun
   SONAR_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/sonar-scanner-cli:4
@@ -72,9 +80,15 @@ stages:
   - test
   - parallel01
   - get_analysis_result
-  - deploy
-  - rollout
-
+  - deploy-artifact
+  - deploy-feature
+  - rollout-feature
+  - deploy-uat
+  - rollout-uat
+  - deploy-stag
+  - rollout-stag
+  - deploy-prod
+  - rollout-prod
 
 cache:
   paths:
@@ -147,27 +161,35 @@ deploy_feature:
     GIT_CHECKOUT: "true"
     DEPLOY_FILE: 'deploy.yaml'
     ENV_NAME: 'feature'
-    on_stop: 'rollout_feature'
+  environment:
+    on_stop: "rollout_feature"
+  stage: deploy-feature
   image: ${KUBECTL_IMAGE}
   extends: .deploy_k8s
   rules:
-    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+    - if: $RUN_DEPLOY_K8S == 'no'
       when: never
-    - if: $CI_COMMIT_REF_NAME =~ /\d-*/ 
-      when: manual
-    - when: never
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
+      when: never
+    - when: manual
 
 
-## 应用回滚
+## feature应用回滚
 rollout_feature:
+  variables:
+    DEPLOY_FILE: 'deployment.yaml'
+    ENV_NAME: 'feature'
+  stage: rollout-feature
   image: ${KUBECTL_IMAGE}
   extends: .rollout_k8s
+  needs:
+    - deploy_feature
   rules:
-    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+    - if: $RUN_DEPLOY_K8S == 'no'
       when: never
-    - if: $CI_COMMIT_REF_NAME =~ /\d-*/ 
-      when: manual
-    - when: never
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
+      when: never
+    - when: on_failure
 
 ## 发布应用UAT环境
 deploy_uat:
@@ -175,21 +197,33 @@ deploy_uat:
     GIT_CHECKOUT: "true"
     DEPLOY_FILE: 'config/deployment-uat.yaml'
     ENV_NAME: 'uat'
+  environment:
     on_stop: 'rollout_uat'
+  stage: deploy-uat
   image: ${KUBECTL_IMAGE}
   extends: .deploy_k8s
   rules:
-    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+    - if: $RUN_DEPLOY_K8S == 'no'
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
       when: manual
     - when: never
 
 ## UAT应用回滚
 rollout_uat:
+  variables:
+    DEPLOY_FILE: 'config/deployment-uat.yaml'
+    ENV_NAME: 'uat'
+  stage: rollout-uat
   image: ${KUBECTL_IMAGE}
   extends: .rollout_k8s
+  needs:
+    - deploy_uat
   rules:
-    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
-      when: manual
+    - if: $RUN_DEPLOY_K8S == 'no'
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
+      when: on_failure
     - when: never
 
 ## 发布应用STAG环境
@@ -198,21 +232,35 @@ deploy_stag:
     GIT_CHECKOUT: "true"
     DEPLOY_FILE: 'config/deployment-stag.yaml'
     ENV_NAME: 'stag'
+  environment:
     on_stop: 'rollout_stag'
+  stage: deploy-stag
   image: ${KUBECTL_IMAGE}
   extends: .deploy_k8s
+  needs:
+    - deploy_uat
   rules:
-    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+    - if: $RUN_DEPLOY_K8S == 'no'
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
       when: manual
     - when: never
 
 ## STAG应用回滚
 rollout_stag:
+  variables:
+    DEPLOY_FILE: 'config/deployment-stag.yaml'
+    ENV_NAME: 'stag'
+  stage: rollout-stag
   image: ${KUBECTL_IMAGE}
   extends: .rollout_k8s
+  needs:
+    - deploy_stag
   rules:
-    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
-      when: manual
+    - if: $RUN_DEPLOY_K8S == 'no'
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
+      when: on_failure
     - when: never
 
 ## 发布应用PROD环境
@@ -221,19 +269,33 @@ deploy_prod:
     GIT_CHECKOUT: "true"
     DEPLOY_FILE: 'config/deployment-prod.yaml'
     ENV_NAME: 'prod'
+  environment:
     on_stop: 'rollout_prod'
+  stage: deploy-prod
   image: ${KUBECTL_IMAGE}
   extends: .deploy_k8s
+  needs:
+    - deploy_stag
   rules:
-    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+    - if: $RUN_DEPLOY_K8S == 'no'
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
       when: manual
     - when: never
 
 ## PROD应用回滚
 rollout_prod:
+  variables:
+    DEPLOY_FILE: 'config/deployment-prod.yaml'
+    ENV_NAME: 'prod'
+  stage: rollout-prod
   image: ${KUBECTL_IMAGE}
   extends: .rollout_k8s
+  needs:
+    - deploy_prod
   rules:
-    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
-      when: manual
+    - if: $RUN_DEPLOY_K8S == 'no'
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
+      when: on_failure
     - when: never
