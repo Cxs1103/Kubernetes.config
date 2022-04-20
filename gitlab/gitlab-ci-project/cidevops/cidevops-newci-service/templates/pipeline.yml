@@ -22,7 +22,6 @@ variables:
   SONAR_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/sonar-scanner-cli:4
   CURL_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/curl:7.70.0
   DOCKER_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/docker:19.03.12
-  DOCKER_DIND_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/docker:19.03.12-dind
   KUBECTL_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/kubectl
 
   ## 构建测试参数
@@ -56,11 +55,13 @@ variables:
   CONTAINER_PORT: 8081
   #NODE_PORT: 30185
   NAMESPACE: "$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_ENVIRONMENT_SLUG"
+  ENV_URL: "${ENV_NAME}.${CI_PROJECT_NAMESPACE}.${CI_PROJECT_NAME}.devops.com"  #IngressHosts
 
 ## 流水线控制
 workflow:
   rules:
     - if: $CI_MERGE_REQUEST_ID  # 合并请求的项目级别ID。仅当管道用于合并请求并且创建合并请求时才可用。
+    - if: $CI_PIPELINE_SOURCE == 'web'
     - if: $CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"
       when: never
     - when: always
@@ -87,7 +88,6 @@ before_script:
 ################# Jobs Configure #####################
 # 构建作业
 build:
-  stage: build
   variables:
     GIT_CHECKOUT: "true"
   image: ${BUILD_IMAGE}
@@ -95,11 +95,10 @@ build:
 
 # 测试作业
 test:
-  stage: test
   image: ${BUILD_IMAGE}
   extends: .test
   before_script:
-    - ls
+    - ls -a
     - ls target/
 
 ## 代码扫描
@@ -142,16 +141,99 @@ build_image:
 #   stage: build_image
 #   extends: .build-docker
 
-## 发布应用
-deploy_k8s:
+## feature发布应用
+deploy_feature:
   variables:
     GIT_CHECKOUT: "true"
-  stage: deploy
+    DEPLOY_FILE: 'deploy.yaml'
+    ENV_NAME: 'feature'
+    on_stop: 'rollout_feature'
   image: ${KUBECTL_IMAGE}
   extends: .deploy_k8s
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /\d-*/ 
+      when: manual
+    - when: never
+
 
 ## 应用回滚
-rollout_k8s:
-  stage: rollout
+rollout_feature:
   image: ${KUBECTL_IMAGE}
   extends: .rollout_k8s
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /\d-*/ 
+      when: manual
+    - when: never
+
+## 发布应用UAT环境
+deploy_uat:
+  variables:
+    GIT_CHECKOUT: "true"
+    DEPLOY_FILE: 'config/deployment-uat.yaml'
+    ENV_NAME: 'uat'
+    on_stop: 'rollout_uat'
+  image: ${KUBECTL_IMAGE}
+  extends: .deploy_k8s
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+      when: manual
+    - when: never
+
+## UAT应用回滚
+rollout_uat:
+  image: ${KUBECTL_IMAGE}
+  extends: .rollout_k8s
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+      when: manual
+    - when: never
+
+## 发布应用STAG环境
+deploy_stag:
+  variables:
+    GIT_CHECKOUT: "true"
+    DEPLOY_FILE: 'config/deployment-stag.yaml'
+    ENV_NAME: 'stag'
+    on_stop: 'rollout_stag'
+  image: ${KUBECTL_IMAGE}
+  extends: .deploy_k8s
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+      when: manual
+    - when: never
+
+## STAG应用回滚
+rollout_stag:
+  image: ${KUBECTL_IMAGE}
+  extends: .rollout_k8s
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+      when: manual
+    - when: never
+
+## 发布应用PROD环境
+deploy_prod:
+  variables:
+    GIT_CHECKOUT: "true"
+    DEPLOY_FILE: 'config/deployment-prod.yaml'
+    ENV_NAME: 'prod'
+    on_stop: 'rollout_prod'
+  image: ${KUBECTL_IMAGE}
+  extends: .deploy_k8s
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+      when: manual
+    - when: never
+
+## PROD应用回滚
+rollout_prod:
+  image: ${KUBECTL_IMAGE}
+  extends: .rollout_k8s
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ 
+      when: manual
+    - when: never

@@ -6,7 +6,7 @@
     - build
   script:
     - $BUILD_SHELL
-    - ls
+    - ls -a
 
 .build-docker:
   stage: buildimage
