@@ -163,6 +163,7 @@ deploy_feature:
     ENV_NAME: 'feature'
   environment:
     on_stop: "rollout_feature"
+    name: "${ENV_NAME}"
   stage: deploy-feature
   image: ${KUBECTL_IMAGE}
   extends: .deploy_k8s
@@ -172,7 +173,6 @@ deploy_feature:
     - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
       when: never
     - when: manual
-
 
 ## feature应用回滚
 rollout_feature:
@@ -190,6 +190,9 @@ rollout_feature:
     - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
       when: never
     - when: on_failure
+  environment:
+    name: "${ENV_NAME}"
+    action: stop
 
 ## 发布应用UAT环境
 deploy_uat:
@@ -199,6 +202,7 @@ deploy_uat:
     ENV_NAME: 'uat'
   environment:
     on_stop: 'rollout_uat'
+    name: "${ENV_NAME}"
   stage: deploy-uat
   image: ${KUBECTL_IMAGE}
   extends: .deploy_k8s
@@ -223,8 +227,11 @@ rollout_uat:
     - if: $RUN_DEPLOY_K8S == 'no'
       when: never
     - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
-      when: on_failure
+      when: manual
     - when: never
+  environment:
+    name: "${ENV_NAME}"
+    action: stop
 
 ## 发布应用STAG环境
 deploy_stag:
@@ -233,6 +240,7 @@ deploy_stag:
     DEPLOY_FILE: 'config/deployment-stag.yaml'
     ENV_NAME: 'stag'
   environment:
+    name: "${ENV_NAME}"
     on_stop: 'rollout_stag'
   stage: deploy-stag
   image: ${KUBECTL_IMAGE}
@@ -260,8 +268,11 @@ rollout_stag:
     - if: $RUN_DEPLOY_K8S == 'no'
       when: never
     - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
-      when: on_failure
+      when: manual
     - when: never
+  environment:
+    name: "${ENV_NAME}"
+    action: stop
 
 ## 发布应用PROD环境
 deploy_prod:
@@ -270,6 +281,7 @@ deploy_prod:
     DEPLOY_FILE: 'config/deployment-prod.yaml'
     ENV_NAME: 'prod'
   environment:
+    name: "${ENV_NAME}"
     on_stop: 'rollout_prod'
   stage: deploy-prod
   image: ${KUBECTL_IMAGE}
@@ -297,5 +309,8 @@ rollout_prod:
     - if: $RUN_DEPLOY_K8S == 'no'
       when: never
     - if: $CI_COMMIT_REF_NAME =~ /^RELEASE-*/ || $CI_COMMIT_REF_NAME =~ /master/ || $CI_COMMIT_TAG
-      when: on_failure
+      when: manual
     - when: never
+  environment:
+    name: "${ENV_NAME}"
+    action: stop
