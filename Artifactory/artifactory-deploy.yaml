@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: artifactory
-          image: docker.bintray.io/jfrog/artifactory-oss:latest
+          image: registry.cn-hangzhou.aliyuncs.com/cxs1103/artifactory-oss:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
