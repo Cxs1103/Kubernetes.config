@@ -109,6 +109,8 @@ build:
 
 # 测试作业
 test:
+  variables:
+    GIT_CHECKOUT: "true"
   image: ${BUILD_IMAGE}
   extends: .test
   before_script:
@@ -159,7 +161,7 @@ build_image:
 deploy_feature:
   variables:
     GIT_CHECKOUT: "true"
-    DEPLOY_FILE: 'deploy.yaml'
+    DEPLOY_FILE: 'deployment.yaml'
     ENV_NAME: 'feature'
   environment:
     on_stop: "rollout_feature"
