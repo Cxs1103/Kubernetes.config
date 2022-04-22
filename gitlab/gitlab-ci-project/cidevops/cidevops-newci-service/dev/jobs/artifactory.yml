@@ -2,6 +2,8 @@
 ##
 
 .deploy-artifact:
+  tags:
+   - build
   stage: deploy-artifact
   script:
     - echo "curl -u${ARTIFACT_USER}:${ARTIFACT_PASSWD} -T ${ARTIFACT_PATH} $ARTIFACTORY_URL/$ARTIFACTORY_NAME/$TARGET_FILE_PATH/$TARGET_ARTIFACT_NAME"

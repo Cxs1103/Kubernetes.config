@@ -7,14 +7,14 @@ variables:
   ## 全局配置 
   GIT_CLONE_PATH: $CI_BUILDS_DIR/builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_PIPELINE_ID
   GIT_CHECKOUT: "false"
-  CACHE_DIR: ["target/",".scannerwork/"]
+  CACHE_DIR: "target/"
 
   ## 作业控制
   RUN_PIPELINE_BUILD:   "yes"     #是否运行构建 yes/no 
   RUN_PIPELINE_TEST:    "yes"      #是否运行测试 yes/no 
   RUN_CODE_ANALYSIS:    "yes"     #是否代码扫描 yes/no 
   RUN_BUILD_IMAGE:      "yes"     #是否生成镜像 yes/no
-  RUN_DEPLOY_ARTIFACTS: "no"      #是否上传制品 yes/no
+  RUN_DEPLOY_ARTIFACTS: "yes"      #是否上传制品 yes/no
   RUN_DEPLOY_K8S:       "yes"     #是否发布K8S yes/no
 
 
@@ -51,16 +51,22 @@ variables:
   IMAGE_NAME: "$CI_REGISTRY/$CI_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID" # 阿里云可以使用这种
   DOCKER_FILE_PATH: "./Dockerfile"
 
-  ## 上传制品库(artifactory)
-  #ARTIFACTORY_URL: "http://192.168.1.200:30082/artifactory"     #制品库地址
-  #ARTIFACTORY_NAME: "${CI_PROJECT_NAMESPACE}"                   #制品库名称
-  #ARTIFACT_PACKAGE: "jar"                                       #制品类型
-  #ARTIFACT_PATH: "target/*.${ARTIFACT_PACKAGE}"                 #制品位置
-  #TARGET_FILE_PATH: "${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"   #目标制品位置(目录结构)
-  #TARGET_ARTIFACT_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}.${ARTIFACT_PACKAGE}"   #目标制品名称
+  # 上传制品库(artifactory)
+  ARTIFACTORY_URL: "http://artifactory.mieken.cn/artifactory/cidevops-java/"     #制品库地址
+  ARTIFACTORY_NAME: "${CI_PROJECT_NAMESPACE}"                   #制品库名称
+  ARTIFACT_PACKAGE: "jar"                                       #制品类型
+  ARTIFACT_PATH: "target/*.${ARTIFACT_PACKAGE}"                 #制品位置
+  TARGET_FILE_PATH: "${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"   #目标制品位置(目录结构)
+  TARGET_ARTIFACT_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}.${ARTIFACT_PACKAGE}"   #目标制品名称
 
   #部署应用k8s
   APP_NAME: "$CI_PROJECT_NAME"
   CONTAINER_PORT: 8081
   NAMESPACE: "$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_ENVIRONMENT_SLUG"
   ENV_URL: "${ENV_NAME}.${CI_PROJECT_NAMESPACE}.${CI_PROJECT_NAME}.devops.com"  #IngressHosts
+
+## 缓存
+cache:
+  paths:
+    - ${CACHE_DIR}
+    -  .scannerwork/
