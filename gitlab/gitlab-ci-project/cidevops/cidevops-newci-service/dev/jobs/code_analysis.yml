@@ -38,7 +38,12 @@
            echo "sonar-scanner ${GLOBAL_PROJECT_ARGS} ${GLOBAL_SERVER_ARGS} ${SONAR_SCAN_ARGS} ${MULTI_BRANCH_ARGS}"
            sonar-scanner ${GLOBAL_PROJECT_ARGS} ${GLOBAL_SERVER_ARGS} ${SONAR_SCAN_ARGS} ${MULTI_BRANCH_ARGS}
         fi 
-        
+  rules:
+    - if: " $RUN_CODE_ANALYSIS == 'no' "
+      when: never
+    - when: always
+
+#### 获取代码扫描结果       
 .get_analysis_result:
   tags:
     - build
@@ -80,4 +85,8 @@
             cat sonar_result.txt
             sleep 10
           fi
-        done
+        done    
+  rules:
+    - if: " $RUN_CODE_ANALYSIS == 'no' "
+      when: never
+    - when: always
