@@ -1,0 +1,76 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    k8s-app: __appname__
+  name: __appname__
+  namespace: __namespace__
+  annotations:
+    app.gitlab.com/env: __CI_ENVIRONMENT_SLUG__
+    app.gitlab.com/app: __CI_PROJECT_PATH_SLUG__
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: __appname__
+  template:
+    metadata:
+      labels:
+        k8s-app: __appname__
+      namespace: __namespace__
+      name: __appname__
+    spec:
+      containers:
+        - name: __appname__
+          image: __imagename__
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: __containerport__
+              name: web
+              protocol: TCP
+      serviceAccountName: __appname__
+      imagePullSecrets:
+        - name: __appname__
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: __appname__
+  name: __appname__
+  namespace: __namespace__
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: __appname__
+  name: __appname__
+  namespace: __namespace__
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: __containerport__
+      targetPort: __containerport__
+  selector:
+    k8s-app: __appname__
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: __appname__
+  namespace: __namespace__
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: __ingressdomain__
+    http:
+     paths:
+     - path: /
+       backend:
+          serviceName: __appname__
+          servicePort: __containerport__
+---
