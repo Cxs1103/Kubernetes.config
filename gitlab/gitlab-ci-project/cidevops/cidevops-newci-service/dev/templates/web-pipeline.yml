@@ -75,7 +75,7 @@ cache:
   paths:
     - ${CACHE_DIR}
     - node_modules/
-
+    - .scannerwork/
 
 ## 说明：
  ## build.yml 中script 直接调用 variables: BUILD_SHELL 变成单行，导致命令不能执行，所有添加下面build作业进行覆盖
