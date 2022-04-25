@@ -18,7 +18,7 @@ variables:
   RUN_DEPLOY_K8S:       "yes"     #是否发布K8S yes/no
 
   ## 依赖容器镜像
-  BUILD_IMAGE: "node:latest"
+  BUILD_IMAGE: "registry.cn-hangzhou.aliyuncs.com/cxs1103/node:latest"
   SONAR_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/sonar-scanner-cli:4
   CURL_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/curl:7.70.0
   DOCKER_IMAGE: registry.cn-hangzhou.aliyuncs.com/cxs1103/docker:19.03.12
