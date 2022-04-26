@@ -3,6 +3,15 @@ plugins {
 }
 
 android {
+
+    //程序在编译的时候会检查lint，有任何错误提示会停止build，我们可以关闭这个开关
+    lintOptions {
+        //即使报错也不会停止打包
+        abortOnError false
+        //打包release版本的时候是否进行检测
+        checkReleaseBuilds false
+    }
+    
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
