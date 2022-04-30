@@ -138,7 +138,8 @@ spec:
           mountPath: /etc/localtime
           readOnly: true
       - name: jenkins
-        image: jenkins/jenkins:2.300
+        # image: jenkins/jenkins:2.300
+        image: registry.cn-hangzhou.aliyuncs.com/cxs1103/jenkins:2.332.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
