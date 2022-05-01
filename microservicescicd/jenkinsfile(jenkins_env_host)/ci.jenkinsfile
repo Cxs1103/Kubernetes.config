@@ -123,5 +123,88 @@ pipeline {
                 }
             }
         }
+
+        stage("PushFile"){
+          // when {
+          //   expression { "${env.branchName}".contains("RELEASE-") }
+          // }
+          steps{
+            script{
+              if ("${env.branchName}".contains("RELEASE-")){
+                println("branchName = branchName")
+                env.branchName = "master"
+
+              } else {
+                env.branchName = "feature"
+              }
+
+                for (i = 0; i < 3; i++) {
+                    //下载版本库文件 
+                    response = GetRepoFile(15,"${moduleName}%2fvalues.yaml", "${env.branchName}")
+                    //println(response)
+                    
+                    //替换文件中内容
+                    yamlData = readYaml text: """${response}"""
+
+                    println(yamlData.image.version)
+                    println(yamlData.image.commit)
+                    yamlData.image.version = "${releaseVersion}-${env.nowDate}"
+                    yamlData.image.commit  = "${commitId}"
+
+                    println(yamlData.toString())
+
+                    sh "rm -fr test.yaml"
+                    writeYaml charset: 'UTF-8', data: yamlData, file: 'test.yaml'
+                    newYaml = sh returnStdout: true, script: 'cat test.yaml'
+                    
+                    println(newYaml)
+                    //更新gitlab文件内容
+                    base64Content = newYaml.bytes.encodeBase64().toString()
+
+                    // 会有并行问题，同时更新报错
+                    try {
+                      UpdateRepoFile(15,"${moduleName}%2fvalues.yaml",base64Content, "${env.branchName}")
+                      break;
+                    } catch(e){
+                      sh "sleep 2"
+                      continue;
+                    }
+                }
+            }
+          }
+        }
     }
+}
+
+//封装HTTP请求
+def HttpReq(reqType,reqUrl,reqBody){
+    def gitServer = "http://gitlab.mieken.cn/api/v4"
+    withCredentials([string(credentialsId: 'gitlab-token', variable: 'gitlabToken')]) {
+      result = httpRequest customHeaders: [[maskValue: true, name: 'PRIVATE-TOKEN', value: "${gitlabToken}"]], 
+                httpMode: reqType, 
+                contentType: "APPLICATION_JSON",
+                consoleLogResponseBody: true,
+                ignoreSslErrors: true, 
+                requestBody: reqBody,
+                url: "${gitServer}/${reqUrl}"
+                //quiet: true
+    }
+    return result
+}
+
+
+//获取文件内容
+def GetRepoFile(projectId,filePath,branchName){
+    apiUrl = "projects/${projectId}/repository/files/${filePath}/raw?ref=${branchName}"
+    response = HttpReq('GET',apiUrl,'')
+    return response.content
+}
+
+//更新文件内容
+def UpdateRepoFile(projectId,filePath,fileContent, branchName){
+    apiUrl = "projects/${projectId}/repository/files/${filePath}"
+    reqBody = """{"branch": "${branchName}","encoding":"base64", "content": "${fileContent}", "commit_message": "update a new file"}"""
+    response = HttpReq('PUT',apiUrl,reqBody)
+    println(response)
+
 }
