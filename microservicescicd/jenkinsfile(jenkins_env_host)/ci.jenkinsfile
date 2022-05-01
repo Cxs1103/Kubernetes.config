@@ -1,0 +1,127 @@
+
+// String branchName = "master"
+// String moduleName = "service01"
+// String moduleName = "${JOB_NAME}".split("/")[1]
+String srcUrl = "http://gitlab.mieken.cn/microservicecicd/microservice-demo-service.git"
+// String commitId = "5661b467f94fa5d6e935d7c4201efb3a08fbb715"
+// String projectId = "8"
+
+String branchName = "${env.branchName}"
+String moduleName = "${JOB_NAME}".split("/")[1].split("-")[1]
+// String srcUrl = "http://gitlab.idevops.site/microservicecicd/microservicecicd-demo-service.git"
+String commitId = "${env.commitId}"
+String projectId = "${env.projectId}"
+
+pipeline {
+
+    agent any
+
+    stages {
+        stage('GetCode') {
+            steps {
+                script {
+                    checkout([$class: 'GitSCM', 
+                            branches: [[name: "${branchName}"]], 
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'SparseCheckoutPaths', 
+                                        sparseCheckoutPaths: [[path: "${moduleName}"],[path: 'Dockerfile']]]], 
+                            submoduleCfg: [], 
+                            userRemoteConfigs: [[credentialsId: 'gitlab-auth',
+                                                url: "${srcUrl}"]]])
+
+                        println("moduleName:${JOB_NAME}")
+                           
+                }
+                
+            }
+        }
+        stage("Build"){
+            steps{
+                script{
+                    echo "Build..........."
+
+                    sh """
+                    cd ${moduleName}
+                    ls -la
+                    mvn clean package
+
+                    """
+                }
+            }
+            post {
+                always {
+                    junit "${moduleName}/target/surefire-reports/*.xml"
+                }
+            }
+        }
+        stage("SonarScan"){
+            steps{
+                script{
+                    
+                    // 利用时间戳代替项目版本
+                    def sonarDate = sh returnStdout: true, script: 'date  +%Y%m%d%H%M%S'
+                    sonarDate = sonarDate - "\n"
+                    println("${sonarDate}")
+
+                    withCredentials([string(credentialsId: 'sonar-admin-user', variable: 'sonartoken'),
+                                    string(credentialsId: 'gitlab-user-token', variable: 'gitlabtoken')]) {                  
+                        // sonar扫描
+                        sh """
+                        cd ${moduleName}
+                        /usr/local/sonar-scanner/bin/sonar-scanner \
+                        -Dsonar.projectKey=${JOB_NAME} \
+                        -Dsonar.projectName=${JOB_NAME} \
+                        -Dsonar.projectVersion=${sonarDate} \
+                        -Dsonar.ws.timeout=30 \
+                        -Dsonar.projectDescription="xxxxxxx" \
+                        -Dsonar.links.homepage=http://www.baidu.com \
+                        -Dsonar.sources=src \
+                        -Dsonar.sourceEncoding=UTF-8 \
+                        -Dsonar.java.binaries=target/classes \
+                        -Dsonar.java.test.binaries=target/test-classes \
+                        -Dsonar.java.surefire.report=target/surefire-reports \
+                        -Dsonar.host.url="http://192.168.0.85:30003" \
+                        -Dsonar.login=${sonartoken} \
+                        -Dsonar.gitlab.commit_sha=${commitId} \
+                        -Dsonar.gitlab.ref_name=${branchName} \
+                        -Dsonar.gitlab.project_id=${projectId} \
+                        -Dsonar.dynamicAnalysis=reuseReports \
+                        -Dsonar.gitlab.failure_notification_mode=commit-status \
+                        -Dsonar.gitlab.url=http://gitlab.mieken.cn \
+                        -Dsonar.gitlab.user_token=${gitlabtoken} \
+                        -Dsonar.gitlab.api_version=v4
+                        """
+                    }
+                }
+            }
+        }
+
+        stage("BuildImage"){
+            steps{
+                script{
+
+                     withCredentials([usernamePassword(credentialsId: 'aliyun-registry-admin', passwordVariable: 'password', usernameVariable: 'username')]) {
+                
+                         env.nowDate = sh  returnStdout: true, script: 'date  +%Y%m%d%H%M%S'
+                         env.nowDate = env.nowDate - "\n"
+
+                         env.releaseVersion = "${branchName}"
+                         env.imageTag = "${releaseVersion}-${nowDate}-${commitId}"
+                         env.dockerImage = "registry.cn-hangzhou.aliyuncs.com/cxs1103/microservicecicd-${moduleName}-service:${env.imageTag}"
+                         env.jarName = "${moduleName}-${branchName}-${commitId}"
+                         sh """
+                             docker login -u ${username} -p ${password}  registry.cn-beijing.aliyuncs.com
+                             cd ${moduleName} && docker build -t ${dockerImage} -f ../Dockerfile --build-arg SERVICE_NAME=${jarName} .
+                             sleep 1
+                             docker push ${dockerImage}
+                             sleep 1
+                             docker rmi ${dockerImage}
+                          """
+                    }
+
+
+                }
+            }
+        }
+    }
+}
