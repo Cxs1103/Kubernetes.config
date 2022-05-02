@@ -110,7 +110,7 @@ pipeline {
                          env.dockerImage = "registry.cn-hangzhou.aliyuncs.com/cxs1103/microservicecicd-${moduleName}-service:${env.imageTag}"
                          env.jarName = "${moduleName}-${branchName}-${commitId}"
                          sh """
-                             docker login -u ${username} -p ${password}  registry.cn-beijing.aliyuncs.com
+                             docker login -u ${username} -p ${password}  registry.cn-hangzhou.aliyuncs.com
                              cd ${moduleName} && docker build -t ${dockerImage} -f ../Dockerfile --build-arg SERVICE_NAME=${jarName} .
                              sleep 1
                              docker push ${dockerImage}
