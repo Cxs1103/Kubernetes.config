@@ -1,0 +1,92 @@
+String serviceName ="${JOB_NAME}".split("-")[1]
+String nameSpace = "${JOB_NAME}".split("-")[0].split("/")[-1]
+
+
+//pipeline
+// pipeline{
+
+//     agent any
+    
+//     stages{
+
+//pipeline
+def label = "k8s-slave-${UUID.randomUUID().toString()}"
+
+podTemplate(label: label, containers: [
+        containerTemplate(
+                name: 'jnlp',
+                image: 'registry.cn-hangzhou.aliyuncs.com/cxs1103/jnlp-slave:3.36-1',
+                alwaysPullImage: false,
+                privileged: true,
+                args: '${computer.jnlpmac} ${computer.name}'),
+        
+        containerTemplate(name: 'kubectl', image: 'registry.cn-hangzhou.aliyuncs.com/cxs1103/kubectl:latest', command: 'cat', ttyEnabled: true, privileged: true),
+        containerTemplate(name: 'helm', image: 'registry.cn-hangzhou.aliyuncs.com/cxs1103/helm:3.2.1', command: 'cat', ttyEnabled: true, privileged: true),
+        ],
+        namespace: 'kube-ops',serviceAccount: 'jenkins',automountServiceAccountToken: 'true',
+        volumes: [
+            hostPathVolume(hostPath: '/root/.kube', mountPath: '/home/jenkins/.kube'),
+        ]) {
+            node(label) {
+                stage("GetCode"){
+                    script{
+                        println("${branchName}")
+                        println("${env.branchName}".contains("RELEASE-"))
+                        println "获取代码"
+                        checkout([$class: 'GitSCM', branches: [[name: "${env.branchName}"]], 
+                                        doGenerateSubmoduleConfigurations: false, 
+                                        extensions: [[$class: 'SparseCheckoutPaths', 
+                                                        sparseCheckoutPaths: [[path: "${serviceName}"]]]], 
+                                        submoduleCfg: [], 
+                                        userRemoteConfigs: [[credentialsId: 'gitlab-auth', url: "http://gitlab.mieken.cn/microservicecicd/microservice-env-service.git"]]])
+                    }
+                }
+
+                stage("KubectlDeploy"){
+                    container('kubectl') {
+                        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                            sh """
+                            echo "查看 K8S 集群 Pod 列表"
+
+                            mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config
+
+                            kubectl get pods
+
+                            kubectl create ns "${nameSpace}-uat"  || echo false
+                        """
+                        }
+                    }
+                }
+
+                stage("HelmDeploy"){
+                    container('helm') {
+                        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                            sh """
+
+                            mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config
+
+                            helm install "${serviceName}" --namespace "${nameSpace}-uat" ./"${serviceName}" ||  helm upgrade "${serviceName}" --namespace "${nameSpace}-uat" ./"${serviceName}"
+
+                            helm list --namespace "${nameSpace}-uat"
+                            helm history "${serviceName}" --namespace "${nameSpace}-uat"
+
+                            """
+                        }
+                    }
+                }
+
+                stage("KubectlDeploy"){
+                    container('kubectl') {
+                        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                            sh """
+                            echo "查看 K8S 集群 Pod 列表"
+
+                            mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config
+
+                            kubectl -n "${nameSpace}-uat"  get pod,svc,ingress
+                        """
+                        }
+                    }
+                }
+            }
+        }
