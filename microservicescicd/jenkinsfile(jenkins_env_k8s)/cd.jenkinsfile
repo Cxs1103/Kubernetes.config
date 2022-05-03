@@ -1,14 +1,6 @@
 String serviceName ="${JOB_NAME}".split("-")[1]
 String nameSpace = "${JOB_NAME}".split("-")[0].split("/")[-1]
 
-
-//pipeline
-// pipeline{
-
-//     agent any
-    
-//     stages{
-
 //pipeline
 def label = "k8s-slave-${UUID.randomUUID().toString()}"
 
