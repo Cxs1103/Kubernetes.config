@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: cnych-res
+spec:
+  type: git
+  params:
+  - name: url
+    value: http://gitlab.mieken.cn/root/tekton-demo
+  - name: revision
+    value: master
