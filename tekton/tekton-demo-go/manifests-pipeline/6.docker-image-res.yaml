@@ -1,0 +1,9 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: docker-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: registry.cn-hangzhou.aliyuncs.com/cxs1103/tekton-demo:v0.4.0 #构建完的镜像名称
