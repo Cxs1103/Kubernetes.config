@@ -1,0 +1,18 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: test-pipelinerun
+spec:
+  serviceAccountName: build-sa
+  pipelineRef:
+    name: test-pipeline
+  resources:
+  - name: cnych-res  # 指定输入的git仓库资源
+    resourceRef:
+      name: cnych-res
+  - name: docker-image  # 指定输出的镜像资源
+    resourceRef:
+      name: docker-image
+  params:
+  - name: image-tag
+    value: "v0.5.0"
