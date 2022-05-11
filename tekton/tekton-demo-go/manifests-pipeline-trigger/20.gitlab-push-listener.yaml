@@ -1,0 +1,23 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: gitlab-listener  # 该事件监听器会创建一个名为el-gitlab-listener的Service对象
+spec:
+  serviceAccountName: tekton-triggers-gitlab-sa
+  triggers:
+  - name: gitlab-push-events-trigger
+    interceptors:
+    - ref:
+        name: gitlab
+      params:
+      - name: secretRef  # 引用 gitlab-secret 的 Secret 对象中的 secretToken 的值
+        value:
+          secretName: gitlab-secret
+          secretKey: secretToken
+      - name: eventTypes
+        value:
+          - Push Hook # 只接收 GitLab Push 事件
+    bindings:
+    - ref: devops-demo-binding
+    template:
+      ref: devops-demo-template
