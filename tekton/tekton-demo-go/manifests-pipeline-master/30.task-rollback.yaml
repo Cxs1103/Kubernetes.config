@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: rollback
+spec:
+  params:
+    - name: release_name
+      description: The helm release name
+    - name: release_namespace
+      description: The helm release namespace
+      default: ""
+    - name: helm_image
+      description: "helm image to be used"
+      default: "ccr.ccs.tencentyun.com/cxs1103/helm:v3.3.4" #tag: v3.3.4
+  steps:
+    - name: rollback
+      image: $(params.helm_image)
+      script: |
+        echo rollback current installed helm releases
+        helm rollback $(params.release_name) --namespace $(params.release_namespace)

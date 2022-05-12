@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy
+spec:
+  params:
+    - name: charts_dir
+      description: The directory in source that contains the helm chart
+    - name: release_name
+      description: The helm release name
+    - name: release_namespace
+      description: The helm release namespace
+      default: ""
+    - name: overwrite_values
+      description: "Specify the values you want to overwrite, comma separated: autoscaling.enabled=true,replicas=1"
+      default: ""
+    - name: values_file
+      description: "The values file to be used"
+      default: "values.yaml"
+    - name: helm_image
+      description: "helm image to be used"
+      default: "ccr.ccs.tencentyun.com/cxs1103/helm:v3.3.4" #tag: v3.3.4
+  workspaces:
+    - name: source
+  results:
+    - name: helm-status
+      description: Helm deploy status
+  steps:
+    - name: upgrade
+      image: $(params.helm_image)
+      workingDir: /workspace/source
+      script: |
+        echo current installed helm releases
+        helm list --namespace "$(params.release_namespace)"
+
+        echo installing helm chart...
+        helm upgrade --install --wait --values "$(params.charts_dir)/$(params.values_file)" --create-namespace --namespace "$(params.release_namespace)" $(params.release_name) $(params.charts_dir) --debug --set "$(params.overwrite_values)"
+
+        status=`helm status $(params.release_name) --namespace "$(params.release_namespace)" | awk '/STATUS/ {print $2}'`
+        echo ${status} | tr -d "\n" | tee $(results.helm-status.path)

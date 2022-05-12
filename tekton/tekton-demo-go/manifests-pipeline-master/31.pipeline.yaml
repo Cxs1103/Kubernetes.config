@@ -1,0 +1,101 @@
+# pipeline.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  workspaces: # 声明 workspaces
+    - name: go-repo-pvc
+  params:
+    # 定义代码仓库
+    - name: git_url
+    - name: revision
+      type: string
+      default: "master"
+    # 定义镜像参数
+    - name: image
+    - name: registry_url
+      type: string
+      default: "registry.cn-hangzhou.aliyuncs.com"
+    - name: registry_mirror
+      type: string
+      default: "https://fvm9j7yf.mirror.aliyuncs.com/"
+    # 定义 helm charts 参数
+    - name: charts_dir
+    - name: release_name
+    - name: release_namespace
+      default: "default"
+    - name: overwrite_values
+      default: ""
+    - name: values_file
+      default: "values.yaml"
+  tasks: # 添加task到流水线中
+    - name: clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: go-repo-pvc
+      params:
+        - name: url
+          value: $(params.git_url)
+        - name: revision
+          value: $(params.revision)
+    - name: test
+      taskRef:
+        name: test
+    - name: build # 编译二进制程序
+      taskRef:
+        name: build
+      runAfter: # 测试任务执行之后才执行 build task
+        - test
+        - clone
+      workspaces: # 传递 workspaces
+        - name: go-repo
+          workspace: go-repo-pvc
+    - name: docker # 构建并推送 Docker 镜像
+      taskRef:
+        name: docker
+      runAfter:
+        - build
+      workspaces: # 传递 workspaces
+        - name: go-repo
+          workspace: go-repo-pvc
+      params: # 传递参数
+        - name: image
+          value: $(params.image)
+        - name: registry_url
+          value: $(params.registry_url)
+        - name: registry_mirror
+          value: $(params.registry_mirror)
+    - name: deploy # 部署应用
+      taskRef:
+        name: deploy
+      runAfter:
+        - docker
+      workspaces:
+        - name: source
+          workspace: go-repo-pvc
+      params:
+        - name: charts_dir
+          value: $(params.charts_dir)
+        - name: release_name
+          value: $(params.release_name)
+        - name: release_namespace
+          value: $(params.release_namespace)
+        - name: overwrite_values
+          value: $(params.overwrite_values)
+        - name: values_file
+          value: $(params.values_file)
+    - name: rollback # 回滚
+      taskRef:
+        name: rollback
+      when:
+        - input: "$(tasks.deploy.results.helm-status)"
+          operator: in
+          values: ["failed"]
+      params:
+        - name: release_name
+          value: $(params.release_name)
+        - name: release_namespace
+          value: $(params.release_namespace)
