@@ -1710,13 +1710,14 @@ spec:
             "-version", "v0.24.1",
             # These images are built on-demand by `ko resolve` and are replaced
             # by image references by digest.
-            "-kubeconfig-writer-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/kubeconfigwriter:v0.24.1@sha256:6acb4d173d0e3400ee486095d93f6a0f46a225ebaa0ad34e3bbee4dfcebad3f8", "-git-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.24.1@sha256:52358dec303aa1349c2b4f23e6e483b479ba71214ef8e94c369cfe8e25af31fb", "-entrypoint-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint:v0.24.1@sha256:b2133bcb5942dc9cc0ece08090924464aa60a2be80e8c53b8949312f5b60c37a", "-nop-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/nop:v0.24.1@sha256:980d1658252873937abed0b8ee5b328883f78771ef721d6f50077de3043ad4e5", "-imagedigest-exporter-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/imagedigestexporter:v0.24.1@sha256:65b26906f18276b4133184bbe5e23b91aac022acf48c24403dd78652490443c1", "-pr-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/pullrequest-init:v0.24.1@sha256:1a634bcb0f9b1cd7430a98041c09939b13c1216838c9cfa65b90801b38b683d8",
+            "-kubeconfig-writer-image", "ccr.ccs.tencentyun.com/cxs1103/pipeline-kubeconfigwriter:v0.24.1", "-git-image", "ccr.ccs.tencentyun.com/cxs1103/pipeline-git-init:v0.24.1", "-entrypoint-image", "ccr.ccs.tencentyun.com/cxs1103/pipeline-entrypoint:v0.24.1", "-nop-image", "ccr.ccs.tencentyun.com/cxs1103/pipeline-nop:v0.24.1", "-imagedigest-exporter-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/imagedigestexporter:v0.24.1@sha256:65b26906f18276b4133184bbe5e23b91aac022acf48c24403dd78652490443c1", "-pr-image", "ccr.ccs.tencentyun.com/cxs1103/pipeline-pullrequest-init:v0.24.1",
             # This is gcr.io/google.com/cloudsdktool/cloud-sdk:302.0.0-slim
-            "-gsutil-image", "gcr.io/google.com/cloudsdktool/cloud-sdk@sha256:27b2c22bf259d9bc1a291e99c63791ba0c27a04d2db0a43241ba0f1f20f4067f",
+            "-gsutil-image", "ccr.ccs.tencentyun.com/cxs1103/cloudsdktool-cloud-sdk:302.0.0-slim",
             # The shell image must be root in order to create directories and copy files to PVCs.
             # gcr.io/distroless/base:debug as of Apirl 17, 2021
             # image shall not contains tag, so it will be supported on a runtime like cri-o
-            "-shell-image", "gcr.io/distroless/base@sha256:aa4fd987555ea10e1a4ec8765da8158b5ffdfef1e72da512c7ede509bc9966c4"]
+            #"-shell-image", "gcr.io/distroless/base@sha256:aa4fd987555ea10e1a4ec8765da8158b5ffdfef1e72da512c7ede509bc9966c4"]
+            "-shell-image", "busybox@sha256:a2490cec4484ee6c1068ba3a05f89934010c85242f736280b35343483b2264b6"]
           volumeMounts:
             - name: config-logging
               mountPath: /etc/config-logging

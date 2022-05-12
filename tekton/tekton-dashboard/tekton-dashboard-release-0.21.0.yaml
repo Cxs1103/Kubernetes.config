@@ -302,6 +302,7 @@ metadata:
   name: tekton-dashboard
   namespace: tekton-pipelines
 spec:
+  type: NodePort
   ports:
     - name: http
       port: 9097
@@ -363,7 +364,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard@sha256:95f71a2568ced67ec370b5360f88bec3280601908cac9e62dfbb801114480437
+          image: ccr.ccs.tencentyun.com/cxs1103/tekton-dashboard:v0.21.0
           livenessProbe:
             httpGet:
               path: /health
