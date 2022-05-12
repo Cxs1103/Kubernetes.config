@@ -18,5 +18,5 @@ ENV TZ=Asia/Shanghai
 
 EXPOSE 8080
 
-ENTRYPOINT ./demo-app
+ENTRYPOINT ./app
 
