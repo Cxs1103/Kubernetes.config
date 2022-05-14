@@ -9729,6 +9729,7 @@ metadata:
     app.kubernetes.io/part-of: argocd
   name: argocd-repo-server
 spec:
+  type: NodePort
   ports:
   - name: server
     port: 8081
@@ -10237,6 +10238,11 @@ spec:
       containers:
       - command:
         - argocd-server
+        - --staticassets
+        - /shared/app
+        - --repo-server
+        - argocd-repo-server:8081
+        - --insecure  # 需要禁用 tls，否则会 `redirected you too many times`
         env:
         - name: ARGOCD_SERVER_INSECURE
           valueFrom:
