@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  # 项目名
+  name: demo
+  namespace: argocd
+spec:
+  # 目标
+  destinations:
+    # 此项目的服务允许部署的 namespace，这里为全部
+  - namespace: '*'
+    # 此项目允许部署的集群，这里为默认集群，即为Argo CD部署的当前集群
+    server: https://kubernetes.default.svc
+  # 允许的数据源
+  sourceRepos:
+  - http://gitlab.mieken.cn/root/devops-demo-deploy.git
