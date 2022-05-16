@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: sync
+spec:
+  volumes:
+  - name: argocd-secret
+    secret:
+      secretName: $(inputs.params.argocd_secret)
+  params:
+    - name: argocd_url
+      description: "The URL of the ArgoCD server"
+    - name: argocd_secret
+      description: "The secret containing the username and password for the tekton task to connect to argo"
+    - name: image_tag
+      description: "The docker image tag to update"
+    - name: app_name
+      description: "The name of the argo app to update"
+    - name: app_revision
+      default: "HEAD"
+      description: "The revision of the argo app to update"
+  steps:
+  - name: deploy
+    image: ccr.ccs.tencentyun.com/cxs1103/argocd:v2.3.3
+    volumeMounts:
+    - name: argocd-secret
+      mountPath: /var/secret
+    command:
+    - sh
+    args:
+    - -ce
+    - |
+      set -e
+      echo "update commit id"
+      echo $(params.argocd_url)
+      echo $(/bin/cat /var/secret/username)
+      echo $(/bin/cat /var/secret/password)
+      argocd login --insecure argocd.mieken.cn --username admin --password Argocd@1234 --grpc-web
+      argocd app sync $(params.app_name) --revision $(params.app_revision)
+      argocd app wait $(params.app_name) --health

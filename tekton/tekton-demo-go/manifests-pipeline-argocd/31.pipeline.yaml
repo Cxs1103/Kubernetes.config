@@ -1,0 +1,109 @@
+# pipeline.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  workspaces: # 声明 workspaces
+    - name: go-repo-pvc
+  params:
+    # 定义代码仓库
+    - name: git_url
+    - name: git_infra_url
+    - name: revision
+      type: string
+      default: "master"
+    # 定义镜像参数
+    - name: image
+    - name: image_tag
+    - name: registry_url
+      type: string
+      default: "registry.cn-hangzhou.aliyuncs.com"
+    - name: registry_mirror
+      type: string
+      default: "https://fvm9j7yf.mirror.aliyuncs.com/"
+    # # 定义 helm charts 参数
+    # - name: charts_dir
+    # - name: release_name
+    # - name: release_namespace
+    #   default: "default"
+    # - name: overwrite_values
+    #   default: ""
+    # - name: values_file
+    #   default: "values.yaml"
+    - name: git_manifest_dir
+      default: "helm"
+    # 定义 argocd 参数
+    - name: argocd_url
+    - name: argocd_secret
+    - name: app_name
+    - name: app_revision
+      type: string
+      default: "HEAD"
+  tasks: # 添加task到流水线中
+    - name: clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: go-repo-pvc
+      params:
+        - name: url
+          value: $(params.git_url)
+        - name: revision
+          value: $(params.revision)
+    - name: test
+      taskRef:
+        name: test
+    - name: build # 编译二进制程序
+      taskRef:
+        name: build
+      runAfter: # 测试任务执行之后才执行 build task
+        - test
+        - clone
+      workspaces: # 传递 workspaces
+        - name: go-repo
+          workspace: go-repo-pvc
+    - name: docker # 构建并推送 Docker 镜像
+      taskRef:
+        name: docker
+      runAfter:
+        - build
+      workspaces: # 传递 workspaces
+        - name: go-repo
+          workspace: go-repo-pvc
+      params: # 传递参数
+        - name: image
+          value: $(params.image):$(params.image_tag)
+        - name: registry_url
+          value: $(params.registry_url)
+        - name: registry_mirror
+          value: $(params.registry_mirror)
+    - name: manifests
+      taskRef:
+        name: change-manifests
+      runAfter:
+        - docker
+      params:
+      - name: git_url
+        value: $(params.git_infra_url)
+      - name: git_manifest_dir
+        value: $(params.git_manifest_dir)
+      - name: image_tag
+        value: $(params.image_tag)
+    - name: sync
+      taskRef:
+        name: sync
+      runAfter:
+        - manifests
+      params:
+      - name: argocd_url
+        value: $(params.argocd_url)
+      - name: argocd_secret
+        value: $(params.argocd_secret)
+      - name: image_tag
+        value: $(params.image_tag)
+      - name: app_name
+        value: $(params.app_name)
+      - name: app_revision
+        value: $(params.app_revision)
