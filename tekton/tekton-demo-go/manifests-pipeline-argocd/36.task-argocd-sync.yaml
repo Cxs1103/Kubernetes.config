@@ -32,9 +32,6 @@ spec:
     - |
       set -e
       echo "update commit id"
-      echo $(params.argocd_url)
-      echo $(/bin/cat /var/secret/username)
-      echo $(/bin/cat /var/secret/password)
-      argocd login --insecure argocd.mieken.cn --username admin --password Argocd@1234 --grpc-web
+      argocd login --insecure $(params.argocd_url) --username $(/bin/cat /var/secret/username) --password $(/bin/cat /var/secret/password) --grpc-web
       argocd app sync $(params.app_name) --revision $(params.app_revision)
       argocd app wait $(params.app_name) --health
