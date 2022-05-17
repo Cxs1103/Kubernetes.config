@@ -1,0 +1,38 @@
+# basic-rollout.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: rollouts-demo
+spec:
+  replicas: 5  # 定义5个副本
+  strategy:  # 定义升级策略
+    canary:   # 金丝雀发布
+      steps:  # 发布的节奏
+      - setWeight: 20
+      - pause: {}  # 会一直暂停
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+  revisionHistoryLimit: 2  # 下面部分其实是和 Deployment 兼容的
+  selector:
+    matchLabels:
+      app: rollouts-demo
+  template:
+    metadata:
+      labels:
+        app: rollouts-demo
+    spec:
+      containers:
+      - name: rollouts-demo
+        image: ccr.ccs.tencentyun.com/cxs1103/rollouts-demo:blue
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
