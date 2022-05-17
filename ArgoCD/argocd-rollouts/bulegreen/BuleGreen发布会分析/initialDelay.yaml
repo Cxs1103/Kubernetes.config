@@ -1,0 +1,10 @@
+# 延迟分析运行
+  metrics:
+  - name: success-rate
+    # Do not start this analysis until 5 minutes after the analysis run starts
+    initialDelay: 5m
+    successCondition: result[0] >= 0.90
+    provider:
+      prometheus:
+        address: http://prometheus.example.com:9090
+        query: ...

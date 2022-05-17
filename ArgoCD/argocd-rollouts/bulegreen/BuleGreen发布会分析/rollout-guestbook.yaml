@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: guestbook
+spec:
+#............
+  strategy:
+    blueGreen:
+      activeService: active-svc
+      previewService: preview-svc
+      scaleDownDelaySeconds: 600 # 10 minutes
+      postPromotionAnalysis:
+        templates:
+        - templateName: smoke-tests
+        args:
+        - name: service-name
+          value: preview-svc.default.svc.cluster.local

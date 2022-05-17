@@ -1,0 +1,16 @@
+# 无结果的运行
+  metrics:
+  - name: my-query
+    provider:
+      prometheus:
+        address: http://prometheus.example.com:9090
+        query: ...
+---
+  metrics:
+  - name: success-rate
+    successCondition: result[0] >= 0.90
+    failureCondition: result[0] < 0.50
+    provider:
+      prometheus:
+        address: http://prometheus.example.com:9090
+        query: ...
