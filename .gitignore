@@ -1,2 +1,3 @@
 ArgoCD/argocd-linux-amd64
 ArgoCD/Argocd_install/argocd-linux-amd64
+ArgoCD/argocd-rollouts/install/kubectl-argo-rollouts-linux-amd64
