@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: args-example
+spec:
+  args:
+  # required
+  - name: service-name
+  - name: stable-hash
+  - name: latest-hash
+  # optional
+  - name: api-url
+    value: http://example/measure
+  # from secret
+  - name: api-token
+    valueFrom:
+      secretKeyRef:
+        name: token-secret
+        key: apiToken
+  metrics:
+  - name: webmetric
+    successCondition: result == 'true'
+    provider:
+      web:
+        # placeholders are resolved when an AnalysisRun is created
+        url: "{{ args.api-url }}?service={{ args.service-name }}"
+        headers:
+          - key: Authorization
+            value: "Bearer {{ args.api-token }}"
+        jsonPath: "{$.results.ok}"
