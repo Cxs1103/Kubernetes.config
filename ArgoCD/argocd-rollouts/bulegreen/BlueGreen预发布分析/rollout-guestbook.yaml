@@ -1,0 +1,15 @@
+kind: Rollout
+metadata:
+  name: guestbook
+spec:
+...
+  strategy:
+    blueGreen:
+      activeService: active-svc
+      previewService: preview-svc
+      prePromotionAnalysis:
+        templates:
+        - templateName: smoke-tests
+        args:
+        - name: service-name
+          value: preview-svc.default.svc.cluster.local
