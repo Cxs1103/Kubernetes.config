@@ -1,0 +1,33 @@
+# cnn-virtual.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: direct-cnn-through-egress-gateway
+spec:
+  hosts:
+  - edition.cnn.com
+  gateways:
+  - istio-egressgateway
+  - mesh  # mesh 表示网格中的所有 Sidecar，如果没有指定 gateways，则默认为 mesh
+  http:
+  - match:
+    - gateways:
+      - mesh
+      port: 80
+    route:
+    - destination:  # 将服务路由到什么地方去
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        subset: cnn  # subset 配置流量目的地的子集
+        port:
+          number: 80
+      weight: 100
+  - match:
+    - gateways:
+      - istio-egressgateway
+      port: 80
+    route:
+    - destination:
+        host: edition.cnn.com
+        port:
+          number: 80
+      weight: 100
