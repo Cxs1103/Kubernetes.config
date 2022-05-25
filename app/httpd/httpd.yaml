@@ -54,3 +54,6 @@ spec:
       - name: httpd-persistent-storage
         persistentVolumeClaim:
           claimName: httpd-pvc
+        # hostPath:
+        #   path: /opt
+        #   type: Directory
