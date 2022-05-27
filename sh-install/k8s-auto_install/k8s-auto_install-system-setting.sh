@@ -57,9 +57,10 @@ EOF
 chmod 755 /etc/sysconfig/modules/br_netfilter.modules
 
 cat <<EOF > /etc/sysctl.d/kubernetes.conf
-net.bridge. bridge-nf-call-ip6tables = 1
-net.bridge. bridge-nfcall-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
 net.ipv4.ip_forward = 1
+vm.swappiness=0
 EOF
 
 echo -e "\033[34;49;1m 重新加载配置 \033[39;49;0m"
