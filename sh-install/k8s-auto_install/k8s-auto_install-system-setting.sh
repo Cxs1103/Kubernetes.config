@@ -17,7 +17,7 @@ yum clean all
 yum makecache
 
 echo -e "\033[34;49;1m 安装chrony时间同步程序\033[39;49;0m"
-yum install chrony -y
+yum install chrony vim -y
 
 echo -e "\033[34;49;1m 设置时间同步服务器\033[39;49;0m"
 sed -i 's/0.centos.pool.ntp.org/ntp.aliyun.com/g' /etc/chrony.conf
@@ -37,10 +37,12 @@ systemctl disable firewalld
 systemctl status firewalld
 
 echo -e "\033[34;49;1m 关闭selinux \033[39;49;0m"
+setenforce 0
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+cat /etc/selinux/config
 
 echo -e "\033[34;49;1m 添加hosts主机解析 \033[39;49;0m"
-echo -e "192.168.0.81 k8s-master\n192.168.0.82 k8s-node01\n192.168.0.83 k8s-node02" >> /etc/hosts
+echo -e "192.168.0.81 master01\n192.168.0.82 node01\n192.168.0.83 node02" >> /etc/hosts
 
 echo -e "\033[34;49;1m 修改Linux内核参数 \033[39;49;0m"
 cat > /etc/rc.sysinit << EOF
@@ -64,7 +66,7 @@ vm.swappiness=0
 EOF
 
 echo -e "\033[34;49;1m 重新加载配置 \033[39;49;0m"
-sysctl -p
+sysctl -p /etc/sysctl.d/kubernetes.conf
 
 echo -e "\033[34;49;1m 加载网桥过滤模块 \033[39;49;0m"
 modprobe br_netfilter
@@ -93,6 +95,10 @@ echo -e "\033[34;49;1m 执行脚本文件 \033[39;49;0m"
 
 echo -e "\033[34;49;1m 查看对应的模块是否加载成功 \033[39;49;0m"
 lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+
+echo -e "\033[34;49;1m 关闭 swap 分区 \033[39;49;0m"
+sed -i "s@/dev/mapper/centos-swap@#/dev/mapper/centos-swap@g"   /etc/fstab
+swapoff  -a
 
 echo -e "\033[34;49;1m 重启服务器 \033[39;49;0m"
 reboot
