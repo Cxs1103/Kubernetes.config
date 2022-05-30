@@ -65,11 +65,12 @@ net.ipv4.ip_forward = 1
 vm.swappiness=0
 EOF
 
-echo -e "\033[34;49;1m 重新加载配置 \033[39;49;0m"
-sysctl -p /etc/sysctl.d/kubernetes.conf
-
+# 一定要先加载网桥，不然会报错：sysctl: cannot stat /proc/sys/net/bridge/bridge-nfcall-iptables: No such file or directory
 echo -e "\033[34;49;1m 加载网桥过滤模块 \033[39;49;0m"
 modprobe br_netfilter
+
+echo -e "\033[34;49;1m 重新加载配置 \033[39;49;0m"
+sysctl -p /etc/sysctl.d/kubernetes.conf
 
 echo -e "\033[34;49;1m 查看网桥过滤模块是否加载成功 \033[39;49;0m"
 lsmod | grep br_netfilter
