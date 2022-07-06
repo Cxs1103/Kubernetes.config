@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: k8s-pv-zk01
+  labels:
+    app: zk
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "anything"
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: 192.168.0.81
+    path: "/usr/local/k8s/zookeeper/pv1"
+  persistentVolumeReclaimPolicy: Recycle
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: k8s-pv-zk02
+  labels:
+    app: zk
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "anything"
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: 192.168.0.81
+    path: "/usr/local/k8s/zookeeper/pv2"
+  persistentVolumeReclaimPolicy: Recycle
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: k8s-pv-zk03
+  labels:
+    app: zk
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "anything"
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: 192.168.0.81
+    path: "/usr/local/k8s/zookeeper/pv3"
+  persistentVolumeReclaimPolicy: Recycle
