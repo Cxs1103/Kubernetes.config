@@ -1,0 +1,17 @@
+#Service
+apiVersion: v1
+kind: Service
+metadata:
+    name: kafka-zookeeper-service
+    namespace: paas-basic
+    labels:
+        name: zookeeper-service
+spec:    
+    selector:
+        name: kafka-zookeeper-pod
+    # sessionAffinity: ClientIP
+    type: NodePort
+    ports:
+    - name: "zookeeper"
+      port: 2181
+      targetPort: 2181

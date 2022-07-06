@@ -1,0 +1,18 @@
+#Service
+apiVersion: v1
+kind: Service
+metadata:
+    name: kafka-manager
+    namespace: paas-basic
+    labels:
+        name: manager-service
+spec:    
+    selector:
+        name: kafka-manager-pod
+    sessionAffinity: ClientIP
+    type: NodePort
+    ports:
+    - name: "manager"
+      port: 9000
+      targetPort: 9000
+      nodePort: 30900

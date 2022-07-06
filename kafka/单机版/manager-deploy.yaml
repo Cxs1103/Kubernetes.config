@@ -1,0 +1,32 @@
+#Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: kafka-manager-deploy
+    namespace: paas-basic
+    labels:
+        name: manager-deploy
+spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        name: kafka-manager-pod
+    template:
+        metadata:
+            labels:
+                name: kafka-manager-pod
+        spec:
+            terminationGracePeriodSeconds: 1  #k8s正确、优雅地关闭应用，等待时间30秒
+            # nodeSelector:
+            #   kafka: "true"
+            containers:
+            - name: "kafka-manager"
+              image:  sheepkiller/kafka-manager
+              imagePullPolicy: IfNotPresent
+              ports:
+              - containerPort: 9000
+              env:
+              - name: ZK_HOSTS
+                value: kafka-zookeeper-service.paas-basic:2181
+              - name: KAFKA_ZOOKEEPER_CONNECT
+                value: kafka-zookeeper-service.paas-basic:2181

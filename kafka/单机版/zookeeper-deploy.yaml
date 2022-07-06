@@ -1,0 +1,35 @@
+#Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: kafka-zookeeper-deploy
+    namespace: paas-basic
+    labels:
+        name: zookeeper-deploy-label
+spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        name: kafka-zookeeper-pod
+    template:
+        metadata:
+            labels:
+                name: kafka-zookeeper-pod
+        spec:
+            terminationGracePeriodSeconds: 30  #k8s正确、优雅地关闭应用，等待时间30秒
+            # nodeSelector:
+            #   kafka: "true"
+            containers:
+            - name: "kafka-zookeeper"
+              image: wurstmeister/zookeeper
+              imagePullPolicy: IfNotPresent
+              ports:
+              - containerPort: 2181
+              volumeMounts:
+              - name: zk-data
+                readOnly: false
+                mountPath: /opt/zookeeper-3.4.13/data
+            volumes:
+            - name: zk-data
+              hostPath:
+                path: /home/kafka/zookeeper_data

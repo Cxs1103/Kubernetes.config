@@ -1,0 +1,48 @@
+#Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: kafka-deploy
+    namespace: paas-basic
+    labels:
+        name: kafka-deploy
+spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        name: kafka-pod
+    template:
+        metadata:
+            labels:
+                name: kafka-pod
+        spec:
+            terminationGracePeriodSeconds: 30  #k8s正确、优雅地关闭应用，等待时间30秒
+            # nodeSelector:
+            #   kafka: "true"
+            # hostname: kafka-hostname       #设置pod的hostaname
+            containers:
+            - name: "kafka"
+              image: wurstmeister/kafka:2.12-2.3.0
+              imagePullPolicy: IfNotPresent
+              ports:
+              - containerPort: 9092
+              volumeMounts:
+              - name: kafka-volume
+                mountPath: /kafka
+              env:
+              - name: KAFKA_BROKER_ID
+                value: "0"
+              - name: KAFKA_LISTENERS
+                value: PLAINTEXT://0.0.0.0:9092
+              - name: KAFKA_ADVERTISED_PORT
+                value: "9092"
+              - name: KAFKA_ADVERTISED_HOST_NAME
+                value: kafka-service.paas-basic
+              - name: KAFKA_ZOOKEEPER_CONNECT
+                value: kafka-zookeeper-service.paas-basic.svc.cluster.local:2181
+              - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+                value: "true"
+            volumes:
+            - name: kafka-volume
+              hostPath:
+                path: /home/kafka/volume
