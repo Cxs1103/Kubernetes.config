@@ -8,7 +8,7 @@ metadata:
 spec:
   containers:
   - name: front-end
-    image: nginx:1.20.0
+    image: nginx:1.20.2
     resources:
       limits:
         memory: "128Mi"
@@ -16,7 +16,7 @@ spec:
     ports:
       - containerPort: 80
   - name: flask-demo
-    image: cnych/flaskapp
+    image: jcdemo/flaskapp
     resources:
       limits:
         memory: "256Mi"
