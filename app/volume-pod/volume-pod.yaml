@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: volume-pod
+  namespace: kube-system
+  labels:
+    k8s-app: test-volume
+    node-env: test
+  annotations:
+    own: youdianzhishi
+    build: test
+spec:
+  volumes:
+  - name: podinfo
+    downwardAPI:
+      items:
+      - path: labels
+        fieldRef:
+          fieldPath: metadata.labels
+      - path: annotations
+        fieldRef:
+          fieldPath: metadata.annotations
+  containers:
+  - name: volume-pod
+    image: busybox
+    args:
+    - sleep
+    - "3600"
+    volumeMounts:
+    - name: podinfo
+      mountPath: /etc/podinfo
