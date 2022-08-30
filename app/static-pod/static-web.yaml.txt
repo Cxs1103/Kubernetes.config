@@ -1,0 +1,15 @@
+cat <<EOF >/etc/kubernetes/manifests/static-web.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-pod
+  labels:
+    app: static
+spec:
+  containers:
+  - name: web
+    image: nginx
+    ports:
+      - name: web
+        containerPort: 80
+EOF
