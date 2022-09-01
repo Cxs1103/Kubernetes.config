@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+  namespace: default
+spec:
+  serviceName: "nginx"
+  replicas: 6
+  podManagementPolicy: Parallel # Parallel 管理模式，表示让 StatefulSet 控制器并行的终止所有 Pod，在启动或终止另一个 Pod 前，不必等待这些 Pod 变成 Running 和 Ready 或者完全终止状态
+  updateStrategy:
+    rollingUpdate:
+      partition: 2  # 总共6个pod，大于等于2的pod标签都更新，web-2到web-5
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.22.0
+        #image: nginx:latest
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates: # 声明挂载点
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
