@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  nginx-deploy
+  namespace: default
+  labels:
+    role: deploy # 此标签仅用于标记deployment本身这个资源对象
+spec:
+  replicas: 3  # 期望的 Pod 副本数量，默认值为1
+  revisionHistoryLimit: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:  # Label Selector，必须匹配 Pod 模板中的标签
+    matchLabels:
+      app: nginx
+      test: course
+  template:  # Pod 模板
+    metadata:
+      labels: # 一定要和上面的 selector 保持一致
+        app: nginx
+        test: course
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80  # 应用里面还是80 ，所以访问的时候也是用80，这个地方只是一个声明作用
