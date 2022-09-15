@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testcm4-pod
+spec:
+  volumes:
+    - name: config-volume
+      configMap:
+        name: cm-demo1
+        items:
+        - key: mysql.conf
+          path: msyql.conf
+  containers:
+    - name: testcm4
+      image: busybox
+      command: [ "/bin/sh","-c","cat /etc/config/msyql.conf" ]
+      volumeMounts:
+      - name: config-volume
+        mountPath: /etc/config
+
