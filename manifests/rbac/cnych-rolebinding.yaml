@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cnych-rolebinding
+  namespace: kube-system
+subjects:
+- kind: User
+  name: cnych
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: cnych-role
+  apiGroup: rbac.authorization.k8s.io  # 留空字符串也可以，则使用当前的apiGroup

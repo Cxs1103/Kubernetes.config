@@ -1,0 +1,13 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cnych-sa-rolebinding
+  namespace: kube-system
+subjects:
+- kind: ServiceAccount
+  name: cnych-sa
+  namespace: kube-system
+roleRef:
+  kind: Role
+  name: cnych-sa-role
+  apiGroup: rbac.authorization.k8s.io
