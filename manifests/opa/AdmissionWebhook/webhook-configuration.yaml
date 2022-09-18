@@ -1,0 +1,29 @@
+kind: ValidatingWebhookConfiguration
+apiVersion: admissionregistration.k8s.io/v1
+metadata:
+  name: opa-validating-webhook
+webhooks:
+  - name: validating-webhook.openpolicyagent.org
+    admissionReviewVersions: ["v1", "v1beta1"]
+    namespaceSelector:
+      matchExpressions:
+      - key: openpolicyagent.org/webhook
+        operator: NotIn
+        values:
+        - ignore
+    failurePolicy: Ignore
+    rules:
+      - apiGroups:
+        - '*'
+        apiVersions:
+        - '*'
+        operations:
+        - '*'
+        resources:
+        - '*'
+    sideEffects: None
+    clientConfig:
+      caBundle: $(cat ca.crt | base64 | tr -d '\n')
+      service:
+        namespace: opa
+        name: opa
