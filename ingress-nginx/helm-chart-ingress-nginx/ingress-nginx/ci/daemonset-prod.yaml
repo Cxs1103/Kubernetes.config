@@ -5,6 +5,47 @@ controller:
     tag: "v1.1.0"
     digest:
 
+  config:
+    allow-snippet-annotations: "true"
+    client-header-buffer-size: 32k  # 注意不是下划线
+    client-max-body-size: 5m
+    use-gzip: "true"
+    gzip-level: "7"
+    large-client-header-buffers: 4 32k
+    proxy-connect-timeout: 11s
+    proxy-read-timeout: 12s
+    keep-alive: "75"   # 启用keep-alive，连接复用，提高QPS
+    keep-alive-requests: "100"
+    upstream-keepalive-connections: "10000"
+    upstream-keepalive-requests: "100"
+    upstream-keepalive-timeout: "60"
+    disable-ipv6: "true"
+    disable-ipv6-dns: "true"
+    max-worker-connections: "65535"
+    max-worker-open-files: "10240"
+
+  extraInitContainers:
+  - name: init-sysctl
+    image: busybox
+    securityContext:
+      capabilities:
+        add:
+        - SYS_ADMIN
+        drop:
+        - ALL
+    command:
+    - /bin/sh
+    - -c
+    - |
+      mount -o remount rw /proc/sys
+      sysctl -w net.core.somaxconn=65535  # socket监听的backlog上限
+      sysctl -w net.ipv4.tcp_tw_reuse=1  # 开启重用，允许将 TIME-WAIT sockets 重新用于新的TCP连接
+      sysctl -w net.ipv4.ip_local_port_range="1024 65535"
+      sysctl -w fs.file-max=1048576
+      sysctl -w fs.inotify.max_user_instances=16384
+      sysctl -w fs.inotify.max_user_watches=524288
+      sysctl -w fs.inotify.max_queued_events=16384
+
   dnsPolicy: ClusterFirstWithHostNet
   hostNetwork: true
 
@@ -59,3 +100,9 @@ defaultBackend:  # 配置默认后端
   image:
     repository: cnych/ingress-nginx-defaultbackend
     tag: "1.5"
+
+tcp:  # 配置 tcp 服务
+  27017: "default/mongo:27017"  # 使用 27017 端口去映射 mongo 服务
+
+#udp:  # 配置 udp 服务
+#  53: "kube-system/kube-dns:53"
