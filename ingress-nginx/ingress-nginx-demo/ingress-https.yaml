@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-with-auth
+  annotations:
+    # 认证类型
+    nginx.ingress.kubernetes.io/auth-type: basic
+    # 包含 user/password 定义的 secret 对象名
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    # 要显示的带有适当上下文的消息，说明需要身份验证的原因
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - foo'
+spec:
+  ingressClassName: nginx
+  tls:  # 配置 tls 证书
+  - hosts:
+    - foo.bar.com
+    secretName: foo-tls
+  rules:
+  - host: foo.bar.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-nginx
+            port:
+              number: 80
