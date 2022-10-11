@@ -1,0 +1,9 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-foo-path
+  namespace: default  # 注意这里的中间件我们定义在default命名空间下面的
+spec:
+  stripPrefix:
+    prefixes:
+    - /foo
