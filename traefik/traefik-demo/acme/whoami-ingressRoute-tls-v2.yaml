@@ -1,0 +1,17 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingressroute-tls-demo
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`who.mieken.cn`) && PathPrefix(`/tls`)
+    kind: Rule
+    services:
+    - name: whoami
+      port: 80
+  tls:
+    certResolver: ali
+    domains:
+    - main: "*.mieken.cn"
