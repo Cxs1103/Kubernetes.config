@@ -1,0 +1,14 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: TraefikService
+metadata:
+  name: app-wrr
+spec:
+  weighted:
+    services:
+      - name: appv1
+        weight: 3  # 定义权重
+        port: 80
+        kind: Service  # 可选，默认就是 Service
+      - name: appv2
+        weight: 1
+        port: 80
