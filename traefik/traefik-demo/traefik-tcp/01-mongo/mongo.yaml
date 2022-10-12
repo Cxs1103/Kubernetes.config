@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-traefik
+  labels:
+    app: mongo-traefik
+spec:
+  selector:
+    matchLabels:
+      app: mongo-traefik
+  template:
+    metadata:
+      labels:
+        app: mongo-traefik
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:4.0
+        ports:
+        - containerPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-traefik
+spec:
+  selector:
+    app: mongo-traefik
+  ports:
+  - port: 27017
