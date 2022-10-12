@@ -1,0 +1,27 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: TraefikService
+metadata:
+  name: app-mirror
+spec:
+  mirroring:
+    name: v1 # 发送 100% 的请求到 K8S 的 Service "v1"
+    port: 80
+    mirrors:
+    - name: v2 # 然后复制 50% 的请求到 v2
+      percent: 50
+      port: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mirror-ingress-route
+  namespace: default
+spec:
+  entryPoints:
+  - web
+  routes:
+  - match: Host(`mirror.mieken.cn`)
+    kind: Rule
+    services:
+    - name: app-mirror
+      kind: TraefikService # 使用声明的 TraefikService 服务，而不是 K8S 的 Service

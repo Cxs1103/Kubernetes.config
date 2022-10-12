@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: v1
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: 80
+  selector:
+    app: v1
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: v1
+  labels:
+    app: v1
+spec:
+  selector:
+    matchLabels:
+      app: v1
+  template:
+    metadata:
+      labels:
+        app: v1
+    spec:
+      containers:
+        - name: v1
+          image: nginx
+          ports:
+            - name: web
+              containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: v2
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: 80
+  selector:
+    app: v2
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: v2
+  labels:
+    app: v2
+spec:
+  selector:
+    matchLabels:
+      app: v2
+  template:
+    metadata:
+      labels:
+        app: v2
+    spec:
+      containers:
+        - name: v2
+          image: nginx
+          ports:
+            - name: web
+              containerPort: 80
