@@ -1,0 +1,10 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: my-private-plugin
+spec:
+  plugin:
+    plugindemo:  # 插件名
+      Headers:
+        X-Demo: private-demo
+        Foo: bar
