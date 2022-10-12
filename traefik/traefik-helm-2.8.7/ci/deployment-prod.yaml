@@ -1,0 +1,107 @@
+deployment:
+  enabled: true
+  kind: Deployment
+
+# 使用 IngressClass. Traefik 版本<2.3 或者 Kubernetes 版本 < 1.18.x 会被忽略
+ingressClass:
+  # 还没有进行完整的单元测试，pending https://github.com/rancher/helm-unittest/pull/12
+  enabled: true
+  isDefaultClass: false
+
+ingressRoute:  # 不用自动创建，我们自己处理
+  dashboard:
+    enabled: false
+
+# 配置 providers
+providers:
+  kubernetesCRD:  # 开启 crd provider
+    enabled: true
+    allowCrossNamespace: true  # 是否允许跨命名空间
+    allowExternalNameServices: true  # 是否允许使用 ExternalName 的服务
+
+  kubernetesIngress:  # 开启 ingress provider
+    enabled: true
+    allowExternalNameServices: true
+
+logs:
+  general:
+    # format: json
+    level: DEBUG
+  access:
+    enabled: true
+
+ports:
+  web:
+    port: 8000
+    hostPort: 80  # 使用 hostport 模式
+
+  websecure:
+    port: 8443
+    hostPort: 443  # 使用 hostport 模式
+
+  metrics:
+    port: 9100
+    hostPort: 9101
+
+
+service:  # host 模式就不需要创建 Service 了，云端环境可以用 Service 模式
+  enabled: false
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "100Mi"
+  limits:
+    cpu: "100m"
+    memory: "100Mi"
+
+# tolerations:   # kubeadm 安装的集群默认情况下master是有污点，如果需要安装在master节点需要添加容忍
+# - key: "node-role.kubernetes.io/master"
+#   operator: "Equal"
+#   effect: "NoSchedule"
+
+nodeSelector:   # 固定到node1这个边缘节点
+  kubernetes.io/hostname: "node01"
+
+# ci/deployment-prod.yaml
+additionalArguments:
+# 使用 dns 验证方式
+- --certificatesResolvers.ali.acme.dnsChallenge.provider=alidns
+# 先使用staging环境进行验证，验证成功后再使用移除下面一行的配置
+#- --certificatesResolvers.ali.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+# 邮箱配置
+- --certificatesResolvers.ali.acme.email=cxs1103@163.com
+# 保存 ACME 证书的位置
+- --certificatesResolvers.ali.acme.storage=/data/acme.json
+# 添加 demo plugin 的本地支持
+- --experimental.localPlugins.plugindemo.moduleName=github.com/traefik/plugindemo
+
+envFrom:
+- secretRef:
+    name: traefik-alidns-secret
+    # ALICLOUD_ACCESS_KEY
+    # ALICLOUD_SECRET_KEY
+    # ALICLOUD_REGION_ID
+
+persistence:
+  enabled: true  # 开启持久化
+  accessMode: ReadWriteOnce
+  size: 128Mi
+  path: /data
+
+# 由于上面持久化了ACME的数据，需要重新配置下面的安全上下文
+securityContext:
+  readOnlyRootFilesystem: false
+  runAsGroup: 0
+  runAsUser: 0
+  runAsNonRoot: false
+
+image:
+  name: cnych/traefik-private-demo-plugin
+  tag: 2.5.4
+
+# 其他省略
+
+# 不需要开启 pilot 了
+pilot:
+  enabled: false
