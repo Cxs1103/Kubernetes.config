@@ -1,0 +1,11 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: whoamiudp
+spec:
+  entryPoints:
+  - udpep
+  routes:
+  - services:
+    - name: whoamiudp
+      port: 8080
