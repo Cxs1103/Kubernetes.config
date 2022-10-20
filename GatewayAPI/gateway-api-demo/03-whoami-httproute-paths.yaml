@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: HTTPRoute
+metadata:
+  name: http-app-1
+  namespace: kube-system
+  labels:
+    app: traefik
+spec:
+  hostnames:
+    - whoami
+  rules:
+    - backendRefs:
+        - port: 8080
+          name: whoami
+          weight: 1
+      matches:
+        - path:
+            type: Exact  # 匹配 /foo 的路径
+            value: /foo
