@@ -1,0 +1,31 @@
+apisix:
+  enabled: true
+
+  nodeSelector:  # 固定在node2节点上
+    kubernetes.io/hostname: node02
+
+gateway:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  http:
+    enabled: true
+    servicePort: 80
+    containerPort: 9080
+  tls:
+    enabled: true  # 启用 tls
+    servicePort: 443
+    containerPort: 9443
+
+etcd:
+  enabled: true  # 会自动创建3个节点的etcd集群
+  replicaCount: 1  # 多副本需要修改下模板，这里暂时运行一个etcd pod
+
+dashboard:
+  enabled: true
+
+ingress-controller:
+  enabled: true
+  config:
+    apisix:
+      serviceName: apisix-admin
+      serviceNamespace: apisix  # 指定命名空间，如果不是 ingress-apisix 需要重新指定
