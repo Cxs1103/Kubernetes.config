@@ -1,0 +1,10 @@
+apiVersion: apisix.apache.org/v2
+kind: ApisixConsumer
+metadata:
+  name: nexusbauth  # name 必须包含小写字母数字字符，'-'或'.'，并且必须以字母数字字符开头和结尾
+spec:
+  authParameter:
+    basicAuth:
+      value:
+        username: admin
+        password: admin@321
