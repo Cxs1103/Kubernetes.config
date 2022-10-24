@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-client-provisioner
+  namespace: apisix
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nfs-client-provisioner
+  template:
+    metadata:
+      labels:
+        app: nfs-client-provisioner
+    spec:
+      serviceAccount: nfs-provisioner
+      containers:
+        - name: nfs-client-provisioner
+          image: registry.cn-hangzhou.aliyuncs.com/open-ali/nfs-client-provisioner
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath:  /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: apisix
+            - name: NFS_SERVER
+              value: 192.168.0.81
+            - name: NFS_PATH
+              value: /root/data/nfs
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: 192.168.0.81
+            path: /root/data/nfs
