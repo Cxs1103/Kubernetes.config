@@ -1,0 +1,10 @@
+apiVersion: apisix.apache.org/v2
+kind: ApisixTls
+metadata:
+  name: apisix-tls
+spec:
+  hosts:
+    - apisix.mieken.cn
+  secret:
+    name: apisix-tls
+    namespace: default
