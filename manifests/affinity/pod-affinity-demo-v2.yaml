@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-affinity
+  labels:
+    app: pod-affinity
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pod-affinity
+  template:
+    metadata:
+      labels:
+        app: pod-affinity
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: nginxweb
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: # 软策略 
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: os
+                      operator: In
+                      values:
+                        - linux
+                topologyKey: beta.kubernetes.io/os
+              weight: 1

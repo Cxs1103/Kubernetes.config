@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox-pod
+spec:
+  selector:
+    matchLabels:
+      app: busybox-pod
+  template:
+    metadata:
+      labels:
+        app: busybox-pod
+    spec:
+      containers:
+        - image: nginx:1.22.0
+          imagePullPolicy: IfNotPresent
+          name: nginx
+          ports:
+            - containerPort: 80
