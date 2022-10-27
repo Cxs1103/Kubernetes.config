@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-antiaffinity
+  labels:
+    app: pod-antiaffinity
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pod-antiaffinity
+  template:
+    metadata:
+      labels:
+        app: pod-antiaffinity
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: nginxweb
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:  # 硬策略
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - busybox-pod
+            topologyKey: kubernetes.io/hostname
