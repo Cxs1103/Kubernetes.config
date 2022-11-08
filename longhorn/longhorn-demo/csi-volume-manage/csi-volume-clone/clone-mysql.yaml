@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-clone-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi  # 必须大于或等于源的值
+  dataSource:
+    kind: PersistentVolumeClaim
+    name: mysql-pvc
+
