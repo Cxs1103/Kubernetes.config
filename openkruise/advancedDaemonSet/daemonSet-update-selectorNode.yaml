@@ -1,0 +1,27 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: DaemonSet
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      rollingUpdateType: Standard
+      selector:
+        matchLabels:
+          kubernetes.io/hostname: node01
+  selector:
+    matchLabels:
+      k8s-app: nginx
+  template:
+    metadata:
+      labels:
+        k8s-app: nginx
+    spec:
+      containers:
+      - image: nginx:1.22.0
+        name: nginx
+        ports:
+        - name: http
+          containerPort: 80
