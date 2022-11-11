@@ -1,0 +1,26 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: CloneSet
+metadata:
+  name: cs-demo
+spec:
+  updateStrategy:
+    type: InPlaceIfPossible
+    partition: 2
+  minReadySeconds: 60
+  scaleStrategy:
+    maxUnavailable: 1
+  replicas: 5
+  selector:
+    matchLabels:
+      app: cs
+  template:
+    metadata:
+      labels:
+        app: cs
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.23.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
