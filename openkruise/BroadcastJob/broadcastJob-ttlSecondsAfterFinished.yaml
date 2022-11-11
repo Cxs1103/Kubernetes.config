@@ -1,0 +1,19 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: BroadcastJob
+metadata:
+  name: bcj-demo
+  namespace: default
+spec:
+  completionPolicy:
+    type: Always
+    ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      restartPolicy: Never
+      containers:  # 一定不是一个常驻前台的进程，一定是一个任务，执行完成后需要退出的
+      - name: counter
+        image: busybox
+        command:
+        - "/bin/sh"
+        - "-c"
+        - "for i in 9 8 7 6 5 4 3 2 1; do echo $i; done"
