@@ -1,0 +1,28 @@
+apiVersion: apps.kruise.io/v1beta1
+kind: StatefulSet
+metadata:
+  name: web
+  namespace: default
+spec:
+  serviceName: "nginx-headless"
+  podManagementPolicy: Parallel
+  replicas: 5
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 3
+      # partition: 4
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx  # @
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.23.0
+        ports:
+        - name: web
+          containerPort: 80
