@@ -1,0 +1,30 @@
+apiVersion: apps.kruise.io/v1beta1
+kind: StatefulSet
+metadata:
+  name: web
+  namespace: default
+spec:
+  serviceName: "nginx-headless"
+  podManagementPolicy: Parallel
+  replicas: 5
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      podUpdatePolicy: InPlaceIfPossible  # 尽可能执行原地升级
+      maxUnavailable: 3 # 允许并行更新，最大不可以实例数为3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      readinessGates:
+      - conditionType: InPlaceUpdateReady # 一个新的条件，可确保 Pod 在发生原地更新时保持在 NotReady 状态
+      containers:
+      - name: nginx
+        image: nginx:1.23.2
+        ports:
+        - name: web
+          containerPort: 80
