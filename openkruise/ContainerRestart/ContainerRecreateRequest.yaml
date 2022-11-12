@@ -1,0 +1,17 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: ContainerRecreateRequest
+metadata:
+  namespace: default 
+  name: test-pod-restart
+spec:
+  podName: test-pod
+  containers:       # 要重建的容器名字列表，至少要有 1 个
+  - name: app
+  strategy:
+    failurePolicy: Fail                 # 'Fail' 或 'Ignore'，表示一旦有某个容器停止或重建失败， CRR 立即结束
+    orderedRecreate: false              # 'true' 表示要等前一个容器重建完成了，再开始重建下一个
+    terminationGracePeriodSeconds: 30   # 等待容器优雅退出的时间，不填默认用 Pod 中定义的
+    unreadyGracePeriodSeconds: 3        # 在重建之前先把 Pod 设为 not ready，并等待这段时间后再开始执行重建
+    minStartedSeconds: 10               # 重建后新容器至少保持运行这段时间，才认为该容器重建成功
+  activeDeadlineSeconds: 300        # 如果 CRR 执行超过这个时间，则直接标记为结束（未结束的容器标记为失败）
+  ttlSecondsAfterFinished: 1800     # CRR 结束后，过了这段时间自动被删除掉
