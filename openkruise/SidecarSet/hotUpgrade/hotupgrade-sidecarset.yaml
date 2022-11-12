@@ -1,0 +1,21 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: SidecarSet
+metadata:
+  name: hotupgrade-sidecarset
+spec:
+  selector:
+    matchLabels:
+      app: hotupgrade
+  containers:
+  - name: sidecar
+    image: openkruise/hotupgrade-sample:sidecarv1
+    imagePullPolicy: Always
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - /bin/sh
+          - /migrate.sh
+    upgradeStrategy:
+      upgradeType: HotUpgrade
+      hotUpgradeEmptyImage: openkruise/hotupgrade-sample:empty
