@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: nginx # matches the SidecarSet's selector
+    canary.release: "true"
+  name: test-pod
+spec:
+  containers:
+  - name: app
+    image: nginx:1.7.9
