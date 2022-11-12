@@ -1,0 +1,20 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: ImagePullJob
+metadata:
+  name: job-with-always
+  labels:
+    kubernetes.io/arch: amd64
+    kubernetes.io/os: linux
+spec:
+  image: nginx:1.9.1   # [required] 完整的镜像名 name:tag
+  parallelism: 10      # [optional] 最大并发拉取的节点梳理, 默认为 1
+  selector:            # [optional] 指定节点的 名字列表 或 标签选择器 (只能设置其中一种)
+    names:
+    - node01
+  completionPolicy:
+    type: Always                  # [optional] 默认为 Always
+    activeDeadlineSeconds: 1200   # [optional] 无默认值, 只对 Alway 类型生效
+    ttlSecondsAfterFinished: 300  # [optional] 无默认值, 只对 Alway 类型生效
+  pullPolicy:                     # [optional] 默认 backoffLimit=3, timeoutSeconds=600
+    backoffLimit: 3
+    timeoutSeconds: 300
