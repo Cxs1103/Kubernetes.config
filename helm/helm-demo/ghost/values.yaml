@@ -1,0 +1,62 @@
+replicaCount: 1
+image: ghost:latest
+node_env: production
+url: ghost.mieken.cn
+
+service:
+  type: NodePort
+  port: 80
+
+ingress:
+  enabled: true
+  ingressClass: nginx
+
+## 是否使用 PVC 开启数据持久化
+persistence:
+  enabled: true
+  ## 是否使用 storageClass，如果不适用则补配置
+  # storageClass: "xxx"
+  ##
+  ## 如果想使用一个存在的 PVC 对象，则直接传递给下面的 existingClaim 变量
+  # existingClaim: your-claim
+  accessMode: ReadWriteOnce  # 访问模式
+  size: 1Gi  # 存储容量
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 1
+
+nodeSelector:
+  kubernetes.io/hostname: node01
+
+affinity: {}
+tolerations: {}
+
+image:
+  name: ghost
+  tag: latest
+  pullPolicy: IfNotPresent
+  ## 如果是私有仓库，需要指定 imagePullSecrets
+  # pullSecrets:
+  #   - myRegistryKeySecretName
+
+resources:
+  limits:
+    cpu: 150m
+    memory: 1Gi
+  requests:
+    cpu: 150m
+    memory: 500Mi
+
+startupProbe:
+  enabled: false
+
+livenessProbe:
+  enabled: false
+
+readinessProbe:
+  enabled: false
+
+

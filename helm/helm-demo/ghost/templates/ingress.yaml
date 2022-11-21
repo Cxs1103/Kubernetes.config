@@ -1,0 +1,41 @@
+{{- if .Values.ingress.enabled }}
+{{- $apiIsStable := eq (include "ghost.ingress.isStable" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "ghost.ingress.supportsPathType" .) "true" -}}
+apiVersion: {{ include "ghost.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: {{ template "ghost.fullname" . }}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    {{- if and .Values.ingress.ingressClass (not $apiIsStable) }}
+    kubernetes.io/ingress.class: {{ .Values.ingress.ingressClass }}
+    {{- end }}
+  labels:
+    {{- include "ghost.labels" . | nindent 4 }}
+spec:
+  {{- if and .Values.ingress.ingressClass $apiIsStable }}
+  ingressClassName: {{ .Values.ingress.ingressClass }}
+  {{- end }}
+  rules:
+  {{- if not (empty .Values.url) }}
+  - host: {{ .Values.url }}
+    http:
+  {{- else }}
+  - http:
+  {{- end }}
+      paths:
+      - path: /
+        {{- if $ingressSupportsPathType }}
+        pathType: Prefix
+        {{- end }}
+        backend:
+          {{- if $apiIsStable }}
+          service:
+            name: {{ template "ghost.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
+          {{- else }}
+          serviceName: {{ template "ghost.fullname" . }}
+          servicePort: {{ .Values.service.port }}
+          {{- end }}
+{{- end }}
