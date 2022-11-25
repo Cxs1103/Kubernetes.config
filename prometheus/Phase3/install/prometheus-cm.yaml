@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitor
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      scrape_timeout: 15s
+
+    scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+        - targets: ['localhost:9090']
+
+    - job_name: 'coredns'
+      static_configs:
+        - targets: ['10.244.3.5:9153', '10.244.3.4:9153']
+
+    - job_name: 'example-random'
+      # Override the global default and scrape targets from this job every 5 seconds.
+      scrape_interval: 5s
+      static_configs:
+        - targets: ['192.168.0.84:8080', '192.168.0.84:8081']
+          labels:
+            group: 'production'
+        - targets: ['192.168.0.84:8082']
+          labels:
+            group: 'canary'
+
+    - job_name: 'redis'
+      static_configs:
+      - targets: ['redis:9121']
