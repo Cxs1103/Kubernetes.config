@@ -28,3 +28,7 @@ data:
         - targets: ['192.168.0.84:8082']
           labels:
             group: 'canary'
+
+    - job_name: 'redis'
+      static_configs:
+      - targets: ['redis:9121']
