@@ -39,13 +39,13 @@ spec:
           name: config-volume
         - mountPath: "/prometheus"
           name: data
-        resources:
-          requests:
-            cpu: 100m
-            memory: 512Mi
-          limits:
-            cpu: 100m
-            memory: 512Mi
+        # resources:
+        #   requests:
+        #     cpu: 100m
+        #     memory: 512Mi
+        #   limits:
+        #     cpu: 100m
+        #     memory: 512Mi
       volumes:
       - name: data
         persistentVolumeClaim:
