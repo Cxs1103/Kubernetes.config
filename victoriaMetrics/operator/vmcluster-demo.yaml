@@ -1,0 +1,33 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMCluster
+metadata:
+  name: vmcluster-demo
+spec:
+  replicationFactor: 1
+  retentionPeriod: "1w"
+  vmstorage:
+    replicaCount: 3
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10G
+          storageClassName: nfs-client
+    storageDataPath: /vm-data
+  vmselect:
+    replicaCount: 3
+    cacheMountPath: /cache
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nfs-client
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1G
+  vminsert:
+    replicaCount: 3

@@ -1,0 +1,10 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMNodeScrape
+metadata:
+  name: node-exporter
+spec:
+  path: /metrics
+  port: "9111" # 指定 node-exporter 的端口
+  scrape_interval: 15s
+#   relabelConfigs：  # relabel配置
+#   #   selector:  # 过滤节点vmnode-exporter-scrape.yaml
