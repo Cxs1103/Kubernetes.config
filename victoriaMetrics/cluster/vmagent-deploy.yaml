@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vmagent-pvc
+  namespace: kube-vm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs-client
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmagent
+  namespace: kube-vm
+  labels:
+    app: vmagent
+spec:
+  selector:
+    matchLabels:
+      app: vmagent
+  template:
+    metadata:
+      labels:
+        app: vmagent
+    spec:
+      serviceAccountName: vmagent
+      containers:
+        - name: agent
+          image: "victoriametrics/vmagent:v1.77.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - -promscrape.config=/config/scrape.yml
+            - -remoteWrite.tmpDataPath=/tmpData
+            - -remoteWrite.url=http://vminsert:8480/insert/0/prometheus
+            - -envflag.enable=true
+            - -envflag.prefix=VM_
+            - -loggerFormat=json
+          ports:
+            - name: http
+              containerPort: 8429
+          volumeMounts:
+            - name: tmpdata
+              mountPath: /tmpData
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: tmpdata
+          persistentVolumeClaim:
+            claimName: vmagent-pvc
+        - name: config
+          configMap:
+            name: vmagent-config

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmagent-0
+  namespace: kube-vm
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8429"
+spec:
+  selector:
+    app: vmagent
+    statefulset.kubernetes.io/pod-name: vmagent-0
+  type: NodePort
+  ports:
+    - name: http
+      port: 8429
+      targetPort: http
