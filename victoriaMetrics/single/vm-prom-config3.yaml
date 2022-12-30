@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: kube-vm
+data:
+  prometheus.yaml: |
+    global:
+      scrape_interval: 15s
+      scrape_timeout: 15s
+    remote_write:    # 写入到远程 VM 存储，url 是远程写入接口地址
+    - url: http://vminsert:8480/insert/0/prometheus/
+      # queue_config:    # 如果 Prometheus 抓取指标很大，可以加调整 queue，但是会提高内存占用
+      #   max_samples_per_send: 10000  # 每次发送的最大样本数
+      #   capacity: 20000
+      #   max_shards: 30   # 最大分片数，即并发量。
+    scrape_configs:
+    - job_name: "nodes"
+      static_configs:
+      - targets: ['192.168.0.84:9111', '192.168.0.85:9111', '192.168.0.86:9111', '192.168.0.87:9111', '192.168.0.88:9111', '192.168.0.89:9111']
+      relabel_configs: # 通过 relabeling 从 __address__ 中提取 IP 信息，为了后面验证 VM 是否兼容 relabeling
+      - source_labels: [__address__]
+        regex: "(.*):(.*)"
+        replacement: "${1}"
+        target_label: 'ip'
+        action: replace

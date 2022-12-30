@@ -1,0 +1,73 @@
+# vm-promxy.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promxy-config
+  namespace: kube-vm
+data:
+  config.yaml: |
+    promxy:
+      server_groups:
+      - static_configs:
+        - targets: [victoria-metrics:8428]  # 指定vm地址，有多个则往后追加即可
+        path_prefix: /prometheus  # 配置前缀
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: promxy
+  namespace: kube-vm
+spec:
+  selector:
+    matchLabels:
+      app: promxy
+  template:
+    metadata:
+      labels:
+        app: promxy
+    spec:
+      containers:
+        - args:
+            - "--config=/etc/promxy/config.yaml"
+            - "--web.enable-lifecycle"
+            - "--log-level=trace"
+          env:
+            - name: ROLE
+              value: "1"
+          command:
+            - "/bin/promxy"
+          image: quay.io/jacksontj/promxy
+          imagePullPolicy: Always
+          name: promxy
+          ports:
+            - containerPort: 8082
+              name: web
+          volumeMounts:
+            - mountPath: "/etc/promxy/"
+              name: promxy-config
+              readOnly: true
+        - args: # container to reload configs on configmap change
+            - "--volume-dir=/etc/promxy"
+            - "--webhook-url=http://localhost:8082/-/reload"
+          image: jimmidyson/configmap-reload:v0.1
+          name: promxy-server-configmap-reload
+          volumeMounts:
+            - mountPath: "/etc/promxy/"
+              name: promxy-config
+              readOnly: true
+      volumes:
+        - configMap:
+            name: promxy-config
+          name: promxy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: promxy
+  namespace: kube-vm
+spec:
+  type: NodePort
+  ports:
+    - port: 8082
+  selector:
+    app: promxy

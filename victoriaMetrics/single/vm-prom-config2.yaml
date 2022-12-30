@@ -1,0 +1,23 @@
+# vm-prom-config2.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: kube-vm
+data:
+  prometheus.yaml: |
+    global:
+      scrape_interval: 15s
+      scrape_timeout: 15s
+    remote_write:    # 远程写入到远程 VM 存储
+    - url: http://victoria-metrics:8428/api/v1/write
+    scrape_configs:
+    - job_name: "nodes"
+      static_configs:
+      - targets: ['192.168.0.84:9111', '192.168.0.85:9111', '192.168.0.86:9111', '192.168.0.87:9111', '192.168.0.88:9111', '192.168.0.89:9111']
+      relabel_configs: # 通过 relabeling 从 __address__ 中提取 IP 信息，为了后面验证 VM 是否兼容 relabeling
+      - source_labels: [__address__]
+        regex: "(.*):(.*)"
+        replacement: "${1}"
+        target_label: 'ip'
+        action: replace
