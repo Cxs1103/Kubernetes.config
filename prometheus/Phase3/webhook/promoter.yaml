@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promoter-conf
+  namespace: monitor
+data:
+  config.yaml: |
+    global:
+      prometheus_url: http://prometheus:9090
+      wechat_api_secret: <secret>  # 企业微信 secret
+      wechat_api_corp_id: <corp_id>  # 企业微信 corp_id
+      dingtalk_api_token: 3f556e31d61694749b26028c4a7130fb388bd55f869e6841ba8713d01354a99a  # 钉钉机器人 token
+      dingtalk_api_secret: SECf4b131fefce8db1890aa69ab6a55358536165a8b2f85df7f79629a1d42026606  # 钉钉机器人 secret
+
+    s3:
+      access_key: <ak>
+      secret_key: <sk>
+      endpoint: oss-cn-beijing.aliyuncs.com
+      region: cn-beijing
+      bucket: my-oss-testing
+
+
+    receivers:
+      - name: test1
+        wechat_configs:  # 可以发送到企业微信
+          - agent_id: <agent_id>
+            to_user: "@all"
+            message_type: markdown
+        dingtalk_configs: # 发送到钉钉群
+          - message_type: markdown
+            at:
+              isAtAll: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: promoter
+  namespace: monitor
+  labels:
+    app: promoter
+spec:
+  selector:
+    matchLabels:
+      app: promoter
+  template:
+    metadata:
+      labels:
+        app: promoter
+    spec:
+      volumes:
+        - name: promotercfg
+          configMap:
+            name: promoter-conf
+      containers:
+        - name: promoter
+          image: cnych/promoter:main
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--config.file=/etc/promoter/config.yaml"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - mountPath: "/etc/promoter"
+              name: promotercfg
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: promoter
+  namespace: monitor
+  labels:
+    app: promoter
+spec:
+  selector:
+    app: promoter
+  ports:
+    - port: 8080
