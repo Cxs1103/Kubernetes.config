@@ -19,7 +19,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - node01
+          - node02
   persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
