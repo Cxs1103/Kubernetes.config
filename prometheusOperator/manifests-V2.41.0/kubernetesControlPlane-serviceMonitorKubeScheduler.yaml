@@ -21,3 +21,18 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: kube-scheduler
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-scheduler
+  labels: # 必须和上面的 ServiceMonitor 下面的 matchLabels 保持一致
+    app.kubernetes.io/name: kube-scheduler
+spec:
+  selector:
+    component: kube-scheduler
+  ports:
+    - name: https-metrics
+      port: 10259
+      targetPort: 10259 # 需要注意现在版本默认的安全端口是10259
