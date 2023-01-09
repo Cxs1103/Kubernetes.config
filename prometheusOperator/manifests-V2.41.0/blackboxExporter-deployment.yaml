@@ -37,11 +37,11 @@ spec:
           name: http
         resources:
           limits:
-            cpu: 20m
-            memory: 40Mi
+            cpu: 200m
+            memory: 400Mi
           requests:
-            cpu: 10m
-            memory: 20Mi
+            cpu: 100m
+            memory: 200Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
