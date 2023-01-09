@@ -58,3 +58,18 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: kube-controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-controller-manager
+  labels:
+    app.kubernetes.io/name: kube-controller-manager
+spec:
+  selector:
+    component: kube-controller-manager
+  ports:
+    - name: https-metrics
+      port: 10257
+      targetPort: 10257 # controller-manager 的安全端口为10257
