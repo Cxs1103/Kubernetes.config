@@ -46,3 +46,17 @@ spec:
   serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector: {}
   version: 2.41.0
+  additionalScrapeConfigs:
+    name: additional-configs
+    key: prometheus-additional.yaml
+  storage:
+    volumeClaimTemplate:
+      metadata:
+        name: prometheus-local-pvc
+      spec:
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 20Gi
+  remoteWrite:
+    - url: http://vminsert-vmcluster-demo.default:8480/insert/0/prometheus/
