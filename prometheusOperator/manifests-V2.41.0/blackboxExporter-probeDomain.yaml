@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: domain-probe
+  namespace: monitoring
+spec:
+  jobName: domain-probe # 任务名称
+  prober: # 指定blackbox的地址
+    url: blackbox-exporter:19115
+  module: http_2xx # 配置文件中的检测模块
+  targets: # 目标（可以是static配置也可以是ingress配置）
+    # ingress <Object>
+    staticConfig: # 如果配置了 ingress，静态配置优先
+      static:
+        - prometheus.io
+      relabelingConfigs:
+        - sourceLabels: [__address__]
+          targetLabel: __param_target
+        - sourceLabels: [__param_target]
+          targetLabel: instance
