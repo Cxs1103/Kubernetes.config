@@ -69,7 +69,7 @@ spec:
       serviceAccountName: fluentd-es
       containers:
         - name: fluentd
-          image: quay.io/fluentd_elasticsearch/fluentd:v3.4.0
+          image: cnych/fluentd-kafka:v0.17.5
           volumeMounts:
             - name: fluentconfig
               mountPath: /etc/fluent/config.d
