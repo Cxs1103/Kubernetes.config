@@ -1,0 +1,20 @@
+# values-prod.yaml
+## @section Persistence parameters
+persistence:
+  enabled: true
+  storageClass: "local-path"
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+
+  mountPath: /bitnami/kafka
+
+# 配置zk volumes
+zookeeper:
+  enabled: true
+  persistence:
+    enabled: true
+    storageClass: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
