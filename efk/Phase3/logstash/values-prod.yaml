@@ -1,0 +1,28 @@
+# values-prod.yaml
+fullnameOverride: logstash
+
+persistence:
+  enabled: true
+
+logstashConfig:
+  logstash.yml: |
+    http.host: 0.0.0.0
+    # 如果启用了xpack，需要做如下配置
+    xpack.monitoring.enabled: true
+    xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch-client:9200"]
+    xpack.monitoring.elasticsearch.username: "elastic"
+    xpack.monitoring.elasticsearch.password: "admin321"
+
+# 要注意下格式
+logstashPipeline:
+  logstash.conf: |
+    input { kafka { bootstrap_servers => "kafka-0.kafka-headless.logging.svc.cluster.local:9092" codec => json consumer_threads => 3 topics => ["messages"] } }
+    filter {}  # 过滤配置（比如可以删除key、添加geoip等等）
+    output { elasticsearch { hosts => [ "elasticsearch-client:9200" ] user => "elastic" password => "admin321" index => "k8s-%{[kubernetes][labels][logIndex]}-%{+YYYY.MM.dd}" } stdout { codec => rubydebug } }
+
+volumeClaimTemplate:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
