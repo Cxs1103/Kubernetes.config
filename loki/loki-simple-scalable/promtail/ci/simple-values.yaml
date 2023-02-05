@@ -1,0 +1,6 @@
+# ci/simple-values.yaml
+rbac:
+  pspEnabled: false
+config:
+  clients:
+    - url: http://loki-gateway/loki/api/v1/push # 指定Loki的地址，write 的push地址，gateway的地址

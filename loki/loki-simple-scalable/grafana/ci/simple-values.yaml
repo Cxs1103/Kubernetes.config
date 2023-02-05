@@ -1,0 +1,12 @@
+# simple-values.yaml
+service:
+  type: NodePort
+  nodePort: 32001
+rbac:
+  pspEnabled: false
+persistence:
+  enabled: true
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
