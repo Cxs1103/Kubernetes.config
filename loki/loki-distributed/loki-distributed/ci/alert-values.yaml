@@ -1,0 +1,92 @@
+loki:
+  structuredConfig:
+    ingester:
+      max_transfer_retries: 0
+      chunk_idle_period: 1h
+      chunk_target_size: 1536000
+      max_chunk_age: 1h
+    storage_config: # 存储的配置，定义其他组件可能用到的存储
+      aws: # s3 / s3 兼容的对象存储
+        endpoint: minio.logging.svc.cluster.local:9000
+        insecure: true
+        bucketnames: loki-data
+        access_key_id: myaccessKey
+        secret_access_key: mysecretKey
+        s3forcepathstyle: true
+      boltdb_shipper:
+        shared_store: s3
+    schema_config:
+      configs:
+        - from: 2022-06-21
+          store: boltdb-shipper # index
+          object_store: s3  # chunks
+          schema: v12
+          index:
+            prefix: loki_index_
+            period: 24h
+    ruler:
+      storage:
+        type: local
+        local:
+          directory: /etc/loki/rules
+      ring:
+        kvstore:
+          store: memberlist
+      rule_path: /tmp/loki/scratch
+      alertmanager_url: http://alertmanager-main.monitoring.svc.cluster.local:9093
+      external_url: http:/192.168.0.84:31918
+
+distributor:
+  replicas: 2
+
+ingester: # WAL（replay）
+  replicas: 2
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: nfs-client
+
+querier:
+  replicas: 2
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: nfs-client
+
+queryFrontend:
+  replicas: 2
+
+gateway: # nginx容器 -> 路由日志写/读的请求
+  nginxConfig:
+    httpSnippet: |-
+      client_max_body_size 100M;
+    serverSnippet: |-
+      client_max_body_size 100M;
+
+# Configuration for the ruler
+ruler:
+  enabled: true
+  kind: Deployment
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: nfs-client
+  # -- Directories containing rules files
+  directories:
+    tenant_no:
+      rules1.txt: |
+        groups:
+          - name: nginx-rate
+            rules:
+            - alert: LokiNginxRate
+              expr: sum(rate({app="nginx"} |= "error" [1m])) by (job)
+                    /
+                  sum(rate({app="nginx"}[1m])) by (job)
+                    > 0.01
+              for: 1m
+              labels:
+                severity: critical
+              annotations:
+                summary: loki nginx rate
+                description: high request latency

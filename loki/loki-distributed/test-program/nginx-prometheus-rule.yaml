@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: k8s
+    role: alert-rules
+  name: promtail-nginx-hits
+  namespace: logging
+spec:
+  groups:
+    - name: nginx-hits
+      rules:
+        - alert: LokiNginxHits
+          annotations:
+            summary: nginx hits counter
+            description: 'nginx_hits total insufficient count ({{ $value }}).'
+          expr: |
+            sum(increase(promtail_custom_nginx_hits[1m])) > 2
+          for: 2m
+          labels:
+            severity: critical

@@ -1,0 +1,25 @@
+rbac:
+  pspEnabled: false
+config:
+  clients:
+    - url: http://loki-loki-distributed-gateway/loki/api/v1/push
+  snippets:
+    pipelineStages:
+    - cri: {}
+    - match:
+        selector: '{app="nginx"}'
+        stages:
+        - regex:
+            expression: '.*(?P<hits>GET /.*)'
+        - metrics:
+            nginx_hits:
+              type: Counter
+              description: "Total nginx requests"
+              source: hits
+              config:
+                action: inc
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    app: prometheus-operator
+    release: prometheus
