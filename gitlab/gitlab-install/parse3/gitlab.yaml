@@ -1,0 +1,176 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitlab-pvc
+  namespace: kube-ops
+spec:
+  storageClassName: local-path
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab
+  namespace: kube-ops
+  labels:
+    name: gitlab
+spec:
+  selector:
+    matchLabels:
+      name: gitlab
+  template:
+    metadata:
+      name: gitlab
+      labels:
+        name: gitlab
+    spec:
+      affinity: # 亲和性配置
+        podAntiAffinity: # Pod反亲和性
+         requiredDuringSchedulingIgnoredDuringExecution: # 硬限制
+           - labelSelector:
+               matchExpressions:
+                 - key: name
+                   operator: In
+                   values:
+                     - "redis"
+                     - "postgresql"
+             topologyKey: kubernetes.io/hostname
+      initContainers:
+      - name: fix-permissions
+        image: busybox:1.35.0
+        command: ["sh", "-c", "chown -R 1000:1000 /home/git/data"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data
+          mountPath: /home/git/data
+      containers:
+      - name: gitlab
+        image: sameersbn/gitlab:15.1.0
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: GITLAB_TIMEZONE
+          value: Beijing
+        - name: GITLAB_SECRETS_DB_KEY_BASE
+          value: long-and-random-alpha-numeric-string
+        - name: GITLAB_SECRETS_SECRET_KEY_BASE
+          value: long-and-random-alpha-numeric-string
+        - name: GITLAB_SECRETS_OTP_KEY_BASE
+          value: long-and-random-alpha-numeric-string
+        - name: GITLAB_ROOT_PASSWORD
+          value: admin321
+        - name: GITLAB_ROOT_EMAIL
+          value: cxs1103@163.com
+        - name: GITLAB_HOST
+          value: gitlab.mieken.cn
+        - name: GITLAB_PORT
+          value: "80"
+        - name: GITLAB_NOTIFY_ON_BROKEN_BUILDS
+          value: "true"
+        - name: GITLAB_NOTIFY_PUSHER
+          value: "false"
+        - name: GITLAB_BACKUP_SCHEDULE
+          value: daily
+        - name: GITLAB_BACKUP_TIME
+          value: 01:00
+        - name: DB_TYPE
+          value: postgres
+        - name: DB_HOST
+          value: postgresql
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: gitlab
+        - name: DB_PASS
+          value: passw0rd
+        - name: DB_NAME
+          value: gitlab_production
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_PORT
+          value: "6379"
+        ports:
+        - name: http
+          containerPort: 80
+        - name: ssh
+          containerPort: 22
+        volumeMounts:
+        - mountPath: /home/git/data
+          name: data
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          timeoutSeconds: 1
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: gitlab-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitlab
+  namespace: kube-ops
+  labels:
+    name: gitlab
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: ssh
+      port: 22
+      targetPort: ssh
+      nodePort: 30022
+  type: NodePort
+  selector:
+    name: gitlab
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gitlab
+  namespace: kube-ops
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1024m"  # git界面需要上传下载文件，默认不够，改大点
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+spec:
+  rules:
+  - host: gitlab.mieken.cn
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: gitlab
+            port:
+              number: 80
+# ---
+# apiVersion: apisix.apache.org/v2beta2
+# kind: ApisixRoute
+# metadata:
+#   name: gitlab
+#   namespace: kube-ops
+# spec:
+#   http:
+#     - name: main
+#       match:
+#         hosts:
+#           - gitlab.mieken.cn
+#         paths:
+#           - "/*"
+#       backends:
+#       - serviceName: gitlab
+#         servicePort: 80
+
