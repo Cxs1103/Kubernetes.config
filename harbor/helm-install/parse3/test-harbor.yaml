@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: harbor-registry-test
+spec:
+  containers:
+  - name: test
+    image: harbor.mieken.cn/library/busybox:1.35.0
+    args:
+    - sleep
+    - "3600"
+  imagePullSecrets:
+  - name: harbor-auth
