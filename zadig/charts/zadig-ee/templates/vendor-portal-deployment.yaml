@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vendor-portal
+  labels:
+    {{- include "plutus-vendor.portal.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.portal.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "plutus-vendor.portal.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/vendor-portal-configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "plutus-vendor.portal.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+      imagePullSecrets:
+        - name: ee-registry-secret
+      containers:
+        - name:  vendor-portal
+          image:  {{ .Values.portal.image.repository }}:{{ .Values.portal.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.portal.image.pullPolicy | default "Always" }}
+          ports:
+            - protocol: TCP
+              containerPort: 80
+          volumeMounts:
+            - name: vendor-portal-config
+              mountPath: /etc/nginx/conf.d
+          resources:
+            limits:
+              cpu: {{ .Values.portal.resources.limits.cpu }}
+              memory: {{ .Values.portal.resources.limits.memory }}
+            requests:
+              cpu: 10m
+              memory: 10Mi
+      volumes:
+        - name: vendor-portal-config
+          configMap:
+            name: vendor-portal-config

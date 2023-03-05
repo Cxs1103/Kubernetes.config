@@ -1,0 +1,63 @@
+{{- if .Values.tags.mysql }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "zadig.mysql.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zadig.mysql.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zadig.mysql.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "zadig.mysql.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.mysql.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-secret
+                key: password
+          - name: MYSQL_DATABASE
+            value: dex
+          ports:
+          - containerPort: 3306
+            name: mysql
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+      {{ if and .Values.mysql.persistence.enabled .Values.mysql.persistence.existingClaim }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.mysql.persistence.existingClaim . }}
+      {{- else if not .Values.mysql.persistence.enabled }}
+      volumes:
+        - name: data
+          emptyDir: {}
+      {{- else if and .Values.mysql.persistence.enabled (not .Values.mysql.persistence.existingClaim) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{ include "zadig.mysql.selectorLabels" . | nindent 10 }}
+      spec:
+        {{ if .Values.mysql.storageClass }}
+        storageClassName: {{ .Values.mysql.storageClass }}
+        {{- end }}
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .Values.mysql.persistence.size | quote }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  labels:
+    {{- include "zadig.microservice.opa.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.microservice.opa.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.opa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.opa.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: opa
+          image: {{ .Values.microservice.opa.image.repository }}:{{ .Values.microservice.opa.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.microservice.opa.image.pullPolicy | default "Always" }}
+          volumeMounts:
+            - readOnly: true
+              mountPath: /config
+              name: opa-envoy-config
+          args:
+            - "run"
+            - "--server"
+            - "--config-file=/config/config.yaml"
+            - "--addr=0.0.0.0:8181"
+            - "--set=plugins.envoy_ext_authz_grpc.addr=0.0.0.0:9191"
+            - "--set=plugins.envoy_ext_authz_grpc.query=data.rbac.response"
+            - "--set=decision_logs.console=true"
+            - "--ignore=.*"
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: zadig-aes-key
+                  key: aesKey
+          resources:
+          {{- if .Values.microservice.opa.resources }}
+            {{ toYaml .Values.microservice.opa.resources | nindent 12 }}
+          {{- else }}
+            limits:
+              cpu: 2
+              memory: 2Gi
+            requests:
+              cpu: 1
+              memory: 1Gi
+          {{- end }}
+      volumes:
+        - name: opa-envoy-config
+          configMap:
+            name: opa-envoy-config

@@ -1,0 +1,8 @@
+Zadig has been installed successfully.
+
+An initial account has been generated for your first login:
+- Login: {{- include "zadig.endpoint" . | indent 2 }}
+- User: admin
+- Password: {{ .Values.init.adminPassword }}
+
+Add wechat ID "guotimeme": get FREE Zadig Tech Support, and Join our online community.

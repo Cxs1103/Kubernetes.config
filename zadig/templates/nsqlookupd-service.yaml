@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nsqlookupd
+  labels:
+    {{- include "zadig.microservice.nsqlookupd.labels" . | nindent 4 }}
+spec:
+  ports:
+    - protocol: TCP
+      name: tcp
+      port: 4160
+      targetPort: 4160
+    - protocol: TCP
+      name: http
+      port: 4161
+      targetPort: 4161
+  clusterIP: None
+  selector:
+    {{- include "zadig.microservice.nsqlookupd.selectorLabels" . | nindent 4 }}

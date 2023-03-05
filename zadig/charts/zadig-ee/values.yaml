@@ -1,0 +1,36 @@
+# Default values for plutus-vendor.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+image:
+  repository: koderover.tencentcloudcr.com/koderover-ee/plutus-vendor
+  tag: "20220718152314-amd64"
+
+portal:
+  image:
+    repository: koderover.tencentcloudcr.com/koderover-ee/vendor-portal
+    tag: 0.1.2
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi
+
+dc:
+  mongo:
+    db: "plutus_zadig"
+    port: "27017"
+    connectionString: mongodb://root:zadig@kr-mongodb:27017
+
+vendor:
+  httpScheme: http
+  host: poc-ee.example.com
+  rootToken: lWSDou1uGiodtRC3
+  mongo:
+    addr: "zadig-storage"
+    db: "plutus_zadig"
+    port: "27017"
+    connectionString: mongodb://root:zadig@kr-mongodb:27017
+
+ingressClass: koderover

@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-init"
+  labels:
+    {{- include "zadig.init.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "10"
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.init.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "zadig.serviceAccountName" .}}
+      restartPolicy: Never
+      containers:
+        - name: init-job
+          image: "{{ .Values.init.image.repository }}:{{ .Values.init.image.tag }}"
+          imagePullPolicy: {{ .Values.init.image.pullPolicy }}
+          args:
+            - "init"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          env:
+            - name: ADMIN_PASSWORD
+              value: {{ .Values.init.adminPassword }}
+            - name: ADMIN_EMAIL
+              value: {{ .Values.init.adminEmail }}
+            - name: ADDRESS
+              value: {{ default "http" .Values.protocol }}://{{- include "zadig.endpoint" . }}
+            - name: BE_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace

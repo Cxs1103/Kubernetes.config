@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cron
+  labels:
+    {{- include "zadig.microservice.cron.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.microservice.cron.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.cron.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.cron.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: nsqd
+          image: {{ .Values.nsqd.image.repository }}:{{ .Values.nsqd.image.tag }}
+          imagePullPolicy: {{ .Values.nsqd.image.pullPolicy }}
+          resources:
+            limits:
+              cpu: {{ .Values.nsqd.resources.limits.cpu }}
+              memory: {{ .Values.nsqd.resources.limits.memory }}
+            requests:
+              cpu: 10m
+              memory: 10Mi
+          env:
+            - name: NSQD_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          command:
+            - /nsqd
+          args:
+            - -data-path
+            - /data
+            - -lookupd-tcp-address
+            - nsqlookupd:4160
+            - -broadcast-address
+            - $(NSQD_POD_IP)
+          ports:
+            - protocol: TCP
+              name: tcp
+              containerPort: 4150
+            - protocol: TCP
+              name: http
+              containerPort: 4151
+        - image: {{ .Values.microservice.cron.image.repository }}:{{ .Values.microservice.cron.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.microservice.cron.image.pullPolicy | default "Always" }}
+          name: cron
+          env:
+            - name: ROOT_TOKEN
+              value: {{ include "zadig.rootToken" . }}
+            - name: NSQLOOKUP_ADDRS
+              value: nsqlookupd:4161
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1024M
+            requests:
+              cpu: 10m
+              memory: 10Mi

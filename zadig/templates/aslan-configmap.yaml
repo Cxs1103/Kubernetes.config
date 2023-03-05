@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aslan-config
+  labels:
+    {{- include "zadig.microservice.aslan.labels" . | nindent 4 }}
+data:
+  # --------------------------------------------------------------------------------------
+  # common
+  # --------------------------------------------------------------------------------------
+  ADDRESS: {{ default "http" .Values.protocol }}://{{- include "zadig.endpoint" . }}
+  ENTERPRISE: {{ .Values.tags.enterprise | quote }}
+
+  # --------------------------------------------------------------------------------------
+  # logging
+  # level: 0(Debug), 1(Info), 2(Warn), 3(Error), 4(Panic), 5(Fatal)
+  # --------------------------------------------------------------------------------------
+  LOG_LEVEL: Info
+
+  # --------------------------------------------------------------------------------------
+  # mongo
+  # --------------------------------------------------------------------------------------
+  MONGODB_CONNECTION_STRING: {{ .Values.connections.mongodb.connectionString }}
+  ASLAN_DB: {{ default "zadig" .Values.connections.mongodb.db }}
+
+  # --------------------------------------------------------------------------------------
+  # kube
+  # --------------------------------------------------------------------------------------
+  KUBE_SERVER_ADDR: {{ default "" .Values.kubernetes.server | quote }}
+
+  # --------------------------------------------------------------------------------------
+  # build
+  # --------------------------------------------------------------------------------------
+  NSQLOOKUP_ADDRS: nsqlookupd:4161
+
+  REAPER_IMAGE: {{ .Values.global.builtInImage.ubuntuBase }}
+  REAPER_BINARY_FILE: http://resource-server/reaper
+  PREDATOR_IMAGE:  {{ .Values.microservice.predator.image.repository }}:{{ .Values.microservice.predator.image.tag | default .Chart.AppVersion }}
+  JENKINS_BUILD_IMAGE: {{ .Values.microservice.jenkins.image.repository }}:{{ .Values.microservice.jenkins.image.tag | default .Chart.AppVersion }}
+  PACKAGER_IMAGE:  {{ .Values.microservice.packager.image.repository }}:{{ .Values.microservice.packager.image.tag | default .Chart.AppVersion }}
+
+  # --------------------------------------------------------------------------------------
+  # github app
+  # --------------------------------------------------------------------------------------
+  GITHUB_KNOWN_HOST: {{ .Values.github.knownHost | default "" | quote }}
+  GITHUB_SSH_KEY: {{ .Values.github.sshKey  | default "" | quote }}
+
+  # --------------------------------------------------------------------------------------
+  # docker
+  # --------------------------------------------------------------------------------------
+  DOCKER_HOSTS: tcp://dind-0.dind:2375,tcp://dind-1.dind:2375,tcp://dind-2.dind:2375
+  POETRY_API_ROOT_KEY: {{ include "zadig.rootToken" . }}
+
+  # -------------------------------------------------------------------------------
+  # mysql settings due to the merge of user/config service
+  # -------------------------------------------------------------------------------
+  MYSQL_USER_DB: {{ .Values.connections.mysql.db.user }}
+  MYSQL_DEX_DB: {{ .Values.connections.mysql.db.dex }}
+  MYSQL_HOST: {{ .Values.connections.mysql.host }}
+  MYSQL_USER: {{ .Values.connections.mysql.auth.user }}
+  MYSQL_PASSWORD: {{ .Values.connections.mysql.auth.password }}
+
+  # -------------------------------------------------------------------------------
+  # user service environment variables
+  # -------------------------------------------------------------------------------
+  ISSUER_URL: {{ .Values.dex.config.issuer }}
+  CLIENT_ID: {{ (first .Values.dex.config.staticClients).id }}
+  CLIENT_SECRET: {{ (first .Values.dex.config.staticClients).secret }}
+  REDIRECT_URI: {{ (first (first .Values.dex.config.staticClients).redirectURIs) }}
+  SCOPES: "openid,profile,email,offline_access,groups,federated:id"
+  TOKEN_EXPIRES_AT: "1440"
+
+  # -------------------------------------------------------------------------------
+  # UNKNOWN USE
+  # -------------------------------------------------------------------------------
+  USE_CLASSIC_BUILD: {{ default false .Values.microservice.aslan.useClassicBuild | quote }}
+  CUSTOM_DNS_NOT_SUPPORTED: {{ default false .Values.microservice.aslan.customDNSNotSupported | quote}}
+  OLD_ENV_SUPPORTED: {{ default false .Values.microservice.aslan.oldEnvSupported | quote }}
+
+  HUB_AGENT_IMAGE: {{ .Values.microservice.hubAgent.image.repository }}:{{ .Values.microservice.hubAgent.image.tag | default .Chart.AppVersion }}
+  RESOURCE_SERVER_IMAGE: {{ .Values.microservice.resourceServer.image.repository }}:{{ .Values.microservice.resourceServer.image.tag | default .Chart.AppVersion }}
+  DIND_IMAGE: {{ .Values.microservice.dind.image.repository }}:{{ .Values.microservice.dind.image.tag | default .Chart.AppVersion }}
+
+  SERVICE_START_TIMEOUT: {{ default "300" .Values.microservice.aslan.serviceStartTimeout | quote }}
+  DEFAULT_REGISTRY: "koderover.tencentcloudcr.com"
+  DEFAULT_REGISTRY_AK: "100026682071"
+  DEFAULT_REGISTRY_SK: "eyJhbGciOiJSUzI1NiIsImtpZCI6IlpFS1I6V0oySzpQTDZaOktVN0U6MlpIUjpQWUVYOldPSUI6WVkzRzpDTzNKOkpPRk86VlJaTzpBU0dMIn0.eyJvd25lclVpbiI6IjEwMDAwODcxNTUxOSIsIm9wZXJhdG9yVWluIjoiMTAwMDI2NjgyMDcxIiwidG9rZW5JZCI6ImNiZnBpaXI4a2NnczAyMGdlMGMwIiwiZXhwIjoxOTc0MTgwOTM5LCJuYmYiOjE2NTg4MjA5MzksImlhdCI6MTY1ODgyMDkzOX0.aFNExxYkXMo6C0USp7rktPbS8kXXtIFzsNIiNmUwEDEjHOnAxw1fMtcMyQOM7HAuPSLUKJK9D2XH_9w1aKrnFz8FyiIyRwL16GqCbGpnyYEaDNPmWQZGqUWPKCRbvq-RnG-vsw8V81a8X06xVhlEiGyCGU--488dO_soktFVB4DYhmgg8zzf5zC_-2JipUDokkexVaadlXoDKKrOq4_hoATj57KbWPzYzTPdBTx51SE5ocrjJCiXL_WdiVo8vdDacbDv1Ch90ZSr7UWByCXhFWoCQliI6lBpWPOuu3J2cOYXhIMSEwfrVIT_uowycuJglfjkZPELboPdAVkL56elbA"
+  DEFAULT_REGISTRY_NAMESPACE: "trial"
+
+  S3STORAGE_ENDPOINT: {{ .Values.minio.endpoint }}
+  S3STORAGE_AK: {{ (first .Values.minio.users).accessKey }}
+  S3STORAGE_SK: {{ (first .Values.minio.users).secretKey }}
+  S3STORAGE_BUCKET: {{ .Values.minio.bucket }}
+  S3STORAGE_PROTOCOL: {{ .Values.minio.protocol }}
+
+  KODESPACE_VERSION: {{ .Values.microservice.kodespace.version }}
+  CHART_VERSION: {{ .Chart.AppVersion }}

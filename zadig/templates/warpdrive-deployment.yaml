@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warpdrive
+  labels:
+    {{- include "zadig.microservice.warpdrive.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.microservice.warpdrive.replicas | default 2 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.warpdrive.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/warpdrive-configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "zadig.microservice.warpdrive.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+      serviceAccountName: {{ include "zadig.serviceAccountName" . }}
+      containers:
+        - name: nsqd
+          image: {{ .Values.nsqd.image.repository }}:{{ .Values.nsqd.image.tag }}
+          imagePullPolicy: {{ .Values.nsqd.image.pullPolicy }}
+          env:
+            - name: NSQD_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          command:
+            - /nsqd
+          args:
+            - -data-path
+            - /data
+            - -lookupd-tcp-address
+            - nsqlookupd:4160
+            - -broadcast-address
+            - $(NSQD_POD_IP)
+          ports:
+            - protocol: TCP
+              name: tcp
+              containerPort: 4150
+            - protocol: TCP
+              name: http
+              containerPort: 4151
+          resources:
+            limits:
+              cpu: {{ .Values.nsqd.resources.limits.cpu }}
+              memory: {{ .Values.nsqd.resources.limits.memory }}
+            requests:
+              cpu: 10m
+              memory: 100M
+        - name:  warpdrive
+          image:  {{ .Values.microservice.warpdrive.image.repository }}:{{ .Values.microservice.warpdrive.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.microservice.warpdrive.image.pullPolicy | default "Always" }}
+          ports:
+            - protocol: TCP
+              containerPort: {{ template "zadig.microservice.warpdrive.port" . }}
+          resources:
+            limits:
+              cpu: {{ .Values.microservice.warpdrive.resources.limits.cpu }}
+              memory: {{ .Values.microservice.warpdrive.resources.limits.memory }}
+            requests:
+              cpu: 10m
+              memory: 10Mi
+          volumeMounts:
+            - mountPath: /etc/encryption
+              name: aes-key
+              readOnly: true
+          envFrom:
+            - configMapRef:
+                name: warpdrive-config
+          env:
+            - name: WD_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: BE_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+      volumes:
+        - name: aes-key
+          secret:
+            secretName: zadig-aes-key
+            items:
+              - key: aesKey
+                path: aes

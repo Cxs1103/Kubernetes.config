@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nsqlookup
+  labels:
+    {{- include "zadig.microservice.nsqlookupd.labels" . | nindent 4 }}
+spec:
+  serviceName: nsqlookupd
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.nsqlookupd.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.nsqlookupd.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: nsqlookupd
+          image: {{ .Values.nsqd.image.repository }}:{{ .Values.nsqd.image.tag }}
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+            requests:
+              cpu: 10m
+              memory: 10Mi
+          command:
+            - /nsqlookupd
+          ports:
+            - protocol: TCP
+              name: tcp
+              containerPort: 4160
+            - protocol: TCP
+              name: http
+              containerPort: 4161

@@ -1,0 +1,18 @@
+tags:
+  mongodb: true
+  minio: true
+  ingressController: false
+  mysql: true
+
+endpoint:
+  type: FQDN
+  FQDN: zadig.mieken.cn
+
+dex:
+  config:
+    staticClients:
+      - id: zadig
+        redirectURIs:
+          - "http://zadig.mieken.cn/api/v1/callback"
+        name: "zadig"
+        secret: ZXhhbXBsZS1hcHAtc2VjcmV0

@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aslan
+  labels:
+    {{- include "zadig.microservice.aslan.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.microservice.aslan.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.aslan.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.aslan.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/aslan-configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "zadig.serviceAccountName" .}}
+      containers:
+        - name: nsqd
+          image: {{ .Values.nsqd.image.repository }}:{{ .Values.nsqd.image.tag }}
+          imagePullPolicy: {{ .Values.nsqd.image.pullPolicy }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: {{ .Values.nsqd.resources.limits.cpu }}
+              memory: {{ .Values.nsqd.resources.limits.memory }}
+          env:
+            - name: NSQD_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          command:
+            - /nsqd
+          args:
+            - -data-path
+            - /data
+            - -lookupd-tcp-address
+            - nsqlookupd:4160
+            - -broadcast-address
+            - $(NSQD_POD_IP)
+            - -max-msg-timeout
+            - {{ .Values.microservice.aslan.nsqd.maxMsgTimeout }}
+          ports:
+            - protocol: TCP
+              name: tcp
+              containerPort: 4150
+            - protocol: TCP
+              name: http
+              containerPort: 4151
+          volumeMounts:
+            - mountPath: /data
+              name: data
+        - image: {{ .Values.microservice.aslan.image.repository }}:{{ .Values.microservice.aslan.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.microservice.aslan.image.pullPolicy | default "Always" }}
+          name: aslan
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: {{ template "zadig.microservice.aslan.port" . }}
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: {{ template "zadig.microservice.aslan.port" . }}
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 3
+            failureThreshold: 15
+          envFrom:
+            - configMapRef:
+                name: aslan-config
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: zadig-aes-key
+                  key: aesKey
+            - name: BE_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: BE_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - protocol: TCP
+              containerPort: {{ template "zadig.microservice.aslan.port" . }}
+          resources:
+            limits:
+              cpu: {{ .Values.microservice.aslan.resources.limits.cpu }}
+              memory: {{ .Values.microservice.aslan.resources.limits.memory }}
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - mountPath: /etc/encryption
+              name: aes-key
+              readOnly: true
+            - mountPath: /config
+              name: policy-config
+              readOnly: true
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: aes-key
+          secret:
+            secretName: zadig-aes-key
+            items:
+              - key: aesKey
+                path: aes
+        - name: policy-config
+          configMap:
+            name: policy-config
+

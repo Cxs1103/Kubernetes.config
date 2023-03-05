@@ -1,0 +1,18 @@
+{{- if .Values.tags.mysql }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zadig.mysql.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zadig.mysql.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: mysql
+      port: 3306
+      protocol: TCP
+      targetPort: mysql
+  selector:
+    {{- include "zadig.mysql.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: warpdrive-config
+  labels:
+    {{- include "zadig.microservice.warpdrive.labels" . | nindent 4 }}
+data:
+  ADDRESS: {{ default "http" .Values.protocol }}://{{- include "zadig.endpoint" . }}
+  NSQLOOKUP_ADDRS: "nsqlookupd:4161"
+  POETRY_API_ROOT_KEY: {{ include "zadig.rootToken" . }}
+  DISABLE_KUBE_INFORMER: "true"
+  {{- if .Values.microservice.warpdrive.releaseImageTimeout }}
+  RELEASE_IMAGE_TIMEOUT: {{ .Values.microservice.warpdrive.releaseImageTimeout | quote }}
+  {{- end }}
+  {{- if .Values.microservice.warpdrive.deployPluginTimeout }}
+  DEPLOY_PLUGIN_TIMEOUT: {{ .Values.microservice.warpdrive.deployPluginTimeout | quote }}
+  {{- end }}

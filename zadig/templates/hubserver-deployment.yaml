@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hub-server
+  labels:
+    {{- include "zadig.microservice.hubServer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.microservice.hubServer.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.hubServer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.hubServer.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - image: {{ .Values.microservice.hubServer.image.repository }}:{{ .Values.microservice.hubServer.image.tag | default .Chart.AppVersion }}
+          name: hub-server
+          imagePullPolicy: {{ .Values.microservice.hubServer.image.pullPolicy | default "Always" }}
+          env:
+            - name: MONGODB_CONNECTION_STRING
+              value: {{ .Values.connections.mongodb.connectionString }}
+            - name: ASLAN_DB
+              value: {{ default "zadig" .Values.connections.mongodb.db }}
+          ports:
+            - protocol: TCP
+              containerPort: {{ template "zadig.microservice.hubServer.port" . }}
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1G
+            requests:
+              cpu: 10m
+              memory: 100M
+          volumeMounts:
+            - mountPath: /etc/encryption
+              name: aes-key
+              readOnly: true
+      volumes:
+        - name: aes-key
+          secret:
+            secretName: zadig-aes-key
+            items:
+              - key: aesKey
+                path: aes

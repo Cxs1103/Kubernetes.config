@@ -1,0 +1,139 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: zadig
+spec:
+  virtualHost:
+    domains:
+      - "*"
+    routes:
+      {{- if .Values.tags.enterprise }}
+      - matchers:
+          - prefix: /plutus-vendor
+        routeAction:
+          single:
+            kube:
+              port: 80
+              ref:
+                name: vendor-portal
+                namespace: {{ .Release.Namespace }}
+      - matchers:
+          - prefix: /api/plutus
+          - prefix: /api/dc
+        options:
+          timeout: 3600s
+        routeAction:
+          single:
+            kube:
+              port: 29000
+              ref:
+                name: plutus-vendor
+                namespace: {{ .Release.Namespace }}
+      {{- end }}
+      - matchers:
+          - prefix: /dex
+        routeAction:
+          single:
+            kube:
+              ref:
+                name: {{ .Values.dex.fullnameOverride }}
+                namespace: {{ .Release.Namespace }}
+              port: 5556
+        options:
+          timeout: 30s
+      - matchers:
+          - prefix: /api/v1/policy/permission
+        options:
+          autoHostRewrite: true
+          prefixRewrite: /api/v1/permission
+        routeAction:
+          single:
+            kube:
+              port: 25000
+              ref:
+                name: aslan
+                namespace: {{ .Release.Namespace }}
+      - matchers:
+          - prefix: /api/directory/codehosts/callback
+        routeAction:
+          single:
+            kube:
+              ref:
+                name: aslan
+                namespace: {{ .Release.Namespace }}
+              port: 25000
+        options:
+          prefixRewrite: /api/v1/codehosts/callback
+          timeout: 3600s
+      - matchers:
+          - prefix: /api/directory
+        routeAction:
+          single:
+            kube:
+              ref:
+                name: aslan
+                namespace: {{ .Release.Namespace }}
+              port: 25000
+        options:
+          prefixRewrite: /public-api/v1
+      - matchers:
+          - prefix: /api/aslan
+        routeAction:
+          single:
+            kube:
+              ref:
+                name: aslan
+                namespace: {{ .Release.Namespace }}
+              port: 25000
+        options:
+          # set a big value to avoid sudden disconnection of the sse apis
+          timeout: 3600s
+          prefixRewrite: /api
+      - matchers:
+          {{- if not .Values.tags.enterprise }}
+          - prefix: /api/plutus
+          {{- end }}
+          - prefix: /api/podexec
+          - prefix: /api/hub
+          - prefix: /api/callback
+          - prefix: /api/v1/connectors
+          - prefix: /api/v1/emails
+          - prefix: /api/v1/jira
+          - prefix: /api/v1/codehosts
+          - prefix: /api/v1/features
+          - prefix: /api/v1/roles
+          - prefix: /api/v1/preset-roles
+          - prefix: /api/v1/system-roles
+          - prefix: /api/v1/rolebindings
+          - prefix: /api/v1/userbindings
+          - prefix: /api/v1/system-rolebindings
+          - prefix: /api/v1/policy-definitions
+          - prefix: /api/v1/policies
+          - prefix: /api/v1/picket
+          - prefix: /api/v1/callback
+          - prefix: /api/v1/users
+          - prefix: /api/v1/user/count
+          - prefix: /api/v1/login
+          - prefix: /api/v1/signup
+          - prefix: /api/v1/retrieve
+          - prefix: /api/v1/reset
+          - prefix: /openapi
+        routeAction:
+          single:
+            kube:
+              ref:
+                name: aslan
+                namespace: {{ .Release.Namespace }}
+              port: 25000
+      - matchers:
+          - prefix: /
+        routeAction:
+          single:
+            kube:
+              ref:
+                name: zadig-portal
+                namespace: {{ .Release.Namespace }}
+              port: 80
+    options:
+      extauth:
+        customAuth: {}

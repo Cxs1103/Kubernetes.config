@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dind
+  labels:
+    {{- include "zadig.microservice.dind.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: dind
+      protocol: TCP
+      port: {{ include "zadig.microservice.dind.port" . }}
+      targetPort: {{ include "zadig.microservice.dind.port" . }}
+  clusterIP: None
+  selector:
+    {{- include "zadig.microservice.dind.selectorLabels" . | nindent 4 }}

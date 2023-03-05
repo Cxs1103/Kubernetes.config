@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zadig-portal
+  labels:
+    {{- include "zadig.frontend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.frontend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/zadig-portal-configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "zadig.frontend.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name:  zadig-portal
+          image:  {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy | default "Always" }}
+          ports:
+            - protocol: TCP
+              containerPort: 80
+          volumeMounts:
+            - name: zadig-portal-config
+              mountPath: /etc/nginx/conf.d
+          resources:
+            limits:
+              cpu: {{ .Values.frontend.resources.limits.cpu }}
+              memory: {{ .Values.frontend.resources.limits.memory }}
+            requests:
+              cpu: 10m
+              memory: 10Mi
+      volumes:
+        - name: zadig-portal-config
+          configMap:
+            name: zadig-portal-config

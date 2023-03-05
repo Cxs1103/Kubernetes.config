@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-server
+  labels:
+    {{- include "zadig.microservice.resourceServer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.microservice.resourceServer.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.resourceServer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.resourceServer.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - image: {{ .Values.microservice.resourceServer.image.repository }}:{{ .Values.microservice.resourceServer.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.microservice.resourceServer.image.pullPolicy | default "Always" }}
+          name: resource-server
+          resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi

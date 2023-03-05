@@ -1,0 +1,15 @@
+apiVersion: gloo.solo.io/v1
+kind: Upstream
+metadata:
+  name: auth-server
+  labels:
+    {{- include "zadig.microservice.opa.labels" . | nindent 4 }}
+spec:
+  discoveryMetadata: {}
+  kube:
+    selector:
+      {{- include "zadig.microservice.opa.selectorLabels" . | nindent 6 }}
+    serviceName: opa
+    serviceNamespace: {{ .Release.Namespace }}
+    servicePort: 9191
+  useHttp2: true

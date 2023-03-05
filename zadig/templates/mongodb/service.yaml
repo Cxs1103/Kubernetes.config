@@ -1,0 +1,18 @@
+{{- if .Values.tags.mongodb }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zadig.mongodb.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zadig.mongodb.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: mongodb
+      port: 27017
+      protocol: TCP
+      targetPort: mongodb
+  selector:
+    {{- include "zadig.mongodb.selectorLabels" . | nindent 4 }}
+{{- end }}

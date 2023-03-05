@@ -1,0 +1,290 @@
+tags:
+  # enterprise is the main switch for the zadig version installed.
+  enterprise: false
+  # mongodb is the switch for installing mongodb for zadig, if an external database is provided, set this to false
+  mongodb: true
+  # minio is the switch for installing minIO for zadig, if an external object storage is provided, set this to false
+  minio: true
+  # mysql is the switch for installing mysql for zadig, if an external database is provided, set this to false
+  mysql: true
+endpoint:
+  # endpoint.type is the type of Zadig system endpoint. It can be of type FQDN or IP. By default the type is FQDN.
+  type: FQDN
+  # FQDN is the domain name the user choose to visit in. It must be set if endpoint is of type FQDN.
+  FQDN: poc.example.com
+  # IP is the ip of one of the cluster's worker node. It must be set if the endpoint is of type IP. By default it is empty.
+  IP:
+global:
+  encryption:
+    key: 9F11B4E503C7F2B577E5F9366BDDAB64
+  image:
+    registry: koderover.tencentcloudcr.com/koderover-public
+  extensions:
+    extAuth:
+      extauthzServerRef:
+        name: auth-server
+        # Mandatory, set it to the namespace where the chart is installed.
+        namespace: zadig
+      requestTimeout: 5s
+  builtInImage:
+    ubuntuBase: koderover.tencentcloudcr.com/koderover-public/build-base:${BuildOS}
+# protocol is the internet protocol used to access zadig
+protocol: http
+microservice:
+  aslan:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/aslan
+      tag: 1.16.0
+      pullPolicy: Always
+    serviceStartTimeout: 600
+    resources:
+      limits:
+        cpu: 2
+        memory: 4Gi
+    nsqd:
+      maxMsgTimeout: 60m
+  cron:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/cron
+      tag: 1.16.0
+      pullPolicy: Always
+  dind:
+    image:
+      repository: docker
+      tag: 20.10.14-dind
+    resources:
+      limits:
+        cpu: 4
+        memory: 8Gi
+  hubAgent:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/hub-agent
+      tag: 1.16.0
+  hubServer:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/hub-server
+      tag: 1.16.0
+      pullPolicy: Always
+  jenkins:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/jenkins-plugin
+      tag: 1.16.0
+  kodespace:
+    version: v1.1.0
+  predator:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/predator-plugin
+      tag: 1.16.0
+  resourceServer:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/resource-server
+      tag: 1.16.0
+      pullPolicy: Always
+  packager:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/packager-plugin
+      tag: 1.16.0
+  warpdrive:
+    replicas: 2
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/warpdrive
+      tag: 1.16.0
+      pullPolicy: Always
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+  opa:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-public/opa
+      tag: 0.33.1-envoy
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+init:
+  image:
+    repository: koderover.tencentcloudcr.com/koderover-public/init
+    tag: 1.16.0
+    pullPolicy: Always
+  adminPassword: zadig
+  adminEmail: admin@example.com
+nsqd:
+  image:
+    repository: nsqio/nsq
+    tag: v1.2.1
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi
+frontend:
+  image:
+    repository: koderover.tencentcloudcr.com/koderover-public/zadig-portal
+    tag: 1.16.0
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi
+ua:
+  image:
+    repository: koderover.tencentcloudcr.com/koderover-public/ua
+    tag: 1.16.0
+    pullPolicy: Always
+connections:
+  mysql:
+    host: kr-mysql:3306
+    auth:
+      user: root
+      password: zadig
+    db:
+      user: user
+      dex: dex
+  mongodb:
+    connectionString: mongodb://root:zadig@kr-mongodb:27017
+    db: zadig
+github:
+  knownHost:
+  sshKey:
+kubernetes:
+  server:
+# minio customize values
+# reference: https://github.com/minio/minio/blob/master/helm/minio/values.yaml to set the required values.
+minio:
+  image:
+    repository: minio/minio
+  mode: standalone
+  # endpoint is the endpoint for the minio, if the user choose to provide their own minio
+  endpoint: kr-minio:9000
+  replicas: 1
+  bucket: bucket
+  # buckets is the required bucket list after minio installation. By default, zadig initialize a bucket called bucket to store objects.
+  buckets:
+    - name: bucket
+      policy: public
+      purge: false
+      versioning: true
+      objectlocking: false
+  # data persistence related parameter
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass:
+  # since the default memory request is 16Gi, we change it to a reasonable value
+  resources:
+    requests:
+      memory: 256Mi
+  fullnameOverride: kr-minio
+  # username must be at least 3 characters long
+  rootUser: admin
+  # root password must be at least 8 characters long
+  rootPassword: zadig666
+  # the default access information to be used
+  # DO NOT DELETE THE FIRST USER OTHERWISE THE SYSTEM WILL BE BROKEN
+  users:
+    - accessKey: AKIAIOSFODNN72019EXAMPLE
+      secretKey: wJalrXUtnFEMI2019K7MDENGbPxRfiCYEXAMPLEKEY
+      policy: readwrite
+  protocol: http
+mongodb:
+  rootPassword: zadig
+  persistence:
+    enabled: true
+    size: 20Gi
+  fullnameOverride: kr-mongodb
+mysql:
+  rootPassword: zadig
+  persistence:
+    enabled: true
+    size: 20Gi
+  fullnameOverride: kr-mysql
+zadig-ee:
+  vendor:
+    httpScheme: http
+    host: poc-ee.example.com
+    rootToken: lWSDou1uGiodtRC3
+    autoSyncClient: true
+    mongo:
+      addr: "zadig-storage"
+      db: "plutus_zadig"
+      port: "27017"
+      connectionString: mongodb://root:zadig@kr-mongodb:27017
+  image:
+    repository: koderover.tencentcloudcr.com/koderover-ee/plutus-vendor
+    tag: 1.16.0
+  portal:
+    image:
+      repository: koderover.tencentcloudcr.com/koderover-ee/vendor-portal
+      tag: 1.16.0
+      pullPolicy: Always
+    resources:
+      limits:
+        cpu: 1
+        memory: 512Mi
+dex:
+  fullnameOverride: zadig-dex
+  image:
+    repository: koderover.tencentcloudcr.com/koderover-public/dex
+    tag: 1.16.0
+    pullPolicy: Always
+  config:
+    issuer: http://zadig-dex:5556/dex
+    oauth2:
+      skipApprovalScreen: true
+    storage:
+      type: mysql
+      config:
+        host: kr-mysql
+        port: 3306
+        database: dex
+        user: root
+        password: zadig
+        ssl:
+          mode: "false"
+    web:
+      http: 0.0.0.0:5556
+    staticClients:
+      - id: zadig
+        redirectURIs:
+          - 'http://poc.example.com/api/v1/callback'
+        name: 'zadig'
+        secret: ZXhhbXBsZS1hcHAtc2VjcmV0
+    enablePasswordDB: true
+gloo:
+  settings:
+    singleNamespace: true
+  gatewayProxies:
+    gatewayProxy:
+      gatewaySettings:
+        customHttpGateway:
+          options:
+            httpConnectionManagerSettings:
+              streamIdleTimeout: 60m
+        customHttpsGateway:
+          options:
+            httpConnectionManagerSettings:
+              streamIdleTimeout: 60m
+      podTemplate:
+        image:
+          repository: gloo-envoy-wrapper
+          tag: 1.9.1-multiarch
+  gateway:
+    certGenJob:
+      image:
+        repository: certgen
+        tag: 1.9.1-multiarch
+    deployment:
+      image:
+        repository: gateway
+        tag: 1.9.1-multiarch
+  discovery:
+    deployment:
+      image:
+        repository: discovery
+        tag: 1.9.1-multiarch
+  gloo:
+    deployment:
+      image:
+        repository: gloo
+        tag: 1.9.1-multiarch

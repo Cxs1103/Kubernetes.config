@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plutus-vendor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "plutus-vendor.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "plutus-vendor.labels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: ee-registry-secret
+      serviceAccountName: {{ include "plutus-vendor.fullname" . }}-sa
+      containers:
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: Always
+          name: plutus-vendor
+          livenessProbe:
+            httpGet:
+              path: /api/plutus/health
+              port: 29000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/plutus/health
+              port: 29000
+            initialDelaySeconds: 10
+            periodSeconds: 2
+          envFrom:
+            - configMapRef:
+                name: plutus-vendor-config
+          ports:
+            - protocol: TCP
+              containerPort: 29000
+          resources:
+            limits:
+              cpu: 500m
+              memory: 500M
+            requests:
+              cpu: 100m
+              memory: 100M

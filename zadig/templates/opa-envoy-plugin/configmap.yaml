@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-envoy-config
+  labels:
+    {{- include "zadig.microservice.opa.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    services:
+      bundle_server:
+        url: http://aslan:25000/api/v1
+        response_header_timeout_seconds: 5
+
+    bundles:
+      envoy/authz:
+        service: bundle_server
+        resource: bundles/bundle.tar.gz
+        persist: true
+        polling:
+          min_delay_seconds: 2
+          max_delay_seconds: 4

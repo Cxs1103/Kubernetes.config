@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-post-upgrade"
+  labels:
+    {{- include "zadig.postHook.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "-1"
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.postHook.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-upgrade-job
+          image: "{{ .Values.ua.image.repository }}:{{ .Values.ua.image.tag }}"
+          imagePullPolicy: {{ .Values.ua.image.pullPolicy }}
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
+          args:
+            - "migrate"
+            - "-c"
+            - {{ .Values.connections.mongodb.connectionString | quote }}
+            - "-d"
+            - {{ default "zadig" .Values.connections.mongodb.db | quote }}
+            - "-f"
+            - "$(FROM_VERSION)"
+            - "-t"
+            - {{ .Chart.Version | quote }}
+          env:
+            - name: FROM_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ .Release.Name }}-post-install"
+                  key: VERSION
+                  optional: true
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: zadig-aes-key
+                  key: aesKey
+            - name: ADDRESS
+              value: {{ default "http" .Values.protocol }}://{{- include "zadig.endpoint" . }}
+            - name: MYSQL_USER
+              value: {{ .Values.connections.mysql.auth.user }}
+            - name: MYSQL_PASSWORD
+              value: {{ .Values.connections.mysql.auth.password }}
+            - name: MYSQL_HOST
+              value: {{ .Values.connections.mysql.host }}
+            - name: MYSQL_USER_DB
+              value: {{ .Values.connections.mysql.db.user }}

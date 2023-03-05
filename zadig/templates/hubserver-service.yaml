@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hub-server
+  labels:
+    {{- include "zadig.microservice.hubServer.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: {{ template "zadig.microservice.hubServer.port" . }}
+      targetPort: {{ template "zadig.microservice.hubServer.port" . }}
+  selector:
+    {{- include "zadig.microservice.hubServer.selectorLabels" . | nindent 6 }}

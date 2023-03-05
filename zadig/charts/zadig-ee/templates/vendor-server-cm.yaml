@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: plutus-vendor-config
+data:
+  # --------------------------------------------------------------------------------------
+  # common
+  # --------------------------------------------------------------------------------------
+  PLUTUS_BASE_URL: {{ default "http" .Values.vendor.httpScheme }}://{{ .Values.vendor.host }}
+  PLUTUS_VERSION: {{ .Chart.Version | quote }}
+  AUTO_SYNC_CLIENT: {{ .Values.vendor.autoSyncClient | quote }}
+
+  # --------------------------------------------------------------------------------------
+  # logging
+  # level: 0(Debug), 1(Info), 2(Warn), 3(Error), 4(Panic), 5(Fatal)
+  # --------------------------------------------------------------------------------------
+  PLUTUS_LOG_LEVEL: "0"
+
+  # --------------------------------------------------------------------------------------
+  # mongo
+  # --------------------------------------------------------------------------------------
+  {{- if hasPrefix "mongodb://" .Values.vendor.mongo.connectionString }}
+  PLUTUS_MGO_ADDR: {{ .Values.vendor.mongo.connectionString }}
+  PLUTUS_MGO_DB: {{ .Values.vendor.mongo.db }}
+  {{- else }}
+  PLUTUS_MGO_ADDR: {{ .Values.vendor.mongo.connectionString }}:{{ default "27017" .Values.vendor.mongo.port }}
+  PLUTUS_MGO_DB: {{ .Values.vendor.mongo.db | default "koderover" }}
+  {{- end }}
+  PLUTUS_MGO_MODE: strong
+  PLUTUS_PASSWORD: plutus
+
+  {{- if hasPrefix "mongodb://" .Values.dc.mongo.connectionString }}
+  DC_MGO_ADDR: {{ .Values.dc.mongo.connectionString }}
+  DC_MGO_DB: {{ .Values.dc.mongo.db }}
+  {{- else }}
+  DC_MGO_ADDR: {{ .Values.dc.mongo.connectionString }}:{{ default "27017" .Values.dc.mongo.port }}
+  DC_MGO_DB: {{ .Values.dc.mongo.db | default "koderover" }}
+  {{- end }}
+  DC_MGO_MODE: strong
+  DC_PASSWORD: plutus
+

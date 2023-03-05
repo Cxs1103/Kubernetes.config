@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: aslan
+  labels:
+    {{- include "zadig.microservice.aslan.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: {{ template "zadig.microservice.aslan.port" . }}
+      targetPort: {{ template "zadig.microservice.aslan.port" . }}
+  selector:
+    {{- include "zadig.microservice.aslan.selectorLabels" . | nindent 4 }}

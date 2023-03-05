@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: policy-config
+  labels:
+    {{- include "zadig.microservice.aslan.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    bundles:
+      - resourceType: Environment
+        endpoint: http://aslan:25000/api/environment/bundle-resources
+      - resourceType: Cluster
+        endpoint: http://aslan:25000/api/cluster/bundle-resources
+      - resourceType: Workflow
+        endpoint: http://aslan:25000/api/workflow/bundle-resources

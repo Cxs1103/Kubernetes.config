@@ -1,0 +1,15 @@
+dependencies:
+- name: minio
+  repository: https://charts.min.io/
+  version: 4.0.15
+- name: dex
+  repository: https://charts.dexidp.io
+  version: 0.6.3
+- name: gloo
+  repository: https://storage.googleapis.com/solo-public-helm
+  version: 1.9.1
+- name: zadig-ee
+  repository: ""
+  version: 1.0.0
+digest: sha256:59528856a06853a1fd72d5d4c6234bba18bb379506fbd591e02ab15abef2d73e
+generated: "2022-10-31T14:55:59.900845+08:00"

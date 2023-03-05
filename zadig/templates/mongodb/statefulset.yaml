@@ -1,0 +1,67 @@
+{{- if .Values.tags.mongodb }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "zadig.mongodb.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zadig.mongodb.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zadig.mongodb.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "zadig.mongodb.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.mongodb.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:4.0.28
+          imagePullPolicy: IfNotPresent
+          args: ["--dbpath","/data/db"]
+          env:
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: password
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: username
+          ports:
+          - containerPort: 27017
+            name: mongodb
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+    {{ if and .Values.mongodb.persistence.enabled .Values.mongodb.persistence.existingClaim }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.mongodb.persistence.existingClaim . }}
+    {{- else if not .Values.mongodb.persistence.enabled }}
+      volumes:
+        - name: data
+          emptyDir: {}
+    {{- else if and .Values.mongodb.persistence.enabled (not .Values.mongodb.persistence.existingClaim) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{ include "zadig.mongodb.selectorLabels" . | nindent 10 }}
+      spec:
+        {{ if .Values.mongodb.storageClass }}
+        storageClassName: {{ .Values.mongodb.storageClass }}
+        {{- end }}
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .Values.mongodb.persistence.size | quote }}
+    {{- end }}
+{{- end }}

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dind
+  labels:
+    {{- include "zadig.microservice.dind.labels" . | nindent 4 }}
+spec:
+  serviceName: dind
+  replicas: {{ .Values.microservice.dind.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "zadig.microservice.dind.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zadig.microservice.dind.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: dind
+          image: {{ .Values.microservice.dind.image.repository }}:{{ .Values.microservice.dind.image.tag }}
+          args:
+          - --mtu=1376
+          {{- if default false .Values.dockerUseMirror }}
+          - --registry-mirror=https://dockerhub.azk8s.cn
+          {{- end }}
+          {{- if .Values.insecureRegistry }}
+          - --insecure-registry={{ .Values.insecureRegistry }}
+          {{- end }}
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+          securityContext:
+            privileged: true
+          ports:
+            - protocol: TCP
+              containerPort: 2375
+          resources:
+            limits:
+              cpu: {{ .Values.microservice.dind.resources.limits.cpu }}
+              memory: {{ .Values.microservice.dind.resources.limits.memory }}
+            requests:
+              cpu: 100m
+              memory: 128Mi
+        {{- if .Values.koderover }}
+          volumeMounts:
+          - name: docker-storage-dind
+            mountPath: /var/lib/docker
+        {{- end }}
+  {{- if .Values.koderover }}
+  volumeClaimTemplates:
+  - metadata:
+      name: docker-storage-dind
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.storageClassName }}
+      resources:
+        requests:
+          storage: 100Gi
+  {{- end }}
+
+
+
