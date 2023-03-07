@@ -1,0 +1,9 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: harbor-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: harbor.mieken.cn/course/tekton-demo:v0.1.0 #构建完的镜像名称
