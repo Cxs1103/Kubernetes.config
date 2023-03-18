@@ -1940,7 +1940,7 @@ spec:
               # image shall not contains tag, so it will be supported on a runtime like cri-o
               "-shell-image",
               #"ghcr.io/distroless/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791",
-              "busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791",
+              "busybox:1.35.0",
               # for script mode to work with windows we need a powershell image
               # pinning to nanoserver tag as of July 15 2021
               "-shell-image-win",
