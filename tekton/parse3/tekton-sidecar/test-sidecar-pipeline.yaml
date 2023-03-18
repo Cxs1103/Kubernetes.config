@@ -1,0 +1,57 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: test-sidecar-pipeline
+spec:
+  resources: # 为 Tasks 提供输入和输出资源声明
+    - name: git-res
+      type: git
+  params:
+    - name: image
+      type: string
+    - name: image-tag
+      type: string
+      default: "v0.4.0"
+    - name: registry_url
+      type: string
+      default: "harbor.mieken.cn"
+    - name: registry_mirror
+      type: string
+      default: "https://ot2k4d59.mirror.aliyuncs.com/"
+    - name: insecure_registry
+      type: string
+      default: "harbor.mieken.cn"
+  tasks: # 添加task到流水线中
+    # 运行应用测试
+    - name: test
+      taskRef:
+        name: test
+      resources:
+        inputs:
+          - name: repo # Task 输入名称
+            resource: git-res # Pipeline 资源名称
+    - name: get-build-id
+      taskRef:
+        name: generate-build-id
+      params:
+        - name: base-version
+          value: $(params.image-tag)
+    # 构建并推送 Docker 镜像
+    - name: build-and-push
+      taskRef:
+        name: docker-build-push # 使用上面定义的镜像构建任务
+      runAfter:
+        - test # 测试任务执行之后
+      resources:
+        inputs:
+          - name: source # 指定输入的git仓库资源
+            resource: git-res
+      params:
+        - name: image
+          value: "$(params.image):$(tasks.get-build-id.results.build-id)"
+        - name: registry_url
+          value: $(params.registry_url)
+        - name: insecure_registry
+          value: $(params.insecure_registry)
+        - name: registry_mirror
+          value: $(params.registry_mirror)

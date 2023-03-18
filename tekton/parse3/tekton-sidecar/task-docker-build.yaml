@@ -1,0 +1,94 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: docker-build-push
+spec:
+  resources:
+    inputs: # 定义输入资源
+      - name: source # 源代码仓库
+        type: git
+  params:
+    - name: image
+      description: Reference of the image docker will produce.
+    - name: builder_image
+      description: The location of the docker builder image.
+      default: docker:stable
+    - name: dockerfile
+      description: Path to the Dockerfile to build.
+      default: ./Dockerfile
+    - name: context
+      description: Path to the directory to use as context.
+      default: .
+    - name: build_extra_args
+      description: Extra parameters passed for the build command when building images.
+      default: ""
+    - name: push_extra_args
+      description: Extra parameters passed for the push command when pushing images.
+      default: ""
+    - name: insecure_registry
+      description: Allows the user to push to an insecure registry that has been specified
+      default: ""
+    - name: registry_mirror
+      description: Specific the docker registry mirror
+      default: ""
+    - name: registry_url
+      description: private docker images registry url
+  steps:
+    - name: docker-build # 构建步骤
+      image: $(params.builder_image)
+      env:
+        - name: DOCKER_HOST # 用 TLS 形式通过 TCP 链接 sidecar
+          value: tcp://localhost:2376
+        - name: DOCKER_TLS_VERIFY # 校验 TLS
+          value: "1"
+        - name: DOCKER_CERT_PATH # 使用 sidecar 守护进程生成的证书
+          value: /certs/client
+      workingDir: $(resources.inputs.source.path)
+      script: | # docker 构建命令
+        docker login $(params.registry_url)
+        docker build \
+          $(params.build_extra_args) \
+          --no-cache \
+          -f $(params.dockerfile) -t $(params.image) $(params.context)
+      volumeMounts: # 声明挂载证书目录
+        - mountPath: /certs/client
+          name: dind-certs
+    - name: docker-push #
+      image: $(params.builder_image)
+      env:
+        - name: DOCKER_HOST
+          value: tcp://localhost:2376
+        - name: DOCKER_TLS_VERIFY
+          value: "1"
+        - name: DOCKER_CERT_PATH
+          value: /certs/client
+      workingDir: $(resources.inputs.source.path)
+      script: | # 推送 docker 镜像
+        docker push $(params.push_extra_args) $(params.image)
+      volumeMounts:
+        - mountPath: /certs/client
+          name: dind-certs
+  sidecars: # sidecar 模式，提供 docker daemon服务，实现真正的 DinD 模式
+    - image: docker:dind
+      name: server
+      args:
+        - --storage-driver=vfs
+        - --userland-proxy=false
+        - --debug
+        - --insecure-registry=$(params.insecure_registry)
+        - --registry-mirror=$(params.registry_mirror)
+      securityContext:
+        privileged: true
+      env:
+        - name: DOCKER_TLS_CERTDIR # 将生成的证书写入与客户端共享的路径
+          value: /certs
+      volumeMounts:
+        - mountPath: /certs/client
+          name: dind-certs
+      readinessProbe: # 等待 dind daemon 生成它与客户端共享的证书
+        periodSeconds: 1
+        exec:
+          command: ["ls", "/certs/client/ca.pem"]
+  volumes: # 使用 emptyDir 的形式即可
+    - name: dind-certs
+      emptyDir: {}
