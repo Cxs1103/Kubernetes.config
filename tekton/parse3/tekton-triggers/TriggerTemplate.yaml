@@ -1,0 +1,36 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: devops-demo-template
+spec:
+  params: # 定义参数，和 TriggerBinding 中的保持一致
+    - name: gitrevision
+    - name: gitrepositoryurl
+  resourcetemplates: # 定义资源模板
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun # 定义 TaskRun 模板
+      metadata:
+        generateName: gitlab-run- # TaskRun 名称前缀
+      spec:
+        serviceAccountName: tekton-triggers-gitlab-sa
+        taskSpec: # Task 任务声明
+          resources:
+            inputs: # 定义一个名为 source 的 git 输入资源
+              - name: source
+                type: git
+          steps:
+            - name: show-path
+              image: ubuntu # 定义一个执行步骤，列出代码目录结构
+              script: |
+                #! /bin/bash
+                ls -la $(resources.inputs.source.path)
+        resources: # 声明具体的输入资源参数
+          inputs:
+            - name: source # 和 Task 中的资源名保持一直
+              resourceSpec: # 资源声明
+                type: git
+                params:
+                  - name: revision
+                    value: $(tt.params.gitrevision) # 读取参数值
+                  - name: url
+                    value: $(tt.params.gitrepositoryurl)
