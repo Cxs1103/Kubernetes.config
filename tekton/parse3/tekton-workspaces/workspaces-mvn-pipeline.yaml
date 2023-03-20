@@ -1,0 +1,52 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: mvn-pipeline
+spec:
+  workspaces: # 声明 workspaces
+    - name: local-maven-repo
+  resources: # 声明使用的资源
+    - name: app-git
+      type: git
+  tasks:
+    - name: build # 构建任务
+      taskRef:
+        name: mvn-task # 引用上面的 mvn 任务
+      resources: # 传递 resources 资源
+        inputs:
+          - name: source
+            resource: app-git
+      params: # 传递 params 参数
+        - name: GOALS
+          value: ["package"]
+      workspaces: # 传递 workspaces
+        - name: maven-repo
+          workspace: local-maven-repo
+    - name: int-test # 测试任务
+      taskRef:
+        name: mvn-task
+      runAfter: ["build"] # 需要 build 任务执行完成后
+      resources:
+        inputs:
+          - name: source
+            resource: app-git
+      params:
+        - name: GOALS
+          value: ["verify"]
+      workspaces:
+        - name: maven-repo
+          workspace: local-maven-repo
+    - name: gen-report # 测试报告
+      taskRef:
+        name: mvn-task
+      runAfter: ["build"] # 需要 build 任务执行完成后
+      resources:
+        inputs:
+          - name: source
+            resource: app-git
+      params:
+        - name: GOALS
+          value: ["site"]
+      workspaces:
+        - name: maven-repo
+          workspace: local-maven-repo
