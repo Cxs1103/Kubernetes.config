@@ -1,0 +1,72 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: docker
+spec:
+  workspaces:
+    - name: go-repo
+  params:
+    - name: image
+      description: Reference of the image docker will produce.
+    - name: registry_mirror
+      description: Specific the docker registry mirror
+      default: ""
+    - name: registry_url
+      description: private docker images registry url
+  steps:
+    - name: docker-build # 构建步骤
+      image: docker:stable
+      env:
+        - name: DOCKER_HOST # 用 TLS 形式通过 TCP 链接 sidecar
+          value: tcp://localhost:2376
+        - name: DOCKER_TLS_VERIFY # 校验 TLS
+          value: "1"
+        - name: DOCKER_CERT_PATH # 使用 sidecar 守护进程生成的证书
+          value: /certs/client
+        - name: DOCKER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: harbor-auth
+              key: password
+        - name: DOCKER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: harbor-auth
+              key: username
+      workingDir: $(workspaces.go-repo.path)
+      script: | # docker 构建命令
+        docker login $(params.registry_url) -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        docker build --no-cache -f ./Dockerfile -t $(params.image) .
+        docker push $(params.image)
+      volumeMounts: # 声明挂载证书目录
+        - mountPath: /certs/client
+          name: dind-certs
+  sidecars: # sidecar 模式，提供 docker daemon服务，实现真正的 DinD 模式
+    - image: docker:dind
+      name: server
+      args:
+        - --storage-driver=vfs
+        - --userland-proxy=false
+        - --debug
+        - --insecure-registry=$(params.registry_url)
+        - --registry-mirror=$(params.registry_mirror)
+      securityContext:
+        privileged: true
+      env:
+        - name: DOCKER_TLS_CERTDIR # 将生成的证书写入与客户端共享的路径
+          value: /certs
+      volumeMounts:
+        - mountPath: /certs/client
+          name: dind-certs
+        - mountPath: /var/lib/docker
+          name: docker-root
+      readinessProbe: # 等待 dind daemon 生成它与客户端共享的证书
+        periodSeconds: 1
+        exec:
+          command: ["ls", "/certs/client/ca.pem"]
+  volumes: # 使用 emptyDir 的形式即可
+    - name: dind-certs
+      emptyDir: {}
+    - name: docker-root
+      persistentVolumeClaim:
+        claimName: docker-root-pvc

@@ -1,0 +1,10 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: test
+spec:
+  steps:
+    - name: test
+      image: golang:1.14.2-alpine3.11
+      command: ["echo"]
+      args: ["this is a test task"]

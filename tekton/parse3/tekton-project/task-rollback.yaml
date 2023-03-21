@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: rollback
+spec:
+  params:
+    - name: release_name
+      description: The helm release name
+    - name: release_namespace
+      description: The helm release namespace
+      default: ""
+    - name: helm_image
+      description: "helm image to be used"
+      default: "docker.io/lachlanevenson/k8s-helm@sha256:5c792f29950b388de24e7448d378881f68b3df73a7b30769a6aa861061fd08ae" #tag: v3.6.0
+  steps:
+    - name: rollback
+      image: $(params.helm_image)
+      script: |
+        echo rollback current installed helm releases
+        helm rollback $(params.release_name) --namespace $(params.release_namespace)
