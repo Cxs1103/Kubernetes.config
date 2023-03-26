@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: change-manifests
+spec:
+  params:
+    - name: git_url
+      description: Git repository containing manifest files to update
+    - name: git_email
+      default: pipeline@mieken.cn
+    - name: git_name
+      default: Tekton Pipeline
+    - name: git_manifest_dir
+      description: Manifests files dir
+    - name: tool_image
+      default: cnych/helm-kubectl-curl-git-jq-yq
+    - name: image_tag
+      description: Deploy docker image tag
+  steps:
+    - name: git-push
+      image: $(params.tool_image)
+      env:
+        - name: GIT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-auth
+              key: username
+              optional: true
+        - name: GIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-auth
+              key: password
+              optional: true
+      command: ["/bin/bash"]
+      args:
+        - -c
+        - |
+          set -eu
+          git config --global user.email "$(params.git_email)"
+          git config --global user.name "$(params.git_name)"
+          git clone --branch main --depth 1 http://${GIT_USERNAME}:${GIT_PASSWORD}@$(params.git_url) repo
+          cd "repo/$(params.git_manifest_dir)"
+          ls -l
+          echo old value:
+          cat my-values.yaml | yq r - 'image.tag'
+          echo replacing with new value:
+          echo $(params.image_tag)
+          yq w --inplace my-values.yaml 'image.tag' "$(params.image_tag)"
+          echo verifying new value
+          yq r my-values.yaml 'image.tag'
+          if ! git diff-index --quiet HEAD --; then
+            git status
+            git add .
+            git commit -m "helm values updated by tekton pipeline in change-manifests task"
+            git push
+          else
+              echo "no changes, git repository is up to date"
+          fi
+

@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devops-demo
+  namespace: argocd
+spec:
+  destination:
+    namespace: default
+    server: "https://kubernetes.default.svc"
+  project: demo
+  source:
+    path: helm # 从 Helm 存储库创建应用程序时，chart 必须指定 path
+    repoURL: "http://gitlab.mieken.cn/root/devops-demo-deploy.git"
+    targetRevision: HEAD
+    helm:
+      parameters:
+        - name: replicaCount
+          value: "2"
+      valueFiles:
+        - my-values.yaml
+
