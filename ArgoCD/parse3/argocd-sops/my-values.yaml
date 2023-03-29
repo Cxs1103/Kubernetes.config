@@ -1,0 +1,17 @@
+image:
+  repository: harbor.mieken.cn/course/devops-demo
+  tag: ab68418ebddb3a15d1d8b7588b7ef1855dae2845
+  pullPolicy: IfNotPresent
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  path: /
+  hosts:
+  - devops-demo.mieken.cn
+resources:
+  limits:
+    cpu: 50m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
