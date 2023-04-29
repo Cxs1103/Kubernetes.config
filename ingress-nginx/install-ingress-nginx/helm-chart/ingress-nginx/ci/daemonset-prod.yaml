@@ -5,9 +5,6 @@ controller:
     tag: "v1.1.0"
     digest:
 
-  podAnnotations:
-    linkerd.io/inject: enabled
-
   dnsPolicy: ClusterFirstWithHostNet
 
   hostNetwork: true

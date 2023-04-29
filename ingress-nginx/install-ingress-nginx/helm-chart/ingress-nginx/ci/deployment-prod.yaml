@@ -4,12 +4,9 @@ controller:
     repository: cnych/ingress-nginx
     tag: "v1.1.0"
     digest:
-    
-  podAnnotations:
-    linkerd.io/inject: enabled
-    
+
   dnsPolicy: ClusterFirstWithHostNet
-  
+
   hostNetwork: true
 
   publishService:  # hostNetwork 模式下设置为false，通过节点IP地址上报ingress status数据
