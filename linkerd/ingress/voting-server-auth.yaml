@@ -1,0 +1,14 @@
+apiVersion: policy.linkerd.io/v1beta1
+kind: ServerAuthorization
+metadata:
+  name: voting-grpc
+  namespace: emojivoto
+spec:
+  server:
+    name: voting-grpc # 关联 Server 对象
+  # The voting service only allows requests from the web service.
+  client:
+    meshTLS:
+      serviceAccounts:
+        - name: web
+        - name: web-2

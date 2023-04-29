@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emojivoto-ingress
+  labels:
+    name: emojivoto-ingress
+  namespace: emojivoto
+  annotations:
+    # add below line of nginx is meshed
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    # nginx.ingress.kubernetes.io/affinity: "cookie"
+    # nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+spec:
+  ingressClassName: nginx
+  rules:
+    # update IP with your own IP used by Ingress Controller
+    - host: emoji.192.168.0.84.nip.io
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: web-svc-2
+                port:
+                  number: 80
