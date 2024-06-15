@@ -3,7 +3,10 @@ kind: CloneSet
 metadata:
   name: cs-demo
 spec:
-  replicas: 3
+  minReadySeconds: 60
+  scaleStrategy:
+    maxUnavailable: 1
+  replicas: 5
   selector:
     matchLabels:
       app: cs
