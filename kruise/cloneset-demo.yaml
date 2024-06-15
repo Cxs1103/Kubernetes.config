@@ -6,7 +6,9 @@ spec:
   minReadySeconds: 60
   scaleStrategy:
     maxUnavailable: 1
-  replicas: 5
+    podsToDelete: 1
+      - cs-demo-xgmrc
+  replicas: 4
   selector:
     matchLabels:
       app: cs
