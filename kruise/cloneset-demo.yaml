@@ -2,6 +2,9 @@ apiVersion: apps.kruise.io/v1alpha1
 kind: CloneSet
 metadata:
   name: cs-demo
+  annotations:
+    apps.kruise.io/image-predownload-parallelism: "5"
+    apps.kruise.io/image-predownload-min-updated-ready-pods: "2"
 spec:
   updateStrategy:
     type: InPlaceIfPossible
@@ -21,7 +24,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: registry.cn-hangzhou.aliyuncs.com/cxs1103/nginx
+          image: docker.mieken.cn/library/nginx:1.25.2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
