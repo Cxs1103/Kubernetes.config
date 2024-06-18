@@ -1,0 +1,43 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: CloneSet
+metadata:
+  namespace: demo
+  name: cloneset-lifecycle-demo
+spec:
+  replicas: 2
+  ##########################################################################
+  ## 生命周期配置
+  lifecycle:
+    inPlaceUpdate:
+      labelsHandler:
+        ## 定义标签:
+        ##    1. 为 cloneset 控制器阻止原地更新 Pod 操作
+        ##    2. 通知 operator 执行 inPlace update 钩子
+        example.com/unready-blocker-inplace: "true"
+    preDelete:
+      labelsHandler:
+        ## 定义标签:
+        ##    1. 为 cloneset 控制器阻止删除 pod 操作
+        ##    2. 通知 operator 执行 preDelete 钩子
+        example.com/unready-blocker-delete: "true"
+  ##########################################################################
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        ## 这个标签可以用来判断此 Pod 是否是新创建的
+        example.com/newly-create: "true"
+        ## 对应于 spec.lifecycle.inPlaceUpdate.labelsHandler.example.com/unready-blocker-inplace
+        example.com/unready-blocker-inplace: "true"
+        ## 对应 spec.lifecycle.preDelete.labelsHandler.example.com/unready-blocker-inplace
+        example.com/unready-blocker-delete: "true"
+      containers:
+        - name: main
+          image: docker.mieken.cn/library/nginx:1.25.2
+          imagePullPolicy: Always
+  updateStrategy:
+    maxUnavailable: 20%
+    type: InPlaceIfPossible
