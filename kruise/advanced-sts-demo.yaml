@@ -10,8 +10,11 @@ spec:
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
+      podUpdatePolicy: InPlaceIfPossible
       maxUnavailable: 3 # 40% of 5 = 2
-      # partition: 4 # 如果设置了partition,只有大于等于这个数的pod才会升级
+      #partition: 4 # 如果设置了partition,只有大于等于这个数的pod才会升级
+      inPlaceUpdateStrategy:
+        gracePeriodSeconds: 10 # 原地升级的优雅时间
   selector:
     matchLabels:
       app: nginx
@@ -20,9 +23,11 @@ spec:
       labels:
         app: nginx # @
     spec:
+      readinessGates:
+        - conditionType: InPlaceUpdateReady
       containers:
         - name: nginx
-          image: docker.mieken.cn/library/nginx:1.25.2
+          image: docker.mieken.cn/library/nginx:1.25.3
           ports:
             - name: web
               containerPort: 80
