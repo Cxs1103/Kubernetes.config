@@ -6,11 +6,13 @@ metadata:
 spec:
   serviceName: "nginx-headless"
   podManagementPolicy: Parallel
-  replicas: 5
+  reserveOrdinals:
+    - 1
+  replicas: 4
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
-      paused: true #  paused 为 true 来暂停发布
+      #paused: true #  paused 为 true 来暂停发布
       podUpdatePolicy: InPlaceIfPossible
       maxUnavailable: 3 # 40% of 5 = 2
       #partition: 4 # 如果设置了partition,只有大于等于这个数的pod才会升级
