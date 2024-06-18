@@ -9,7 +9,7 @@ spec:
     rollingUpdate:
       partition: 0
       paused: true # 暂停发布
-      rollingUpdateType: Standard
+      rollingUpdateType: InPlaceIfPossible
       # selector:
       #   matchLabels:
       #     kubernetes.io/hostname: node1
