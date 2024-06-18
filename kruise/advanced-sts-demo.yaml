@@ -1,0 +1,28 @@
+apiVersion: apps.kruise.io/v1beta1
+kind: StatefulSet
+metadata:
+  name: web
+  namespace: default
+spec:
+  serviceName: "nginx-headless"
+  podManagementPolicy: Parallel
+  replicas: 5
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 3 # 40% of 5 = 2
+      # partition: 4 # 如果设置了partition,只有大于等于这个数的pod才会升级
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx # @
+    spec:
+      containers:
+        - name: nginx
+          image: docker.mieken.cn/library/nginx:1.25.2
+          ports:
+            - name: web
+              containerPort: 80
