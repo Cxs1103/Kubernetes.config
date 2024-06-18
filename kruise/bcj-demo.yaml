@@ -4,12 +4,15 @@ metadata:
   name: bcj-demo
   namespace: default
 spec:
+  completionPolicy:
+    type: Always
+    ttlSecondsAfterFinished: 30
   template:
     spec:
       restartPolicy: Never
       containers: # 一定不是一个常驻前台的进程，一定是一个任务，执行完成后需要退出的
         - name: counter
-          image: docker.mieken.cn/library/busybox
+          image: docker.mieken.cn/library/busybox:stable
           command:
             - "/bin/sh"
             - "-c"
