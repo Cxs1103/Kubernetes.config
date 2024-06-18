@@ -7,10 +7,12 @@ spec:
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
+      partition: 0
+      paused: true # 暂停发布
       rollingUpdateType: Standard
-      selector:
-        matchLabels:
-          kubernetes.io/hostname: node1
+      # selector:
+      #   matchLabels:
+      #     kubernetes.io/hostname: node1
   selector:
     matchLabels:
       k8s-app: nginx
