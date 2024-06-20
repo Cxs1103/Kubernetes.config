@@ -1,0 +1,21 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: SidecarSet
+metadata:
+  name: scs-demo
+spec:
+  selector:
+    matchLabels: # 非常重要的属性，会去匹配具有 app=nginx 的 Pod
+      app: nginx
+  updateStrategy:
+    type: RollingUpdate
+    maxUnavailable: 1
+  containers:
+    - name: sidecar1
+      image: busybox
+      command: ["sleep", "999d"]
+      volumeMounts:
+        - name: log-volume
+          mountPath: /var/log
+  volumes: # 该属性会被合并到 pod.spec.volumes 去
+    - name: log-volume
+      emptyDir: {}
