@@ -11,7 +11,7 @@ spec:
     maxUnavailable: 1
   containers:
     - name: sidecar1
-      image: busybox
+      image: docker.mieken.cn/library/busybox:stable
       command: ["sleep", "999d"]
       volumeMounts:
         - name: log-volume
