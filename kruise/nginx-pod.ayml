@@ -3,6 +3,7 @@ kind: Pod
 metadata:
   labels:
     app: nginx # 匹配 SidecarSet 里面指定的标签
+    canary.release: "true"
   name: test-pod
 spec:
   containers:
