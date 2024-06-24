@@ -1,0 +1,19 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: nginx-label-policy
+spec:
+  rules:
+    - name: nginx-label
+      match:
+        resources:
+          kinds:
+            - Pod
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              kyverno: nginx
+          spec:
+            (containers):
+              - (image): "*nginx*" # 容器镜像包含 nginx 即可
