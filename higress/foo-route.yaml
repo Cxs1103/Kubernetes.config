@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: higress
   rules:
-    - host: foo.bar.com
+    - host: foo.192.168.110.182.nip.io
       http:
         paths:
           - pathType: Prefix
