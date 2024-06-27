@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: higress
   rules:
-    - host: higress.k8s.local
+    - host: higress.192.168.110.182.nip.io
       http:
         paths:
           - path: /
