@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   annotations:
     higress.io/canary: "true"
-    higress.io/canary-by-cookie: "users_from_Beijing"
+    higress.io/canary-weight: "20" # 分配20%流量到当前Canary版本
   name: canary
 spec:
   ingressClassName: higress
