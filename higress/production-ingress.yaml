@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: production
+spec:
+  ingressClassName: higress
+  rules:
+    - host: echo.192.168.110.182.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: production
+                port:
+                  number: 80
