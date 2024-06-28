@@ -1,0 +1,9 @@
+for i in $(seq 1 10); do curl -s echo.192.168.110.182.nip.io | grep "Hostname"; done
+
+for i in $(seq 1 10); do curl -s -H "higress: always" echo.192.168.110.182.nip.io | grep "Hostname"; done
+
+for i in $(seq 1 10); do curl -s -H "higress: user-value" echo.192.168.110.182.nip.io | grep "Hostname"; done
+
+for i in $(seq 1 10); do curl -s -b "users_from_Beijing=always" echo.192.168.110.182.nip.io | grep "Hostname"; done
+
+for i in $(seq 1 10); do curl -s echo.192.168.110.182.nip.io | grep "Hostname"; done
