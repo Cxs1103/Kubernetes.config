@@ -1,0 +1,110 @@
+component:
+  master: true
+  datanode: true
+  metanode: true
+  objectnode: true
+  client: false
+  csi: true
+  monitor: false
+  ingress: true
+
+image:
+  # 3.3.0 版本之前会出现 /lib64/libstdc++.so.6: version `GLIBCXX_3.4.21' not found 错误
+  server: docker.mieken.cn/cubefs/cfs-server:v3.3.0
+  client: docker.mieken.cn/cubefs/cfs-client:v3.3.0
+  csi_driver: docker.mieken.cn/cubefs/cfs-csi-driver:v3.3.0
+  csi_provisioner: docker.mieken.cn/dyrnq/csi-provisioner:v3.3.0
+  csi_attacher: docker.mieken.cn/dyrnq/csi-attacher:v3.4.0
+  csi_resizer: docker.mieken.cn/dyrnq/csi-resizer:v1.3.0
+  driver_registrar: docker.mieken.cn/dyrnq/csi-node-driver-registrar:v2.5.0
+
+master:
+  # The replicas of master component, at least 3, recommend to be an odd number
+  replicas: 3
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+  resources:
+    enabled: true
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+objectnode:
+  replicas: 1
+  resources:
+    enabled: true
+    requests:
+      memory: "512Mi"
+      cpu: "300m"
+    limits:
+      memory: "512Mi"
+      cpu: "300m"
+
+metanode:
+  total_mem: "4000000000"
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+  resources:
+    enabled: true
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+datanode:
+  # DataNode 要使用的磁盘，可以挂载多块
+  # 格式: 挂载点:保留的空间
+  # 保留的空间: 单位字节，当磁盘剩余空间小于该值时将不会再在该磁盘上写入数据
+  disks:
+    - /data0:10000000000
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+  resources:
+    enabled: true
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+csi:
+  driverName: csi.cubefs.com
+  logLevel: error
+  kubeletPath: /var/lib/kubelet
+  controller:
+    tolerations: []
+    nodeSelector:
+      component.cubefs.io/csi: "enabled"
+  node:
+    tolerations: []
+    nodeSelector:
+      component.cubefs.io/csi: "enabled"
+    resources:
+      enabled: true
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  storageClass:
+    setToDefault: false
+    reclaimPolicy: "Delete"
+
+# CSI 客户端配置
+provisioner:
+  # Kubelet 的主目录
+  kubelet_path: /var/lib/kubelet
