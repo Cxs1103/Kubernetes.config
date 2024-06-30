@@ -1,0 +1,14 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: plugin-demo
+  namespace: higress-system
+spec:
+  url: oci://docker.io/cnych/higress-plugin-demo:1.0.0
+  defaultConfig:
+    mockEnable: false
+  matchRules:
+    - domain:
+        - foo.bar.com
+      config:
+        mockEnable: true

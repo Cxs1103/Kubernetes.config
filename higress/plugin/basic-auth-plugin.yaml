@@ -1,0 +1,19 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: basic-auth
+  namespace: higress-system
+spec:
+  url: oci://higress-registry.cn-hangzhou.cr.aliyuncs.com/plugins/basic-auth:1.0.0 # 插件镜像地址
+  defaultConfig:
+    consumers:
+      - name: consumer1
+        credential: admin:123456
+      - name: consumer2
+        credential: guest:abc
+  matchRules:
+    - domain:
+        - foo2.192.168.110.182.nip.io
+      config:
+        allow:
+          - consumer2
