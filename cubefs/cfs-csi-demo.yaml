@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfs-csi-demo
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: cfs-csi-demo-pod
+  template:
+    metadata:
+      labels:
+        app: cfs-csi-demo-pod
+    spec:
+      nodeSelector:
+        component.cubefs.io/csi: enabled
+      containers:
+        - name: cfs-csi-demo
+          image: nginx:1.17.9
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 80
+              name: "http-server"
+          volumeMounts:
+            - mountPath: "/usr/share/nginx/html"
+              mountPropagation: HostToContainer
+              name: mypvc
+      volumes:
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: cubefs-pvc
