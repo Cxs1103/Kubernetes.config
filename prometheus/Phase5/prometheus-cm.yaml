@@ -16,3 +16,7 @@ data:
     - job_name: 'coredns'
       static_configs:
         - targets: ['10.0.0.154:9153', '10.0.0.164:9153']
+
+    - job_name: "redis"
+      static_configs:
+        - targets: ["redis:9121"]
