@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: redis
-          image: docker.mieken.cn/redis:7.0.5
+          image: docker.mieken.cn/library/redis:7.2.5
           resources:
             requests:
               cpu: 100m
@@ -22,7 +22,7 @@ spec:
           ports:
             - containerPort: 6379
         - name: redis-exporter
-          image: oliver006/redis_exporter:latest
+          image: docker.mieken.cn/oliver006/redis_exporter:latest
           resources:
             requests:
               cpu: 100m
