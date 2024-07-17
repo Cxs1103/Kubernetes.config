@@ -20,3 +20,7 @@ data:
     - job_name: "redis"
       static_configs:
         - targets: ["redis:9121"]
+
+    - job_name: "nodes"
+      kubernetes_sd_configs:
+        - role: node
