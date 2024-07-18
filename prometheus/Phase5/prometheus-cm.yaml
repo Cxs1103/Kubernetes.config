@@ -90,6 +90,19 @@ data:
     - job_name: "kubernetes-endpoints"
       kubernetes_sd_configs:
         - role: endpoints
+      metric_relabel_configs:
+        - source_labels: [__name__, exported_pod]
+          regex: kube_pod_info;(.+)
+          target_label: pod
+        - source_labels: [__name__, exported_namespace]
+          regex: kube_pod_info;(.+)
+          target_label: namespace
+        - source_labels: [__name__, exported_node]
+          regex: kube_pod_info;(.+)
+          target_label: node
+        - source_labels: [__name__, exported_service]
+          regex: kube_pod_info;(.+)
+          target_label: service
       relabel_configs:
         - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
           action: keep
