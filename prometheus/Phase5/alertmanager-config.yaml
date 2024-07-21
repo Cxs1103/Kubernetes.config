@@ -38,6 +38,11 @@ data:
         group_by: ['instance'] # 根据instance做分组
         match:
           team: node
+      - receiver: webhook
+        group_wait: 10s
+        group_by: ['instance']
+        match:
+          team: node
 
     templates:  # 增加 templates 配置，指定模板文件
     - '/etc/alertmanager/template_email.tmpl'
@@ -47,13 +52,16 @@ data:
       email_configs:
       - to: '1103098721@qq.com'
         send_resolved: true  # 接受告警恢复的通知
-
     - name: 'email'
       email_configs:
       - to: '1103098721@qq.com'
         send_resolved: true
         html: '{{ template "email.html" . }}' # 此处通过 html 指定模板文件中定义的 email.html 模板
- 
+    - name: 'webhook'
+      webhook_configs:
+      - url: 'http://dingtalk-webhook:8000/alert'
+        send_resolved: true
+
     inhibit_rules:
     - source_match:
         alertname: NodeMemoryUsage

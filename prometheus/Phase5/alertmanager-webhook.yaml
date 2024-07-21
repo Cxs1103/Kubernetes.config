@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dingtalk-webhook
+  namespace: monitor
+  labels:
+    app: dingtalk-webhook
+spec:
+  selector:
+    matchLabels:
+      app: dingtalk-webhook
+  template:
+    metadata:
+      labels:
+        app: dingtalk-webhook
+    spec:
+      containers:
+        - name: webhook
+          image: docker.mieken.cn/cnych/prom-dingtalk-webhook:v0.0.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dingtalk-webhook
+  namespace: monitor
+  labels:
+    app: dingtalk-webhook
+spec:
+  selector:
+    app: dingtalk-webhook
+  ports:
+    - port: 8000
