@@ -144,22 +144,25 @@ data:
 
   rules.yml: |
     groups:
-    - name: test-node-mem
-      rules:
-      - alert: NodeMemoryUsage
-        expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 20
-        for: 2m
-        labels:
-          team: node
-        annotations:
-          summary: "{{$labels.instance}}: High Memory usage detected"
-          description: "{{$labels.instance}}: Memory usage is above 20% (current value is: {{ $value }}"
-
-
-
-
-
-
-
-
-
+      - name: test-node-mem
+        rules:
+          - alert: NodeMemoryUsage
+            expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 30
+            for: 2m
+            labels:
+              team: node
+              severity: critical
+            annotations:
+              summary: "{{$labels.instance}}: High Memory usage detected"
+              description: "{{$labels.instance}}: Memory usage is above 30% (current value is: {{ $value }})"
+      - name: test-node-load
+        rules:
+          - alert: NodeLoad
+            expr: node_load5 < 1
+            for: 2m
+            labels:
+              team: node
+              severity: normal
+            annotations:
+              summary: "{{ $labels.instance }}: Low node load deteched"
+              description: "{{ $labels.instance }}: node load is below 1 (current value is: {{ $value }})"

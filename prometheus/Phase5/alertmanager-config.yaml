@@ -38,6 +38,7 @@ data:
         group_by: ['instance'] # 根据instance做分组
         match:
           team: node
+
     receivers:
     - name: 'default'
       email_configs:
@@ -47,3 +48,12 @@ data:
       email_configs:
       - to: '1103098721@qq.com'
         send_resolved: true
+ 
+    inhibit_rules:
+    - source_match:
+        alertname: NodeMemoryUsage
+        severity: critical
+      target_match:
+        severity: normal
+      equal:
+        - instance
