@@ -144,6 +144,10 @@ data:
 
   rules.yml: |
     groups:
+      - name: recording_rules
+        rules:
+          - record: job:node_memory_MemFree_bytes:percent
+            expr: 100 - (100 * node_memory_MemFree_bytes / node_memory_MemTotal_bytes)
       - name: test-node-mem
         rules:
           - alert: NodeMemoryUsage
