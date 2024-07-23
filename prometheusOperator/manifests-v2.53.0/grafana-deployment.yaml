@@ -30,7 +30,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - env: []
-        image: grafana/grafana:11.1.0
+        image: docker.m.daocloud.io/grafana/grafana:11.1.0
         name: grafana
         ports:
         - containerPort: 3000
