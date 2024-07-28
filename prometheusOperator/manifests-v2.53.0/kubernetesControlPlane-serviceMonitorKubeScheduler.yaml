@@ -1,3 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-scheduler
+  labels: # 必须和上面的 ServiceMonitor 下面的 matchLabels 保持一致
+    app.kubernetes.io/name: kube-scheduler
+spec:
+  selector:
+    component: kube-scheduler
+  ports:
+    - name: https-metrics
+      port: 10259
+      targetPort: 10259 # 需要注意现在版本默认的安全端口是10259
+---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -9,15 +24,15 @@ metadata:
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    interval: 30s
-    port: https-metrics
-    scheme: https
+    interval: 30s # 每30s获取一次信息
+    port: https-metrics # 对应 service 的端口名
+    scheme: https # 注意是使用 https 协议
     tlsConfig:
-      insecureSkipVerify: true
-  jobLabel: app.kubernetes.io/name
-  namespaceSelector:
+      insecureSkipVerify: true # 跳过安全校验
+  jobLabel: app.kubernetes.io/name # 用于从中检索任务名称的标签
+  namespaceSelector: # 表示去匹配某一命名空间中的 Service，如果想从所有的namespace中匹配用any:true
     matchNames:
     - kube-system
-  selector:
+  selector: # 匹配的 Service 的 labels，如果使用 mathLabels，则下面的所有标签都匹配时才会匹配该 service，如果使用 matchExpressions，则至少匹配一个标签的 service 都会被选择
     matchLabels:
       app.kubernetes.io/name: kube-scheduler
