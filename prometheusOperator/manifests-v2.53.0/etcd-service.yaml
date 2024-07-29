@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-k8s
+  namespace: kube-system
+  labels: # 用于匹配ServiceMonitor资源对象的selector下面的标签
+    k8s-app: etcd
+spec:
+  clusterIP: None # 自定义Endpoints的话一定要把Service的类型设置为None
+  ports:
+    - name: metrics
+      port: 2381
+      targetPort: 2381
+
+# 要把k8s集群外部的服务引入到Service中来，是不是就要去做自定义的Endpoints资源对象呢？
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: etcd-k8s
+  namespace: kube-system
+  labels:
+    k8s-app: etcd
+subsets:
+  - addresses:
+      - ip: 192.168.68.30
+        nodeName: master
+      # 如果还有其他外部的etcd节点，可以继续添加
+    ports:
+      - name: metrics
+        port: 2381
