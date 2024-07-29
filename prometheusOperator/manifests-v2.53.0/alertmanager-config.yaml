@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: dinghook
+  namespace: monitoring
+  labels: # 必须要有这个标签，用于关联Alertmanager资源对象
+    alertmanager: main
+spec:
+  route:
+    groupBy: ["alertname"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    receiver: demo
+    routes:
+      - receiver: demo
+        match: alertname="Watchdog"
+  receivers:
+    - name: "demo"
+      webhookConfigs:
+        - url: "http://dingtalk-webhook.monitor.svc.cluster.local:8000/alertmanager/webhook"
+          sendResolved: true

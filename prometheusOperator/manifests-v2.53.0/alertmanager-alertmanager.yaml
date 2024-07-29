@@ -35,3 +35,6 @@ spec:
     runAsUser: 1000
   serviceAccountName: alertmanager-main
   version: 0.27.0
+  alertmanagerConfigSelector: # 匹配 AlertmanagerConfig 的标签
+    matchLabels:
+      alertmanagerConfig: main
