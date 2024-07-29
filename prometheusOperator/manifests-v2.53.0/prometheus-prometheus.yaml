@@ -48,3 +48,6 @@ spec:
   serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector: {}
   version: 2.53.0
+  additionalScrapeConfigs:
+    name: additional-configs
+    key: prometheus-additional.yaml

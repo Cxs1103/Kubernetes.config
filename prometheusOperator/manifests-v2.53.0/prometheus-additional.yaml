@@ -1,0 +1,36 @@
+- job_name: "endpoints"
+  kubernetes_sd_configs:
+    - role: endpoints
+  relabel_configs: # 指标采集之前或采集过程中去重新配置
+    - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+      action: keep # 保留具有 prometheus.io/scrape=true 这个注解的Service
+      regex: true
+    - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+      action: replace
+      target_label: __metrics_path__
+      regex: (.+)
+    - source_labels:
+        [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+      action: replace
+      target_label: __address__
+      regex: ([^:]+)(?::\d+)?;(\d+) # RE2 正则规则，+是一次多多次，?是0次或1次，其中?:表示非匹配组(意思就是不获取匹配结果)
+      replacement: $1:$2
+    - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+      action: replace
+      target_label: __scheme__
+      regex: (https?)
+    - action: labelmap
+      regex: __meta_kubernetes_service_label_(.+)
+      replacement: $1
+    - source_labels: [__meta_kubernetes_namespace]
+      action: replace
+      target_label: kubernetes_namespace
+    - source_labels: [__meta_kubernetes_service_name]
+      action: replace
+      target_label: kubernetes_service
+    - source_labels: [__meta_kubernetes_pod_name]
+      action: replace
+      target_label: kubernetes_pod
+    - source_labels: [__meta_kubernetes_node_name]
+      action: replace
+      target_label: kubernetes_node
