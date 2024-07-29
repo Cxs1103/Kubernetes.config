@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: etcd-k8s
+  namespace: kube-system
+  labels:
+    k8s-app: etcd
+spec:
+  groups:
+    - name: etcd
+      rules:
+        - alert: EtcdNoLeader
+          expr: |
+            etcd_server_has_leader{job="etcd"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Etcd No Leader (instance {{ $labels.instance }})"
+            description: "Etcd instance {{ $labels.instance }} has no leader."
