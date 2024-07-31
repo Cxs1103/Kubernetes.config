@@ -1,0 +1,79 @@
+# vm-single.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victoria-metrics
+  namespace: kube-vm
+spec:
+  selector:
+    matchLabels:
+      app: victoria-metrics
+  template:
+    metadata:
+      labels:
+        app: victoria-metrics
+    spec:
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: victoria-metrics-data
+      containers:
+        - name: vm
+          image: docker.m.daocloud.io/victoriametrics/victoria-metrics:v1.101.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - -storageDataPath=/var/lib/victoria-metrics-data # 指定数据存储目录
+            - -retentionPeriod=1w # 数据保存周期
+          ports:
+            - containerPort: 8428
+              name: http
+          volumeMounts:
+            - mountPath: /var/lib/victoria-metrics-data
+              name: storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: victoria-metrics
+  namespace: kube-vm
+spec:
+  type: NodePort
+  ports:
+    - port: 8428
+  selector:
+    app: victoria-metrics
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: victoria-metrics-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 20Gi
+  storageClassName: local-storage
+  local:
+    path: /data/k8s/vm
+  persistentVolumeReclaimPolicy: Retain
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - node2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: victoria-metrics-data
+  namespace: kube-vm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: local-storage
