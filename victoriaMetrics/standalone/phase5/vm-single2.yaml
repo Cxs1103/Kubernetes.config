@@ -1,0 +1,38 @@
+# vm-single2.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victoria-metrics
+  namespace: kube-vm
+spec:
+  selector:
+    matchLabels:
+      app: victoria-metrics
+  template:
+    metadata:
+      labels:
+        app: victoria-metrics
+    spec:
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: victoria-metrics-data
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+      containers:
+        - name: vm
+          image: docker.m.daocloud.io/victoriametrics/victoria-metrics:v1.101.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - -storageDataPath=/var/lib/victoria-metrics-data
+            - -retentionPeriod=1w
+            - -promscrape.config=/etc/prometheus/prometheus.yaml # 指定prometheus配置文件路径
+          ports:
+            - containerPort: 8428
+              name: http
+          volumeMounts:
+            - mountPath: /var/lib/victoria-metrics-data
+              name: storage
+            - mountPath: /etc/prometheus
+              name: prometheus-config
