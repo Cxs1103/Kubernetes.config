@@ -1,0 +1,39 @@
+# vmalert-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vmalert-config
+  namespace: kube-vm
+data:
+  record.yaml: |
+    groups:
+    - name: record
+      rules:
+      - record: job:node_memory_MemFree_bytes:percent  # 记录规则名称
+        expr: 100 - (100 * node_memory_MemFree_bytes / node_memory_MemTotal_bytes)
+  pod.yaml: |
+    groups:
+    - name: pod
+      rules:
+      - alert: PodMemoryUsage
+        expr: sum(container_memory_working_set_bytes{pod!=""}) BY (instance, pod)  / sum(container_spec_memory_limit_bytes{pod!=""} > 0) BY (instance, pod) * 100 > 60
+        for: 1m
+        labels:
+          severity: warning
+          source: pod
+        annotations:
+          summary: "Pod {{ $labels.pod }} High Memory usage detected"
+          description: "{{$labels.instance}}: Pod {{ $labels.pod }} Memory usage is above 60% (current value is: {{ $value }})"
+  node.yaml: |
+    groups:
+    - name: node
+      rules:  # 具体的报警规则
+      - alert: NodeMemoryUsage  # 报警规则的名称
+        expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 30
+        for: 1m
+        labels:
+          source: node
+          severity: critical
+        annotations:
+          summary: "Node {{$labels.instance}} High Memory usage detected"
+          description: "{{$labels.instance}}: Memory usage is above 30% (current value is: {{ $value }})"

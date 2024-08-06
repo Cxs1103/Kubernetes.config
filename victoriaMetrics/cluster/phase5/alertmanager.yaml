@@ -1,0 +1,83 @@
+# alertmanager.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alert-config
+  namespace: kube-vm
+data:
+  config.yml: |-
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: 'smtp.qq.com:465'
+      smtp_from: 'xxx@qq.com'
+      smtp_auth_username: 'xxx@qq.com'
+      smtp_auth_password: '<auth code>'  # 使用QQ邮箱的授权码
+      smtp_hello: 'qq.com'
+      smtp_require_tls: false
+    route:
+      group_by: ['severity', 'source']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 24h
+      receiver: email
+    receivers:
+    - name: 'email'
+      email_configs:
+      - to: 'ych_1024@163.com'
+        send_resolved: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: kube-vm
+  labels:
+    app: alertmanager
+spec:
+  selector:
+    app: alertmanager
+  type: NodePort
+  ports:
+    - name: web
+      port: 9093
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: kube-vm
+  labels:
+    app: alertmanager
+spec:
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      volumes:
+        - name: alertcfg
+          configMap:
+            name: alert-config
+      containers:
+        - name: alertmanager
+          image: docker.m.daocloud.io/prom/alertmanager:v0.27.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--config.file=/etc/alertmanager/config.yml"
+          ports:
+            - containerPort: 9093
+              name: http
+          volumeMounts:
+            - mountPath: "/etc/alertmanager"
+              name: alertcfg
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 100m
+              memory: 256Mi

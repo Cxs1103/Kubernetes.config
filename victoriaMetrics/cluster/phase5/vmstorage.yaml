@@ -1,0 +1,87 @@
+# cluster/vmstorage.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: cluster-vmstorage
+  namespace: kube-vm
+  labels:
+    app: vmstorage
+spec:
+  clusterIP: None
+  ports:
+    - port: 8482
+      targetPort: http
+      name: http
+    - port: 8401
+      targetPort: vmselect
+      name: vmselect
+    - port: 8400
+      targetPort: vminsert
+      name: vminsert
+  selector:
+    app: vmstorage
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vmstorage
+  namespace: kube-vm
+  labels:
+    app: vmstorage
+spec:
+  serviceName: cluster-vmstorage
+  selector:
+    matchLabels:
+      app: vmstorage
+  replicas: 2
+  podManagementPolicy: OrderedReady
+  template:
+    metadata:
+      labels:
+        app: vmstorage
+    spec:
+      containers:
+        - name: vmstorage
+          image: docker.m.daocloud.io/victoriametrics/vmstorage:v1.101.0-cluster
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - "--retentionPeriod=1"
+            - "--storageDataPath=/storage"
+            - --envflag.enable=true
+            - --envflag.prefix=VM_
+            - --loggerFormat=json
+          ports:
+            - name: http
+              containerPort: 8482
+            - name: vminsert # 用于数据写入
+              containerPort: 8400
+            - name: vmselect # 用于查询
+              containerPort: 8401
+          livenessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            tcpSocket:
+              port: http
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+            httpGet:
+              path: /health
+              port: http
+          volumeMounts:
+            - name: storage
+              mountPath: /storage
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        storageClassName: nfs-client # 指定一个可用的存储类（建议用Local PV）
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
