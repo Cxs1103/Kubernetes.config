@@ -344,7 +344,7 @@ metadata:
   name: ingress-nginx-controller
   namespace: ingress-nginx
 spec:
-  externalTrafficPolicy: Local
+  #externalTrafficPolicy: Local
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
@@ -363,7 +363,8 @@ spec:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
     app.kubernetes.io/name: ingress-nginx
-  type: LoadBalancer
+  type: NodePort
+  # type: LoadBalancer
 ---
 apiVersion: v1
 kind: Service
@@ -420,6 +421,7 @@ spec:
         app.kubernetes.io/part-of: ingress-nginx
         app.kubernetes.io/version: 1.12.1
     spec:
+      hostNetwork: true
       containers:
       - args:
         - /nginx-ingress-controller
