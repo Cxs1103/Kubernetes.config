@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-volume
+spec:
+  containers:
+    # 第一个容器（应用容器）
+    - image: dockerproxy.net/library/nginx:1.23.1
+      name: web
+      volumeMounts: # 数据卷挂载
+      - name: log
+        mountPath: /var/log/nginx
+      # 第二个容器（日志采集器）
+    - image: hub.c.163.com/library/centos:latest
+      name: collect
+      command:
+      - sleep
+      - 24d
+      volumeMounts:
+      - name: log
+        mountPath: /var/log/nginx
+  volumes: # 定义数据卷
+  - name: log
+    emptyDir: {}
