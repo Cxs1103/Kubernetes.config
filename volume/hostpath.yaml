@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-hostpath
+spec:
+  containers:
+  - name: test
+    image: hub.c.163.com/library/busybox:latest
+    command:
+    - /bin/sh
+    - -c
+    - sleep 30d
+    volumeMounts:
+    - name: data
+      mountPath: /data
+  volumes:
+  - name: data
+    hostPath:
+      path: /data
+      type: DirectoryOrCreate

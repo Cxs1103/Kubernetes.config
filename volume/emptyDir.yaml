@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-emptydir
+spec:
+  containers:
+  # 应用容器
+  - image: hub.c.163.com/library/centos:latest
+    name: app
+    command: ["/bin/sh", "-c", "for i in {1..10000};do echo $i >>/opt/file.txt;sleep 1;done"]
+    volumeMounts: # 卷挂载
+      - name: data # 挂载的卷名称
+        mountPath: /opt # 卷挂载到容器中的路径
+  # 边车容器
+  - image: hub.c.163.com/library/centos:latest
+    name: sidecar
+    command: ["/bin/sh", "-c", "tail -f /opt/file.txt"]
+    volumeMounts:
+      - name: data
+        mountPath: /opt
+  volumes: # 定义卷
+  - name: data # 卷名称
+    emptyDir: {} # 卷类型
