@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - image: nginx:1.23
+          name: web
+          volumeMounts:
+          - name: data
+            mountPath: /data
+      volumes:
+      - name: data
+        nfs:
+        server: 192.168.68.30 # 指定NFS服务器地址
+        path: /data/k8s/app # 指定NFS共享路径
