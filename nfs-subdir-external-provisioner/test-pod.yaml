@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: test-pod
-    image: busybox:stable
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/busybox:stable
     command:
       - "/bin/sh"
     args:
