@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-exercise
+spec:
+  containers:
+  - name: nginx
+    image: dockerproxy.net/library/nginx:1.23.1
+    ports:
+    - containerPort: 80
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/test.sock
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    readinessProbe:
+      httpGet:
+        path: /index.html
+        port: 80
+      initialDelaySeconds: 10
+      periodSeconds: 10
