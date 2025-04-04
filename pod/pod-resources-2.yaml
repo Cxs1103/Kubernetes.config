@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-resources
+spec:
+  containers:
+  - name: web
+    image: dockerproxy.net/library/nginx:1.23.1
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "600m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+# requests不能大于limits，所以会创建失败
+
+# 查看节点详情
+# kubectl describe node node1
+# Name:               node1
+# Roles:              <none>
+# Labels:             beta.kubernetes.io/arch=amd64
+#                     beta.kubernetes.io/os=linux
+#                     kubernetes.io/arch=amd64
+#                     kubernetes.io/hostname=node1
+#                     kubernetes.io/os=linux
+# Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: unix:///run/containerd/containerd.sock
+#                     node.alpha.kubernetes.io/ttl: 0
+#                     volumes.kubernetes.io/controller-managed-attach-detach: true
+# CreationTimestamp:  Sat, 29 Mar 2025 18:15:58 +0800
+# Taints:             <none>
+# Unschedulable:      false
+# Lease:
+#   HolderIdentity:  node1
+#   AcquireTime:     <unset>
+#   RenewTime:       Sat, 05 Apr 2025 01:11:25 +0800
+# Conditions:
+#   Type                 Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+#   ----                 ------  -----------------                 ------------------                ------                       -------
+#   NetworkUnavailable   False   Sat, 29 Mar 2025 18:16:44 +0800   Sat, 29 Mar 2025 18:16:44 +0800   CiliumIsUp                   Cilium is running on this node
+#   MemoryPressure       False   Sat, 05 Apr 2025 01:11:31 +0800   Sat, 29 Mar 2025 18:43:19 +0800   KubeletHasSufficientMemory   kubelet has sufficient memory available
+#   DiskPressure         False   Sat, 05 Apr 2025 01:11:31 +0800   Sat, 29 Mar 2025 18:43:19 +0800   KubeletHasNoDiskPressure     kubelet has no disk pressure
+#   PIDPressure          False   Sat, 05 Apr 2025 01:11:31 +0800   Sat, 29 Mar 2025 18:43:19 +0800   KubeletHasSufficientPID      kubelet has sufficient PID available
+#   Ready                True    Sat, 05 Apr 2025 01:11:31 +0800   Fri, 04 Apr 2025 16:16:51 +0800   KubeletReady                 kubelet is posting ready status. AppArmor enabled
+# Addresses:
+#   InternalIP:  192.168.68.31
+#   Hostname:    node1
+# Capacity:
+#   cpu:                6
+#   ephemeral-storage:  20466256Ki
+#   hugepages-1Gi:      0
+#   hugepages-2Mi:      0
+#   memory:             16349476Ki
+#   pods:               110
+# Allocatable:
+#   cpu:                6
+#   ephemeral-storage:  18861701499
+#   hugepages-1Gi:      0
+#   hugepages-2Mi:      0
+#   memory:             16247076Ki
+#   pods:               110
+# System Info:
+#   Machine ID:                 71ca940336d54e34ba632f865cf863a6
+#   System UUID:                a9aa4d56-5cdf-3245-b6b6-cb6ef3d83559
+#   Boot ID:                    e5911700-13c6-43bf-a4ae-8604931d901b
+#   Kernel Version:             5.4.0-212-generic
+#   OS Image:                   Ubuntu 20.04.1 LTS
+#   Operating System:           linux
+#   Architecture:               amd64
+#   Container Runtime Version:  containerd://1.7.23
+#   Kubelet Version:            v1.29.9
+#   Kube-Proxy Version:         v1.29.9
+# PodCIDR:                      100.64.1.0/24
+# PodCIDRs:                     100.64.1.0/24
+# Non-terminated Pods:          (6 in total)
+#   Namespace                   Name                                       CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+#   ---------                   ----                                       ------------  ----------  ---------------  -------------  ---
+#   default                     nfs-client-provisioner-69948dcb98-k99np    0 (0%)        0 (0%)      0 (0%)           0 (0%)         2d4h
+#   ingress-nginx               ingress-nginx-controller-jfczm             100m (1%)     0 (0%)      90Mi (0%)        0 (0%)         5d23h
+#   kube-system                 cilium-hckqs                               100m (1%)     0 (0%)      100Mi (0%)       0 (0%)         6d6h
+#   kube-system                 kube-proxy-rvrmc                           0 (0%)        0 (0%)      0 (0%)           0 (0%)         6d6h
+#   kube-system                 kube-sealos-lvscare-node1                  0 (0%)        0 (0%)      0 (0%)           0 (0%)         6d6h
+#   kube-system                 metrics-server-799589dcf4-bs8v8            100m (1%)     0 (0%)      200Mi (1%)       0 (0%)         6d2h
+# Allocated resources:
+#   (Total limits may be over 100 percent, i.e., overcommitted.)
+#   Resource           Requests    Limits
+#   --------           --------    ------
+#   cpu                300m (5%)   0 (0%)
+#   memory             390Mi (2%)  0 (0%)
+#   ephemeral-storage  0 (0%)      0 (0%)
+#   hugepages-1Gi      0 (0%)      0 (0%)
+#   hugepages-2Mi      0 (0%)      0 (0%)
+# Events:              <none>
