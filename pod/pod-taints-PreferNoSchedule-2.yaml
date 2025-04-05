@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-taints-prefernonchedule
+spec:
+  containers:
+  - name: pod-taints-prefernonchedule
+    image: dockerproxy.net/library/nginx:1.23.1
+    ports:
+    - containerPort: 80
+  tolerations:
+  - key: "gpu"
+    operator: "Equal"
+    value: "amd"
+    effect: "PreferNoSchedule"
+
+# 节点配置污点
+# kubectl taint node node1 gpu=navida:NoSchedule
+# kubectl taint node node2 gpu=amd:NoSchedule
