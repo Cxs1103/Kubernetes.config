@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-ds
+spec:
+  selector:
+    matchLabels:
+      name: nginx-ds
+  template:
+    metadata:
+      labels:
+        name: nginx-ds
+    spec:
+      nodeSelector:
+        disktype: ssd
+      containers:
+      - name: log
+        image: dockerproxy.net/library/nginx:1.23.1

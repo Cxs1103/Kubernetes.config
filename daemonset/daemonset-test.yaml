@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: filebeat
+  template:
+    metadata:
+      labels:
+        name: filebeat
+    spec:
+      containers:
+      - name: log
+        image: func.ink/elastic/filebeat:8.17.4
