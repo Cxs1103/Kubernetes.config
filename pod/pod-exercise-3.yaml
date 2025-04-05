@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  nodeSelector:
+    disk: ssd
+  containers:
+  - name: nginx
+    image: dockerproxy.net/library/nginx:1.23.1
+    ports:
+    - containerPort: 80
