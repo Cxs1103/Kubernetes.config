@@ -1,0 +1,7 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority  # 优先级类名称
+value: 1000000         # 优先级数值（越大优先级越高，最大 1,000,000,000）
+globalDefault: false    # 是否全局默认（通常设为 false，按需指定）
+description: "用于关键业务 Pod，确保资源紧张时优先调度"

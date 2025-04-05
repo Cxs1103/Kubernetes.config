@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-high-priority-pod
+spec:
+  priorityClassName: high-priority
+  containers:
+  - name: web
+    image: dockerproxy.net/library/nginx:1.23.1
