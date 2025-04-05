@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-nodename
+spec:
+  nodeName: node1
+  containers:
+  - name: pod-nodename
+    image: dockerproxy.net/library/nginx:1.23.1
+    ports:
+    - containerPort: 80
