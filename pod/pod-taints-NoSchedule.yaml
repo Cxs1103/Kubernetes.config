@@ -6,7 +6,8 @@ spec:
   containers:
   - name: pod-taints
     image: dockerproxy.net/library/nginx:1.23.1
-    command: ['sh', '-c', 'echo Hello Kubernetes! && sleep 3600']
+    ports:
+    - containerPort: 80
   tolerations:
   - key: "gpu"
     operator: "Equal"
