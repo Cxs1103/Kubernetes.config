@@ -24,9 +24,9 @@ metadata:
   labels:
     app: web
 spec:
-  #type: NodePort
+  type: NodePort
   #type: LoadBalancer
-  type: ClusterIP
+  #type: ClusterIP
   ports:
     - name: http
       port: 80
