@@ -1,0 +1,8 @@
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2adver
+  namespace: metallb-system
+spec:
+  ipAddressPools: # 如果不配置则会通告所有的IP池地址
+    - ip-pool
