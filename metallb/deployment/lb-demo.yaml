@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lb-demo
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: lb-demo
+  template: # pod 模板
+    metadata:
+      labels:
+        app: lb-demo
+    spec:
+      containers:
+        - name: app
+          image: dockerproxy.net/library/nginx:1.23.1 # 该应用进程暴露的是80端口
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-demo
+  namespace: default
+spec:
+  selector:
+    app: lb-demo
+  ports:
+    - name: http
+      port: 80 # 这个是Service的端口
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lb-demo
+  namespace: default
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: lb-demo.192.168.68.100.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lb-demo
+                port:
+                  number: 80
