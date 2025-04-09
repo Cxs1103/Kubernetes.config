@@ -25,8 +25,8 @@ metadata:
     app: web
 spec:
   #type: NodePort
-  #type: LoadBalancer
-  type: ClusterIP
+  type: LoadBalancer
+  #type: ClusterIP
   ports:
   - name: http
     port: 80
@@ -40,27 +40,33 @@ kind: Ingress
 metadata:
   name: web
   annotations:
-    # 示例1：设置代理超时参数
+    # 代理超时参数（保留）
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-    # 示例2：设置客户端上传文件大小
+    # 客户端上传文件大小限制（保留）
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    # 示例3：自定义规则(v1.12.1版本，权限提升不让使用server-snippet)
-    nginx.ingress.kubernetes.io/server-snippet: |
-      if ($http_user_agent ~* '(Android|iPhone)') {
-      rewrite ^/(.*) http://m.baidu.com break;
-      }
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - ngdemo.mieken.cn
+    secretName: ngdemo-mieken-cn
   rules:
   - host: ngdemo.mieken.cn
     http:
       paths:
+      - path: /mobile
+        pathType: Prefix
+        backend:
+          service:
+            name: mobile-service  # 单独为移动端部署的后端服务
+            port:
+              number: 80
       - path: /
         pathType: Prefix
         backend:
           service:
             name: web
             port:
-              number: 80  # 必须与 Service 端口一致
+              number: 80
