@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-demo-v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-demo-v1
+  template:
+    metadata:
+      labels:
+        app: web-demo-v1
+    spec:
+      containers:
+        - name: web-demo-v1
+          image: registry.cn-hangzhou.aliyuncs.com/cxs1103/web-demo:v1
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-demo-v1
+  labels:
+    app: web-demo-v1
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 443
+  selector:
+    app: web-demo-v1

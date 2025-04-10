@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-demo-canary
+  annotations:
+    # 设置 Canary
+    nginx.ingress.kubernetes.io/canary: "true"
+    # 设置权重,将20%的流量分配给 web-demo-v2
+    nginx.ingress.kubernetes.io/canary-weight: "20"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ngdemo.mieken.cn  # 将域名映射到 web 服务
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: web-demo-v2
+            port:
+              number: 80

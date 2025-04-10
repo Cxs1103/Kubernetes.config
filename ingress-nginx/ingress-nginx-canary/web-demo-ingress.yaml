@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-demo
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ngdemo.mieken.cn  # 将域名映射到 web 服务
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: web-demo-v1
+            port:
+              number: 80
