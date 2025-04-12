@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - image: dockerproxy.net/library/nginx:1.23.1
+          name: nginx
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: data
+          nfs:
+            server: 192.168.68.30 # 指定NFS服务器地址
+            path: /var/lib/k8s/data # 指定NFS共享路径
