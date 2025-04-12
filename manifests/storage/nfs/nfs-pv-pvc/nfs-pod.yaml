@@ -9,7 +9,7 @@ spec:
       claimName: nfs-pvc
   containers:
   - name: web
-    image: nginx:1.22.0
+    image: dockerproxy.net/library/nginx:1.23.1
     ports:
     - name: web
       containerPort: 80
