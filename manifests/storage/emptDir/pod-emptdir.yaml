@@ -21,3 +21,4 @@ spec:
   volumes: # 定义卷
   - name: data # 卷名称
     emptyDir: {} # 卷类型
+    
