@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-proxy
+spec:
+  containers:
+    - name: web
+      image: dockerproxy.net/library/nginx:1.23.1
+      volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/conf.d/a.conf
+          subPath: a.conf
+        - name: config
+          mountPath: /etc/nginx/conf.d/b.conf
+          subPath: b.conf
+  volumes:
+    - name: config
+      configMap:
+        name: nginx-config
+        items:
+          - key: a.conf
+            path: a.conf
+          - key: b.conf
+            path: b.conf
