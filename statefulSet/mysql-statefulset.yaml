@@ -1,0 +1,183 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  selector:
+    app: mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: "mysql"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: db
+        image: dockerproxy.net/library/mysql:5.7.20
+        command: 
+        - /bin/bash
+        - -c
+        - |
+          # 获取当前Pod序号
+          ordinal=$(hostname | awk -F'-' '{print $NF}')
+          # 处理Master节点
+          if [ $ordinal -eq 0 ]; then
+            echo "###### Master节点 ######"
+            if [ $(ls /var/lib/mysql |wc -l) -eq 0 ]; then
+               # 初始化数据库
+               echo "初始化数据库..."
+               mysqld --initialize --datadir=/var/lib/mysql --user=mysql
+               # 启动MySQL服务并设置root用户密码
+               echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';"  > /init.sql
+               echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';" >> /init.sql
+               echo "启动MySQL服务..."
+               mysqld \
+                 --defaults-file=/etc/mysql/my.cnf \
+                 -u mysql \
+                 --init-file=/init.sql \
+                 --server-id=$((100 + $ordinal)) \
+                 --log-bin=mysql-0-bin
+            else 
+               # 启动MySQL服务
+               echo "启动MySQL服务..."
+               mysqld \
+                 --defaults-file=/etc/mysql/my.cnf \
+                 -u mysql \
+                 --server-id=$((100 + $ordinal)) \
+                 --log-bin=mysql-0-bin
+            fi
+          fi
+          # 处理Slave节点
+          if [ $ordinal -ne 0 ]; then
+            echo "###### Slave节点 ######"
+            if [ $(ls /var/lib/mysql |wc -l) -eq 0 ]; then
+               # 初始化数据库
+               echo "初始化数据库..."
+               mysqld --initialize --datadir=/var/lib/mysql --user=mysql
+               # 启动MySQL服务并设置root用户密码
+               echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';"  > /init.sql
+               echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';" >> /init.sql
+               echo "启动MySQL服务..."
+               nohup mysqld \
+                 --defaults-file=/etc/mysql/my.cnf \
+                 -u mysql \
+                 --init-file=/init.sql \
+                 --server-id=$((100 + $ordinal)) \
+                 &> mysql.log &
+
+               # 等待MySQL启动后，建立主从复制关系
+               while true; do 
+                  if ! mysqladmin ping -uroot -p${MYSQL_ROOT_PASSWORD}; then
+                    echo "等待MySQL服务启动..."
+                    sleep 1
+                  else
+                    break
+                  fi
+               done
+               # Master节点连接地址
+               master_host="mysql-0.mysql"
+               # 序号小于集群初始数量，则认为初次搭建
+               if [ $ordinal -lt $INITIAL_CLUSTER_SIZE ]; then
+                 # 获取Master节点二进制日志文件名和位置
+                 mysql -h $master_host -u root -p$MYSQL_ROOT_PASSWORD -e "SHOW MASTER STATUS\G;" > master_binlog_info.txt
+                 log_file=$(awk -F': ' '/File/{print $2}' master_binlog_info.txt)
+                 log_pos=$(awk -F': ' '/Position/{print $2}' master_binlog_info.txt)
+                 echo "获取Master节点二进制日志文件名: ${log_file}, 日志位置: ${log_pos}"
+                 # 建立主从复制关系
+                 echo "建立主从复制关系..."
+                 mysql -u root -p$MYSQL_ROOT_PASSWORD -e "
+                       CHANGE MASTER TO
+                       MASTER_HOST='${master_host}',
+                       MASTER_USER='root',
+                       MASTER_PASSWORD='${MYSQL_ROOT_PASSWORD}',
+                       MASTER_LOG_FILE='${log_file}',
+                       MASTER_LOG_POS=${log_pos};
+                       START SLAVE;"
+                 echo "当前主从复制线程状态"
+                 mysql -u root -p$MYSQL_ROOT_PASSWORD -e "SHOW SLAVE STATUS\G" | grep "Running:"
+                 tail -f mysql.log
+               # 序号等于或大于集群初始数量，则认为扩展副本数
+               elif [ $ordinal -ge $INITIAL_CLUSTER_SIZE]; then
+                 echo "从Master节点导出数据到SQL文件..."
+                 # 获取非系统数据库列表
+                 databases=$(mysql -h $master_host -u root -p$MYSQL_ROOT_PASSWORD -e "SHOW DATABASES;" | grep -Ev "Database|mysql|sys|information_schema|performance_schema")
+                 # 导出非系统数据库到SQL文件
+                 mysqldump -h $master_host -uroot -p$MYSQL_ROOT_PASSWORD --master-data=2 --databases $databases > all.sql
+                 echo "导入SQL文件到本地MySQL..."
+                 # 导入SQL文件到本地MySQL
+                 mysql -uroot -p$MYSQL_ROOT_PASSWORD < all.sql
+                 # 从SQL文件中获取Master二进制日志文件名和位置
+                 log_file=$(awk -F"[=';]" '/CHANGE MASTER TO/{print $3}' all.sql)
+                 log_pos=$(awk -F"[=';]" '/CHANGE MASTER TO/{print $5}' all.sql)
+                 # 建立主从复制关系
+                 echo "建立主从复制关系..."
+                 mysql -u root -p$MYSQL_ROOT_PASSWORD -e "
+                       CHANGE MASTER TO
+                       MASTER_HOST='${master_host}',
+                       MASTER_USER='root',
+                       MASTER_PASSWORD='${MYSQL_ROOT_PASSWORD}',
+                       MASTER_LOG_FILE='${log_file}',
+                       MASTER_LOG_POS=${log_pos};
+                       START SLAVE;"
+                 echo "主从复制线程状态"
+                 mysql -u root -p$MYSQL_ROOT_PASSWORD -e "SHOW SLAVE STATUS\G" | grep "Running:"
+                 tail -f mysql.log
+               fi
+            else 
+               echo "启动MySQL服务..."
+               mysqld \
+                 --defaults-file=/etc/mysql/my.cnf \
+                 -u mysql \
+                 --server-id=$((100 + $ordinal))
+            fi
+          fi
+        livenessProbe:
+          exec:
+            command: 
+            - /bin/sh
+            - -c  
+            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command: 
+            - /bin/sh
+            - -c  
+            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+          initialDelaySeconds: 20
+          periodSeconds: 10        
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "123456"
+        - name: INITIAL_CLUSTER_SIZE
+          value: "3"
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: "nfs-client"
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+
