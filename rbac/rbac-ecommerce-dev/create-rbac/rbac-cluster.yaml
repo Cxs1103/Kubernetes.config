@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ecommerce-dev-clusterrole
+rules:
+- apiGroups: ["", "apps"] 
+  resources: ["pods", "deployments", "services", "ingresses", "configmaps", "secrets"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ecommerce-dev-clusterrole-cxs
+subjects:
+- kind: User
+  name: cxs 
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: ecommerce-dev-clusterrole
+  apiGroup: rbac.authorization.k8s.io
