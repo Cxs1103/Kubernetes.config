@@ -32,12 +32,6 @@ spec:
         volumeMounts:
         - name: varlog
           mountPath: /var/log
-      - name: sidecar
-        image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/busybox:1.28.4
-        args: [/bin/sh, -c, 'tail -n+1 -f /var/log/app.log']
-        volumeMounts:
-        - name: varlog
-          mountPath: /var/log
       volumes:
       - name: varlog
         emptyDir: {}       # 共享的临时存储卷
