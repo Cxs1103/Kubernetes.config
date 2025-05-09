@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter-deployment
+  labels:
+    app: counter          
+spec:
+  replicas: 1              
+  selector:
+    matchLabels:
+      app: counter         
+  template:
+    metadata:
+      labels:
+        app: counter      
+    spec:
+      containers:
+      - name: count        
+        image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/busybox:1.28.4
+        args:
+        - /bin/sh
+        - -c
+        - >
+          i=0;
+          while true;
+          do
+            echo "$i: $(date)" >> /var/log/app.log;
+            echo "$(date) INFO $i" >> /var/log/app.log;
+            i=$((i+1));
+            sleep 1;
+          done
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+      - name: sidecar
+        image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/busybox:1.28.4
+        args: [/bin/sh, -c, 'tail -n+1 -f /var/log/app.log']
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+      volumes:
+      - name: varlog
+        emptyDir: {}       # 共享的临时存储卷
