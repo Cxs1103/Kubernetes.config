@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress 
+  namespace: test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wordpress 
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      initContainers:
+      - name: test
+        image: hub.c.163.com/library/busybox:latest
+        command: ['/bin/sh', '-c', "sleep 10"]
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "200Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+      containers:
+      - name: web
+        image: dockerproxy.net/library/nginx:1.23.1
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "200Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
