@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: demo
+data:
+  nginx.conf: |
+    server {
+      listen 80;
+      server_name a.mieken.cn;
+
+      ssl_protocols TLSv1.3;
+
+      location / {
+        proxy_pass http://192.168.68.30:8080;
+      }
+    }
