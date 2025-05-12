@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-demo
+  namespace: demo
+spec:
+  replicas: 5 
+  selector:
+    matchLabels:
+      app: web-demo
+  template:
+    metadata:
+      labels:
+        app: web-demo
+    spec:
+      containers:
+        - name: web-demo
+          #image: registry.cn-hangzhou.aliyuncs.com/cxs1103/web-demo:v4
+          image: dockerproxy.net/library/nginx:1.23.1
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          ports:
+            - containerPort: 80
+          volumeMounts:
+          - name: config
+            mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: config
+          configMap:
+            name: nginx-config
