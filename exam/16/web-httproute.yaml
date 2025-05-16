@@ -4,13 +4,13 @@ metadata:
   name: web-httproute
 spec:
   hostnames:
-    - "web.example.com"
+    - "ngdemo.mieken.cn"
   parentRefs:
     - name: web-gateway
   rules:
     - matches:
         - path:
-            type: Prefix
+            type: PathPrefix
             value: /
       backendRefs:
         - name: web
