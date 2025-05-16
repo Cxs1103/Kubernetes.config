@@ -1,0 +1,16 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: web-gateway
+spec:
+  gatewayClassName: nginx 
+  listeners:
+  - name: https
+    protocol: HTTPS
+    port: 443
+    hostname: ngdemo.mieken.cn
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - name: web-cert
+
