@@ -61,6 +61,7 @@ data:
       server_name a.mieken.cn;
 
       ssl_protocols TLSv1.3;
+      ssl_protocols TLSv1.2; # 只保留 TLSv1.3，去掉 TLSv1.2
 
       location / {
         proxy_pass http://192.168.68.30:8080;
